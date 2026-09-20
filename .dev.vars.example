@@ -1,0 +1,20 @@
+# Cloudflare Workers — Variáveis de desenvolvimento
+#
+# Este arquivo é um MODELO. Copie para .dev.vars e substitua os valores.
+# O arquivo real .dev.vars é ignorado pelo Git e NUNCA deve ser versionado.
+
+# Token de autenticação para a área de Secretaria no MCP.
+# Uso: autenticar agentes que consultam e registram guias.
+# Gerar valor de teste (32 bytes em hex): openssl rand -hex 32
+# Ou: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+MCP_SECRETARIA_TOKEN=exemplo_token_secretaria_não_use_em_produção_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Token de autenticação para a área de Financeiro no MCP.
+# Uso: autenticar agentes que revisam exceções e ejecutam decisões.
+# Gerar valor de teste (32 bytes em hex): openssl rand -hex 32
+MCP_FINANCEIRO_TOKEN=exemplo_token_financeiro_não_use_em_produção_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Chave privada para assinar e validar links temporários de revisão.
+# Uso: assinar links de revisão curta duração devolvidos pelo MCP.
+# Gerar valor de teste (32 bytes em hex): openssl rand -hex 32
+LINK_SIGNING_KEY=exemplo_chave_assinatura_não_use_em_produção_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

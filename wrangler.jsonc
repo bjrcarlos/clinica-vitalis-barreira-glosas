@@ -1,0 +1,42 @@
+{
+  // Nome do Worker na Cloudflare.
+  "name": "vitalis-barreira-glosas",
+  // Ponto de entrada do Worker (fetch handler).
+  "main": "src/worker/index.ts",
+  // Data de compatibilidade da Workers Runtime.
+  "compatibility_date": "2026-09-20",
+  // Habilita as APIs Node.js suportadas dentro do Worker.
+  "compatibility_flags": ["nodejs_compat"],
+  // Ativa logs e métricas de observabilidade do Worker.
+  "observability": {
+    "enabled": true
+  },
+  // Serve o build estático do cliente React (SPA) por baixo de env.ASSETS.
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  // Banco D1: guias, protocolos, eventos e regras (schema real entra na Fase 1).
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "vitalis-glosas",
+      // Placeholder: o database_id real é gerado e preenchido na Fase 5 (deploy).
+      "database_id": "local-dev-placeholder"
+    }
+  ],
+  // Bucket R2 privado para evidências (prints, PDFs) anexadas às ações.
+  "r2_buckets": [
+    {
+      "binding": "EVIDENCE",
+      "bucket_name": "vitalis-evidencias"
+    }
+  ],
+  // Binding de Workers AI, usado a partir da Fase 4 para interpretar texto livre.
+  // Sempre remoto (sem emulação local): "pnpm dev" exige CLOUDFLARE_ACCOUNT_ID no
+  // ambiente quando há mais de uma conta Cloudflare autenticada. Ver docs/CONFIG.md.
+  "ai": {
+    "binding": "AI"
+  }
+}

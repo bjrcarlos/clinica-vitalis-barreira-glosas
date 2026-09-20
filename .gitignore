@@ -1,2 +1,15 @@
 /Posicionamento/
 /posicionamento/
+
+# Prints avulsos derrubados na raiz por ferramentas do SO (nunca material do produto).
+/screenshot-*.png
+
+node_modules
+dist
+.wrangler
+.dev.vars
+*.local.*
+.env*
+coverage
+*.log
+.DS_Store
