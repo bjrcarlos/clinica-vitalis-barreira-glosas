@@ -88,6 +88,26 @@ Carregar por Google Fonts com `display=swap`, apenas os pesos acima.
 - **Tabela**: cabeçalho em caixa alta 11px sobre `--cor-superficie`, linhas com divisória suave, hover de linha, coluna de valor alinhada à direita em tabular-nums, protocolo como link em Bricolage.
 - **Chips de filtro**: pílula com contagem embutida; o chip ativo inverte para verde escuro.
 
+## Cores de dados (gráficos)
+
+Série validada para daltonismo e contraste — **use exatamente estes valores em rosca, linha, área e barra de gráfico**:
+
+```css
+:root {
+  --dado-ok: #2FA86A;          /* OK */
+  --dado-corrigir: #C7841C;    /* Corrigir — âmbar escurecido para gráfico */
+  --dado-revisao: #7C5CD6;     /* Revisão humana */
+  --dado-nao-faturar: #E0574A; /* Não faturar ao convênio */
+  --dado-neutro: #B9B4A3;      /* sem sinal / fundo de trilho */
+}
+```
+
+O par de badge `#FFF1D6` / `#7A4B0C` é **texto sobre fundo claro**, não marca de gráfico. O âmbar claro `#E0A032` reprovou no validador e não deve aparecer em nenhuma série.
+
+## Procedência
+
+`design-reference/` é uma cópia da versão `1789920867-1ed6` do canvas de design, que continua vivo e pode receber telas novas. Antes de reconstruir uma tela do zero, confira se a referência local ainda corresponde ao canvas.
+
 ## Acessibilidade e desempenho (obrigatórios)
 
 - Elementos reais: `<button>`, `<a href>`, `<input>` + `<label>`. Nunca `onClick` em `div`.
