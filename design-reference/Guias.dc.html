@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Todas as guias</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Instrument Sans',sans-serif;background:#F4F3ED;color:#14241E;-webkit-font-smoothing:antialiased}
+a{color:#0F3B2E;text-decoration:none}a:hover{color:#1B6B4F}
+.side{width:236px;flex-shrink:0;background:#FBFAF6;border-right:1px solid #E6E4DB;display:flex;flex-direction:column;padding:24px 16px;box-sizing:border-box}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 10px 26px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em;color:#0F3B2E}
+.brand i{width:28px;height:28px;border-radius:8px;background:#0F3B2E;display:flex;align-items:center;justify-content:center}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:14px;color:#3E5249;font-weight:500}
+.nav a:hover{background:#EEF6F0;color:#0F3B2E}
+.nav a.on{background:#DDF3E4;color:#0F3B2E;font-weight:600}
+.nav a.on svg{stroke:#0F3B2E}
+.nav svg{width:18px;height:18px;stroke:#5C7266;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav .n{margin-left:auto;font-size:11px;font-weight:600;background:#F1E4C6;color:#7A4B0C;border-radius:999px;padding:2px 8px;font-variant-numeric:tabular-nums}
+.who{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px 10px;border-top:1px solid #E6E4DB}
+.who b{display:block;font-size:13px;font-weight:600}.who span{font-size:12px;color:#6B7A72}
+.av{width:34px;height:34px;border-radius:50%;background:#0F3B2E;color:#CFF1DB;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:13px}
+.top{display:flex;align-items:center;gap:14px;padding:16px 36px;border-bottom:1px solid #E6E4DB;background:#FBFAF6}
+.search{flex-grow:1;max-width:440px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E3E1D8;border-radius:999px;padding:9px 14px;font-size:13px;color:#7B877F}
+.search input{border:0;outline:0;background:transparent;font:inherit;flex-grow:1;color:#14241E}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;background:#fff;border:1px solid #E3E1D8;color:#3E5249}
+.pill i{width:7px;height:7px;border-radius:50%;background:#2FA86A}
+.clock{margin-left:auto;font-size:12px;color:#6B7A72;text-align:right;line-height:1.35}
+.num{font-family:'Bricolage Grotesque',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.03em;font-weight:600}
+.card{background:#fff;border:1px solid #E3E1D8;border-radius:18px}
+.chip{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;font-weight:500;padding:7px 12px;border-radius:999px;border:1px solid #E3E1D8;background:#fff;color:#3E5249;cursor:pointer}
+.chip.on{background:#0F3B2E;border-color:#0F3B2E;color:#fff}
+.chip.on .c{background:rgba(255,255,255,.2);color:#fff}
+.chip .c{font-size:11px;font-weight:600;background:#F1F0EA;color:#3E5249;border-radius:999px;padding:1px 7px}
+.chip svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#7B877F;text-align:left;padding:14px 12px;border-bottom:1px solid #EFEDE5;background:#FBFAF6}
+th:first-child{padding-left:22px}th:last-child{padding-right:22px}
+td{padding:13px 12px;border-bottom:1px solid #F1F0EA;vertical-align:middle}
+td:first-child{padding-left:22px}td:last-child{padding-right:22px}
+tbody tr:hover{background:#FBFAF6}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;border-radius:999px;padding:4px 9px;white-space:nowrap}
+.st.fix{background:#FFF1D6;color:#7A4B0C}.st.rev{background:#E9E3FF;color:#4B3A9E}.st.no{background:#FCE3DF;color:#8F2B22}.st.ok{background:#DDF3E4;color:#155C3F}
+.wf{font-size:12px;color:#6B7A72;display:inline-flex;align-items:center;gap:6px}
+.wf i{width:7px;height:7px;border-radius:50%;background:#B9B4A3}
+.wf.lib i{background:#2FA86A}.wf.env i{background:#0F3B2E}.wf.mes i{background:#7C5CD6}
+.mono{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;letter-spacing:-.01em}
+.area{font-size:11px;color:#6B7A72}
+</style>
+</helmet>
+<div style="width: 1440px; height: 960px; display: flex; box-sizing: border-box; overflow: hidden;">
+  <aside class="side">
+    <div class="brand"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CFF1DB" stroke-width="2.4" stroke-linecap="round"><path d="M4 12h5l2-5 3 10 2-5h4"/></svg></i>Vitalis</div>
+    <nav class="nav" aria-label="Navegação principal">
+      <a href="Relatorio.dc.html"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 15l5-5 4 4 7-7"/></svg>Relatório</a>
+      <a class="on" href="Guias.dc.html"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Todas as guias</a>
+      <a href="Pendencias.dc.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Minhas pendências<span class="n">9</span></a>
+      <a href="Importar.dc.html"><svg viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>Importar</a>
+      <a href="NovaGuia.dc.html"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nova guia</a>
+      <a href="Regras.dc.html"><svg viewBox="0 0 24 24"><path d="M6 4h9l4 4v12H6z"/><path d="M9 13h6M9 17h6"/></svg>Regras</a>
+    </nav>
+    <div class="who"><div class="av">AF</div><div><b>Ana Ferraz</b><span>Financeiro</span></div></div>
+  </aside>
+  <main style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0;">
+    <header class="top">
+      <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" placeholder="Buscar protocolo, id da guia, paciente…" aria-label="Buscar"></label>
+      <span class="pill"><i></i>Regras agosto/2026 ativas</span>
+      <div class="clock"><b style="color:#14241E">Terça, 22/09/2026</b><br>14:32:07 · horário de Brasília</div>
+    </header>
+    <section style="padding: 28px 36px; display: flex; flex-direction: column; gap: 18px; flex-grow: 1; box-sizing: border-box; min-height: 0;">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between;">
+        <div>
+          <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 30px; letter-spacing: -0.03em; line-height: 1.1;">Todas as guias</h1>
+          <p style="margin: 6px 0 0; font-size: 14px; color: #6B7A72;">Filtro vindo do relatório: <b style="color: #14241E;">exigem atenção</b> · 31 de 80 guias · R$ 2.318,00. Sem filtro, a lista mostra tudo.</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <a href="Importar.dc.html" class="chip">Importar CSV/XLSX</a>
+          <a href="NovaGuia.dc.html" class="chip on">+ Nova guia</a>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+        <button type="button" class="chip">Todas <span class="c">80</span></button>
+        <button type="button" class="chip on">Exigem atenção <span class="c">31</span></button>
+        <button type="button" class="chip">OK <span class="c">49</span></button>
+        <span style="width: 1px; height: 22px; background: #E3E1D8; margin: 0 4px;"></span>
+        <button type="button" class="chip">Corrigir <span class="c">17</span></button>
+        <button type="button" class="chip">Revisão humana <span class="c">9</span></button>
+        <button type="button" class="chip">Não faturar <span class="c">5</span></button>
+        <span style="width: 1px; height: 22px; background: #E3E1D8; margin: 0 4px;"></span>
+        <button type="button" class="chip">Área: todas <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+        <button type="button" class="chip">Unidade: todas <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+        <button type="button" class="chip">Atendimento: 01/08 – 31/08/2026 <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+        <a href="Guias.dc.html" style="margin-left: auto; font-size: 13px; font-weight: 600; color: #1B6B4F;">Limpar filtros</a>
+      </div>
+
+      <div class="card" style="overflow: hidden; display: flex; flex-direction: column; flex-grow: 1; min-height: 0;">
+        <table>
+          <thead><tr><th>Protocolo</th><th>Atendimento</th><th>Paciente · convênio</th><th>Procedimento</th><th>Próxima ação</th><th>Fluxo</th><th>Área</th><th style="text-align: right;">Valor</th><th style="text-align: right;">Versão</th></tr></thead>
+          <tbody>
+            <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0042</a><div class="area">G-2608-0042</div></td><td class="num" style="font-weight: 500;">19/08/2026<div class="area">Norte</div></td><td>P-1029<div class="area">Vitalcard · 493201118</div></td><td>Fisioterapia neurofuncional<div class="area">50000560</div></td><td><span class="st rev">Revisão humana</span><div class="area">observação cita nova autorização</div></td><td><span class="wf"><i></i>Em tratamento</span></td><td>Financeiro</td><td class="num" style="text-align: right;">R$ 70,00</td><td class="num" style="text-align: right; color: #6B7A72;">v1</td></tr>
+            <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0011</a><div class="area">G-2608-0011</div></td><td class="num" style="font-weight: 500;">21/08/2026<div class="area">Sul</div></td><td>P-1012<div class="area">Vitalcard · 771823440</div></td><td>Fisioterapia musculoesquelética<div class="area">50000470</div></td><td><span class="st fix">Corrigir</span><div class="area">autorização vencida em 12/08/2026</div></td><td><span class="wf"><i></i>Em tratamento</span></td><td>Secretaria</td><td class="num" style="text-align: right;">R$ 62,00</td><td class="num" style="text-align: right; color: #6B7A72;">v1</td></tr>
+            <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0057</a><div class="area">G-2608-0057</div></td><td class="num" style="font-weight: 500;">14/08/2026<div class="area">Centro</div></td><td>P-1041<div class="area">Plano Bem · 310772905</div></td><td>Infiltração articular<div class="area">40201015</div></td><td><span class="st no">Não faturar</span><div class="area">procedimento não coberto pelo Plano Bem</div></td><td><span class="wf"><i></i>Em tratamento</span></td><td>Financeiro</td><td class="num" style="text-align: right;">R$ 140,00</td><td class="num" style="text-align: right; color: #6B7A72;">v1</td></tr>
+            <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0019</a><div class="area">G-2608-0019</div></td><td class="num" style="font-weight: 500;">27/08/2026<div class="area">Sul</div></td><td>P-1003<div class="area">Vitalcard · 602118377</div></td><td>Fisioterapia musculoesquelética<div class="area">50000470</div></td><td><span class="st fix">Corrigir</span><div class="area">sessão 15 · limite 10</div></td><td><span class="wf"><i></i>Em tratamento</span></td><td>Secretaria</td><td class="num" style="text-align: right;">R$ 62,00</td><td class="num" style="text-align: right; color: #6B7A72;">v1</td></tr>
+            <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0063</a><div class="area">G-2608-0063</div></td><td class="num" style="font-weight: 500;">11/08/2026<div class="area">Norte</div></td><td>P-1018<div class="area">Plano Bem · 559004112</div></td><td>Consulta ortopédica<div class="area">20103301</div></td><td><span class="st rev">Revisão humana</span><div class="area">possível duplicidade com VT-26-0064</div></td><td><span class="wf"><i></i>Em tratamento</span></td><td>Financeiro</td><td class="num" style="text-align: right;">R$ 90,00</td><td class="num" style="text-align: right; color: #6B7A72;">v1</td></tr>
+            <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0004</a><div class="area">G-2608-0004</div></td><td class="num" style="font-weight: 500;">18/08/2026<div class="area">Norte</div></td><td>P-1026<div class="area">Plano Bem · 728909716</div></td><td>Fisioterapia musculoesquelética<div class="area">50000470</div></td><td><span class="st ok">OK</span><div class="area">corrigida em v2 · autorização renovada</div></td><td><span class="wf lib"><i></i>Liberada para envio</span></td><td>Financeiro</td><td class="num" style="text-align: right;">R$ 62,00</td><td class="num" style="text-align: right; color: #6B7A72;">v2</td></tr>
+            <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0008</a><div class="area">G-2608-0008</div></td><td class="num" style="font-weight: 500;">22/08/2026<div class="area">Centro</div></td><td>P-1037<div class="area">Vitalcard · 190445027</div></td><td>Reavaliação fisioterapêutica<div class="area">50000012</div></td><td><span class="st fix">Corrigir</span><div class="area">CID obrigatório ausente</div></td><td><span class="wf"><i></i>Em tratamento</span></td><td>Secretaria</td><td class="num" style="text-align: right;">R$ 55,00</td><td class="num" style="text-align: right; color: #6B7A72;">v1</td></tr>
+            <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0031</a><div class="area">G-2608-0031</div></td><td class="num" style="font-weight: 500;">29/08/2026<div class="area">Sul</div></td><td>P-1044<div class="area">Plano Bem · 626441373</div></td><td>Consulta ortopédica<div class="area">20103301</div></td><td><span class="st rev">Revisão humana</span><div class="area">observação indica faturamento particular</div></td><td><span class="wf"><i></i>Em tratamento</span></td><td>Financeiro</td><td class="num" style="text-align: right;">R$ 90,00</td><td class="num" style="text-align: right; color: #6B7A72;">v1</td></tr>
+            <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0022</a><div class="area">G-2608-0022</div></td><td class="num" style="font-weight: 500;">08/08/2026<div class="area">Centro</div></td><td>P-1009<div class="area">Vitalcard · 884410270</div></td><td>Fisioterapia neurofuncional<div class="area">50000560</div></td><td><span class="st fix">Corrigir</span><div class="area">número de autorização ausente</div></td><td><span class="wf"><i></i>Em tratamento</span></td><td>Secretaria</td><td class="num" style="text-align: right;">R$ 70,00</td><td class="num" style="text-align: right; color: #6B7A72;">v1</td></tr>
+            <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0049</a><div class="area">G-2608-0049</div></td><td class="num" style="font-weight: 500;">2026/08/13<div class="area">Norte</div></td><td>P-1051<div class="area">Plano Bem · 402117736</div></td><td>Fisioterapia musculoesquelética<div class="area">50000470</div></td><td><span class="st fix">Corrigir</span><div class="area">data fora do padrão · normalizada com aviso</div></td><td><span class="wf"><i></i>Em tratamento</span></td><td>Secretaria</td><td class="num" style="text-align: right;">R$ 62,00</td><td class="num" style="text-align: right; color: #6B7A72;">v1</td></tr>
+            <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0036</a><div class="area">G-2608-0036</div></td><td class="num" style="font-weight: 500;">25/08/2026<div class="area">Sul</div></td><td>P-1015<div class="area">Vitalcard · 238511463</div></td><td>Infiltração articular<div class="area">40201015</div></td><td><span class="st no">Não faturar</span><div class="area">encerrada como particular em 18/09</div></td><td><span class="wf env"><i></i>Encerrada · particular</span></td><td>—</td><td class="num" style="text-align: right;">R$ 140,00</td><td class="num" style="text-align: right; color: #6B7A72;">v1</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top: auto; display: flex; align-items: center; justify-content: space-between; padding: 14px 22px; border-top: 1px solid #EFEDE5; font-size: 13px; color: #6B7A72;">
+          <span>Mostrando 1–11 de 31 · totais reconciliados com o relatório</span>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" class="chip" aria-label="Página anterior"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>
+            <button type="button" class="chip on">1</button><button type="button" class="chip">2</button><button type="button" class="chip">3</button>
+            <button type="button" class="chip" aria-label="Próxima página"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

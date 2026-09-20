@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Página do protocolo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Instrument Sans',sans-serif;background:#F4F3ED;color:#14241E;-webkit-font-smoothing:antialiased}
+a{color:#0F3B2E;text-decoration:none}a:hover{color:#1B6B4F}
+.side{width:236px;flex-shrink:0;background:#FBFAF6;border-right:1px solid #E6E4DB;display:flex;flex-direction:column;padding:24px 16px;box-sizing:border-box}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 10px 26px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em;color:#0F3B2E}
+.brand i{width:28px;height:28px;border-radius:8px;background:#0F3B2E;display:flex;align-items:center;justify-content:center}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:14px;color:#3E5249;font-weight:500}
+.nav a:hover{background:#EEF6F0;color:#0F3B2E}
+.nav a.on{background:#DDF3E4;color:#0F3B2E;font-weight:600}
+.nav a.on svg{stroke:#0F3B2E}
+.nav svg{width:18px;height:18px;stroke:#5C7266;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav .n{margin-left:auto;font-size:11px;font-weight:600;background:#F1E4C6;color:#7A4B0C;border-radius:999px;padding:2px 8px;font-variant-numeric:tabular-nums}
+.who{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px 10px;border-top:1px solid #E6E4DB}
+.who b{display:block;font-size:13px;font-weight:600}.who span{font-size:12px;color:#6B7A72}
+.av{width:34px;height:34px;border-radius:50%;background:#0F3B2E;color:#CFF1DB;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:13px}
+.top{display:flex;align-items:center;gap:14px;padding:16px 36px;border-bottom:1px solid #E6E4DB;background:#FBFAF6}
+.search{flex-grow:1;max-width:440px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E3E1D8;border-radius:999px;padding:9px 14px;font-size:13px;color:#7B877F}
+.search input{border:0;outline:0;background:transparent;font:inherit;flex-grow:1;color:#14241E}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;background:#fff;border:1px solid #E3E1D8;color:#3E5249}
+.pill i{width:7px;height:7px;border-radius:50%;background:#2FA86A}
+.clock{margin-left:auto;font-size:12px;color:#6B7A72;text-align:right;line-height:1.35}
+.num{font-family:'Bricolage Grotesque',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.03em;font-weight:600}
+.card{background:#fff;border:1px solid #E3E1D8;border-radius:18px}
+.h{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:16px;letter-spacing:-.01em;margin:0}
+.sub{font-size:12px;color:#6B7A72;margin:2px 0 0}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:999px;padding:5px 11px;white-space:nowrap}
+.st.fix{background:#FFF1D6;color:#7A4B0C}.st.rev{background:#E9E3FF;color:#4B3A9E}.st.no{background:#FCE3DF;color:#8F2B22}.st.ok{background:#DDF3E4;color:#155C3F}.st.wf{background:#F1F0EA;color:#3E5249}
+.mono{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;letter-spacing:-.01em}
+.btn{font:inherit;font-size:13px;font-weight:600;padding:11px 16px;border-radius:12px;border:1px solid #E3E1D8;background:#fff;color:#14241E;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left}
+.btn:hover{border-color:#0F3B2E}
+.btn.pri{background:#0F3B2E;border-color:#0F3B2E;color:#fff}
+.btn.pri:hover{background:#1B6B4F}
+.btn:disabled{background:#F1F0EA;color:#9AA49E;border-color:#EAE8E0;cursor:not-allowed}
+.btn small{font-weight:500;font-size:11px;opacity:.8}
+.tree{margin:10px 0 0 6px;padding-left:16px;border-left:1.5px solid #E3E1D8;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.tree li{list-style:none;display:flex;gap:8px;align-items:baseline}
+.tree li:before{content:"";width:10px;height:1.5px;background:#E3E1D8;margin-left:-16px;align-self:center}
+.tree b{font-family:'Bricolage Grotesque',sans-serif;font-variant-numeric:tabular-nums}
+.kv{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 18px;font-size:13px}
+.kv .k{font-size:11px;color:#7B877F;letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:3px}
+.kv .v{font-weight:500}
+.chg{background:#FFF8E6;border-radius:8px;padding:6px 8px;margin:-6px -8px}
+.tl{display:flex;flex-direction:column}
+.ev{display:grid;grid-template-columns:22px 1fr;gap:0 14px}
+.ev .dot{width:22px;display:flex;flex-direction:column;align-items:center}
+.ev .dot i{width:10px;height:10px;border-radius:50%;background:#B9B4A3;margin-top:5px;flex-shrink:0}
+.ev .dot span{width:1.5px;flex-grow:1;background:#E3E1D8;margin-top:4px}
+.ev .b{padding-bottom:18px;font-size:13px}
+.ev .t{display:flex;align-items:baseline;gap:10px}
+.ev .t b{font-weight:600}
+.ev .m{font-size:12px;color:#6B7A72;margin-top:2px}
+.ev .m em{font-style:normal;color:#3E5249;font-weight:500}
+.dif{margin-top:8px;display:grid;grid-template-columns:auto 1fr auto 1fr;gap:6px 10px;align-items:center;font-size:12px;background:#FBFAF6;border:1px solid #EFEDE5;border-radius:10px;padding:10px 12px}
+.dif .f{color:#6B7A72}.dif .o{text-decoration:line-through;color:#8F2B22}.dif .n{color:#155C3F;font-weight:600}.dif .a{color:#B9B4A3}
+.file{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid #EFEDE5;border-radius:12px;font-size:13px}
+.file .ic{width:36px;height:36px;border-radius:9px;background:#FCE3DF;color:#8F2B22;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.file .m{font-size:11px;color:#6B7A72}
+.req{border:1.5px dashed #E0B565;background:#FFFBF0}
+.req .ic{background:#FFF1D6;color:#7A4B0C}
+.crumb{font-size:13px;color:#6B7A72;display:flex;gap:6px;align-items:center}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1320px; display: flex; box-sizing: border-box; overflow: hidden;">
+  <aside class="side">
+    <div class="brand"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CFF1DB" stroke-width="2.4" stroke-linecap="round"><path d="M4 12h5l2-5 3 10 2-5h4"/></svg></i>Vitalis</div>
+    <nav class="nav" aria-label="Navegação principal">
+      <a href="Relatorio.dc.html"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 15l5-5 4 4 7-7"/></svg>Relatório</a>
+      <a class="on" href="Guias.dc.html"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Todas as guias</a>
+      <a href="Pendencias.dc.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Minhas pendências<span class="n">9</span></a>
+      <a href="Importar.dc.html"><svg viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>Importar</a>
+      <a href="NovaGuia.dc.html"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nova guia</a>
+      <a href="Regras.dc.html"><svg viewBox="0 0 24 24"><path d="M6 4h9l4 4v12H6z"/><path d="M9 13h6M9 17h6"/></svg>Regras</a>
+    </nav>
+    <div class="who"><div class="av">AF</div><div><b>Ana Ferraz</b><span>Financeiro</span></div></div>
+  </aside>
+  <main style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0;">
+    <header class="top">
+      <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" placeholder="Buscar protocolo, id da guia, paciente…" aria-label="Buscar"></label>
+      <span class="pill"><i></i>Regras agosto/2026 ativas</span>
+      <div class="clock"><b style="color:#14241E">Terça, 22/09/2026</b><br>14:32:07 · horário de Brasília</div>
+    </header>
+    <section style="padding: 24px 36px 36px; display: flex; flex-direction: column; gap: 18px; box-sizing: border-box;">
+      <div class="crumb"><a href="Guias.dc.html">Todas as guias</a><span>›</span><span>Exigem atenção</span><span>›</span><b style="color: #14241E;">VT-26-0011</b></div>
+
+      <div style="display: grid; grid-template-columns: 1fr 340px; gap: 18px; align-items: start;">
+        <div style="display: flex; flex-direction: column; gap: 18px; min-width: 0;">
+
+          <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <h1 class="mono" style="margin: 0; font-size: 34px; letter-spacing: -0.03em; line-height: 1;">VT-26-0011</h1>
+              <span class="st ok">OK na versão 2</span>
+              <span class="st wf">Em tratamento</span>
+              <span style="margin-left: auto; font-size: 12px; color: #6B7A72;">id de origem <b class="mono" style="color: #14241E;">G-2608-0011</b> · Sul · importada em 31/08/2026 10:14:22</span>
+            </div>
+            <div style="display: flex; gap: 14px; align-items: stretch;">
+              <div style="flex-grow: 1; padding: 16px 18px; border-radius: 14px; background: #FFF8E6; border: 1px solid #F3DFA8; display: flex; gap: 14px; align-items: flex-start;">
+                <span style="width: 34px; height: 34px; border-radius: 50%; background: #FFD98F; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A3608" stroke-width="2.2" stroke-linecap="round"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg></span>
+                <div>
+                  <b style="font-size: 15px; display: block;">Próxima ação: anexar a nova autorização AUT991204</b>
+                  <span style="font-size: 13px; color: #5A3608; line-height: 1.45;">A correção resolveu o vencimento, mas a nova autorização ainda não tem documento. Sem ele a guia não pode ser liberada. Responsável: <b>Secretaria · Sul</b>.</span>
+                </div>
+              </div>
+              <div style="width: 200px; padding: 14px 18px; border-radius: 14px; background: #FBFAF6; border: 1px solid #EFEDE5; display: flex; flex-direction: column; justify-content: center;">
+                <span style="font-size: 11px; color: #7B877F; letter-spacing: .04em; text-transform: uppercase;">Valor em risco</span>
+                <span class="num" style="font-size: 26px; color: #8F2B22;">R$ 62,00</span>
+                <span style="font-size: 11px; color: #6B7A72;">contado uma vez · detectado em 31/08</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;"><div><h2 class="h">Problemas e subproblemas</h2><p class="sub">Tudo o que a regra encontrou, versão por versão. Nada é escondido pelo estado principal.</p></div><span style="font-size: 12px; color: #6B7A72;">1 aberto · 1 resolvido</span></div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="border: 1px solid #F3DFA8; border-radius: 14px; padding: 16px 18px; background: #FFFDF7;">
+                <div style="display: flex; align-items: center; gap: 10px;"><span class="st fix">Aberto · Secretaria</span><b style="font-size: 14px;">Evidência obrigatória pendente: autorização AUT991204</b><span style="margin-left: auto; font-size: 11px; color: #7B877F;">EVIDENCE_REQUIRED</span></div>
+                <ul class="tree">
+                  <li>número informado na v2: <b>AUT991204</b></li>
+                  <li>validade informada: <b>10/09/2026</b> · atendimento em <b>21/08/2026</b> → dentro da validade</li>
+                  <li>documento anexado: <b style="color: #8F2B22;">nenhum</b> · exigido pela regra Vitalcard · campos obrigatórios</li>
+                </ul>
+              </div>
+              <div style="border: 1px solid #EFEDE5; border-radius: 14px; padding: 16px 18px; opacity: .78;">
+                <div style="display: flex; align-items: center; gap: 10px;"><span class="st ok">Resolvido na v2</span><b style="font-size: 14px;">Autorização vencida na data do atendimento</b><span style="margin-left: auto; font-size: 11px; color: #7B877F;">AUTH_EXPIRED</span></div>
+                <ul class="tree">
+                  <li>validade na v1: <b>12/08/2026</b> · atendimento: <b>21/08/2026</b> → 9 dias após o vencimento</li>
+                  <li>regra aplicada: validade inclusiva · conjunto <b>agosto/2026</b> · hash 3f9a…c21e</li>
+                  <li>resolvido por correção da Secretaria em 18/09/2026 09:41:05</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;"><div><h2 class="h">Dados da versão atual · v2</h2><p class="sub">Campos alterados em relação à v1 aparecem destacados. Valores originais ficam guardados.</p></div><a href="Protocolo.dc.html" style="font-size: 13px; font-weight: 600; color: #1B6B4F;">Ver versão completa →</a></div>
+            <div class="kv">
+              <div><span class="k">Paciente</span><span class="v">P-1012</span></div>
+              <div><span class="k">Convênio</span><span class="v">Vitalcard</span></div>
+              <div><span class="k">Carteirinha</span><span class="v num" style="font-weight: 500;">771823440</span></div>
+              <div><span class="k">CID</span><span class="v">M79.7</span></div>
+              <div><span class="k">Procedimento</span><span class="v">50000470 · Fisioterapia musculoesquelética</span></div>
+              <div><span class="k">Data do atendimento</span><span class="v num" style="font-weight: 500;">21/08/2026</span></div>
+              <div><span class="k">Profissional</span><span class="v">Bruno Castanho · CREFITO-3 204411-F</span></div>
+              <div><span class="k">Valor</span><span class="v num" style="font-weight: 500;">R$ 62,00 · referência R$ 62,00</span></div>
+              <div class="chg"><span class="k">Nº autorização</span><span class="v">AUT991204</span></div>
+              <div class="chg"><span class="k">Validade</span><span class="v num" style="font-weight: 500;">10/09/2026</span></div>
+              <div><span class="k">Sessão / limite</span><span class="v num" style="font-weight: 500;">7 de 10</span></div>
+              <div><span class="k">Observação da recepção</span><span class="v" style="color: #6B7A72;">—</span></div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;"><div><h2 class="h">Evidências</h2><p class="sub">PDF, JPG ou PNG até 10 MB. Nada é sobrescrito; uma evidência errada é invalidada com motivo.</p></div></div>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+              <div class="file"><span class="ic">CSV</span><div><b>guias-agosto.csv</b><div class="m">importação · sha256 8d1c…f0a7 · 31/08/2026 10:14:22 · sistema</div></div></div>
+              <div class="file req"><span class="ic">PDF</span><div><b>Autorização AUT991204</b><div class="m">obrigatória · aguardando Secretaria · sem arquivo</div></div></div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+            <div><h2 class="h">Histórico</h2><p class="sub">Cada linha é um evento append-only. Datas em horário de Brasília: quando aconteceu · quando foi registrado.</p></div>
+            <div class="tl">
+              <div class="ev"><div class="dot"><i style="background: #E0B565;"></i><span></span></div><div class="b"><div class="t"><b>Tarefa aberta: anexar autorização AUT991204</b><span class="st fix" style="font-size: 10px; padding: 2px 7px;">Secretaria</span></div><div class="m">ocorrido 18/09/2026 09:41:07 · registrado 18/09/2026 09:41:07 · <em>sistema</em> · validação #v2-r1</div></div></div>
+              <div class="ev"><div class="dot"><i style="background: #2FA86A;"></i><span></span></div><div class="b"><div class="t"><b>Validação da v2 concluída: OK</b></div><div class="m">ocorrido 18/09/2026 09:41:06 · registrado 18/09/2026 09:41:06 · <em>sistema</em> · regras agosto/2026 · IA não executada (observação vazia)</div></div></div>
+              <div class="ev"><div class="dot"><i style="background: #0F3B2E;"></i><span></span></div><div class="b"><div class="t"><b>Versão 2 criada</b><span style="font-size: 12px; color: #6B7A72;">por Júlia Prado · Secretaria · interface</span></div><div class="m">ocorrido 18/09/2026 09:41:05 · registrado 18/09/2026 09:41:05 · motivo: <em>“Paciente trouxe autorização renovada; número e validade atualizados.”</em></div>
+                <div class="dif"><span class="f">numero_autorizacao</span><span class="o">AUT887507</span><span class="a">→</span><span class="n">AUT991204</span><span class="f">autorizacao_validade</span><span class="o">12/08/2026</span><span class="a">→</span><span class="n">10/09/2026</span></div></div></div>
+              <div class="ev"><div class="dot"><i style="background: #E0574A;"></i><span></span></div><div class="b"><div class="t"><b>Validação da v1 concluída: CORRIGIR</b></div><div class="m">ocorrido 31/08/2026 10:14:31 · registrado 31/08/2026 10:14:31 · <em>sistema</em> · 1 problema · tarefa aberta para a Secretaria</div></div></div>
+              <div class="ev"><div class="dot"><i></i></div><div class="b" style="padding-bottom: 0;"><div class="t"><b>Protocolo criado por importação</b><span style="font-size: 12px; color: #6B7A72;">guias-agosto.csv · linha 11</span></div><div class="m">ocorrido 31/08/2026 10:14:22 · registrado 31/08/2026 10:14:22 · <em>Ana Ferraz · Financeiro</em></div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 14px; position: sticky; top: 0;">
+          <div class="card" style="padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+            <div><h2 class="h">Ações do Financeiro</h2><p class="sub">O servidor confere o papel e o estado; a interface só mostra.</p></div>
+            <button type="button" class="btn pri" disabled aria-describedby="trava"><span>Liberar para envio</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></button>
+            <div id="trava" style="margin-top: -4px; padding: 12px 14px; border-radius: 12px; background: #FCE3DF; color: #6E1F17; font-size: 12px; line-height: 1.45;"><b>Travada.</b> Falta 1 requisito: evidência da autorização AUT991204. Versão OK ✓ · sem problema aberto ✓ · sem revisão pendente ✓ · evidências obrigatórias ✗</div>
+            <button type="button" class="btn"><span>Registrar envio ao convênio<br><small>exige comprovante externo</small></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12h16M14 6l6 6-6 6"/></svg></button>
+            <button type="button" class="btn"><span>Encerrar como particular</span></button>
+            <button type="button" class="btn"><span>Encerrar · cobrança cancelada</span></button>
+            <a href="Merge.dc.html" class="btn"><span>Comparar com outro protocolo<br><small>merge de duplicidade</small></span></a>
+          </div>
+          <div class="card" style="padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+            <div><h2 class="h" style="font-size: 14px;">O que a Secretaria pode fazer aqui</h2></div>
+            <button type="button" class="btn"><span>Criar nova versão (corrigir)</span></button>
+            <button type="button" class="btn" style="border-color: #E0B565; background: #FFFBF0;"><span>Anexar evidência<br><small>PDF · JPG · PNG · até 10 MB</small></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A4B0C" stroke-width="2" stroke-linecap="round"><path d="M12 16V5M7 10l5-5 5 5M5 20h14"/></svg></button>
+          </div>
+          <div class="card" style="padding: 18px 20px; font-size: 12px; color: #6B7A72; line-height: 1.5;">
+            <b style="color: #14241E; display: block; margin-bottom: 4px;">Detalhes técnicos</b>
+            validação #v2-r1 · regras agosto/2026 · hash 3f9a…c21e<br>ai_status: NOT_RUN · risco inicial 6200 ¢ · risco atual 6200 ¢
+            <a href="Protocolo.dc.html" style="display: block; margin-top: 8px; font-weight: 600; color: #1B6B4F;">Expandir →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1320}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

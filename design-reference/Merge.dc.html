@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Comparar e mesclar duplicidade</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Instrument Sans',sans-serif;background:#F4F3ED;color:#14241E;-webkit-font-smoothing:antialiased}
+a{color:#0F3B2E;text-decoration:none}a:hover{color:#1B6B4F}
+.side{width:236px;flex-shrink:0;background:#FBFAF6;border-right:1px solid #E6E4DB;display:flex;flex-direction:column;padding:24px 16px;box-sizing:border-box}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 10px 26px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em;color:#0F3B2E}
+.brand i{width:28px;height:28px;border-radius:8px;background:#0F3B2E;display:flex;align-items:center;justify-content:center}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:14px;color:#3E5249;font-weight:500}
+.nav a:hover{background:#EEF6F0;color:#0F3B2E}
+.nav a.on{background:#DDF3E4;color:#0F3B2E;font-weight:600}
+.nav a.on svg{stroke:#0F3B2E}
+.nav svg{width:18px;height:18px;stroke:#5C7266;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav .n{margin-left:auto;font-size:11px;font-weight:600;background:#F1E4C6;color:#7A4B0C;border-radius:999px;padding:2px 8px;font-variant-numeric:tabular-nums}
+.who{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px 10px;border-top:1px solid #E6E4DB}
+.who b{display:block;font-size:13px;font-weight:600}.who span{font-size:12px;color:#6B7A72}
+.av{width:34px;height:34px;border-radius:50%;background:#0F3B2E;color:#CFF1DB;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:13px}
+.top{display:flex;align-items:center;gap:14px;padding:16px 36px;border-bottom:1px solid #E6E4DB;background:#FBFAF6}
+.search{flex-grow:1;max-width:440px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E3E1D8;border-radius:999px;padding:9px 14px;font-size:13px;color:#7B877F}
+.search input{border:0;outline:0;background:transparent;font:inherit;flex-grow:1;color:#14241E}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;background:#fff;border:1px solid #E3E1D8;color:#3E5249}
+.pill i{width:7px;height:7px;border-radius:50%;background:#2FA86A}
+.clock{margin-left:auto;font-size:12px;color:#6B7A72;text-align:right;line-height:1.35}
+.num{font-family:'Bricolage Grotesque',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.03em;font-weight:600}
+.card{background:#fff;border:1px solid #E3E1D8;border-radius:18px}
+.h{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:16px;letter-spacing:-.01em;margin:0}
+.sub{font-size:12px;color:#6B7A72;margin:2px 0 0}
+.mono{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;letter-spacing:-.01em}
+.cmp{display:grid;grid-template-columns:190px 1fr 1fr;font-size:13px}
+.cmp > div{padding:11px 14px;border-bottom:1px solid #F1F0EA;display:flex;align-items:center;gap:8px}
+.cmp .k{color:#6B7A72;font-size:12px}
+.cmp .same{color:#3E5249}
+.cmp .diff{background:#FFF8E6}
+.cmp .diff.pick{background:#DDF3E4;font-weight:600}
+.cmp input[type=radio]{accent-color:#0F3B2E;width:16px;height:16px;margin:0}
+.head{padding:14px 14px;background:#FBFAF6;border-bottom:1px solid #EFEDE5;display:flex;flex-direction:column;gap:4px}
+.head .p{font-size:11px;color:#7B877F;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.btn{font:inherit;font-size:13px;font-weight:600;padding:11px 18px;border-radius:12px;border:1px solid #E3E1D8;background:#fff;color:#14241E;cursor:pointer}
+.btn.pri{background:#0F3B2E;border-color:#0F3B2E;color:#fff}.btn.pri:hover{background:#1B6B4F}
+.li{display:flex;gap:10px;font-size:13px;line-height:1.45;padding:8px 0;border-bottom:1px solid #F1F0EA}
+.li:last-child{border-bottom:0}
+.li b{font-family:'Bricolage Grotesque',sans-serif;color:#0F3B2E;width:18px;flex-shrink:0}
+.f label{font-size:12px;font-weight:600;color:#3E5249;display:block;margin-bottom:6px}
+.f textarea{font:inherit;font-size:13px;padding:10px 12px;border:1px solid #E3E1D8;border-radius:10px;width:100%;box-sizing:border-box;outline:0}
+</style>
+</helmet>
+<div style="width: 1440px; height: 960px; display: flex; box-sizing: border-box; overflow: hidden;">
+  <aside class="side">
+    <div class="brand"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CFF1DB" stroke-width="2.4" stroke-linecap="round"><path d="M4 12h5l2-5 3 10 2-5h4"/></svg></i>Vitalis</div>
+    <nav class="nav" aria-label="Navegação principal">
+      <a href="Relatorio.dc.html"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 15l5-5 4 4 7-7"/></svg>Relatório</a>
+      <a href="Guias.dc.html"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Todas as guias</a>
+      <a class="on" href="Pendencias.dc.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Minhas pendências<span class="n">9</span></a>
+      <a href="Importar.dc.html"><svg viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>Importar</a>
+      <a href="NovaGuia.dc.html"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nova guia</a>
+      <a href="Regras.dc.html"><svg viewBox="0 0 24 24"><path d="M6 4h9l4 4v12H6z"/><path d="M9 13h6M9 17h6"/></svg>Regras</a>
+    </nav>
+    <div class="who"><div class="av">AF</div><div><b>Ana Ferraz</b><span>Financeiro</span></div></div>
+  </aside>
+  <main style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0;">
+    <header class="top">
+      <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" placeholder="Buscar protocolo, id da guia, paciente…" aria-label="Buscar"></label>
+      <span class="pill"><i></i>Regras agosto/2026 ativas</span>
+      <div class="clock"><b style="color:#14241E">Terça, 22/09/2026</b><br>14:32:07 · horário de Brasília</div>
+    </header>
+    <section style="padding: 24px 36px 32px; display: grid; grid-template-columns: 1fr 340px; gap: 18px; flex-grow: 1; box-sizing: border-box; min-height: 0; align-items: start;">
+      <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
+        <div style="font-size: 13px; color: #6B7A72; display: flex; gap: 6px;"><a href="Pendencias.dc.html">Minhas pendências</a><span>›</span><b style="color: #14241E;">Possível duplicidade · VT-26-0063 e VT-26-0064</b></div>
+        <div>
+          <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 30px; letter-spacing: -0.03em; line-height: 1.1;">É a mesma consulta?</h1>
+          <p style="margin: 6px 0 0; font-size: 14px; color: #6B7A72;">Chave que levantou a suspeita: <b style="color: #14241E;">paciente P-1018 · 20103301 · 11/08/2026 · Plano Bem</b>. Nada é mesclado automaticamente; a decisão é sua.</p>
+        </div>
+
+        <div class="card" style="overflow: hidden;">
+          <div class="cmp">
+            <div class="head"><span class="p">Campo</span></div>
+            <div class="head" style="background: #DDF3E4;"><span class="p" style="color: #155C3F;">Principal · fica</span><label style="display: flex; gap: 8px; align-items: center; font-size: 14px;"><input type="radio" name="main" checked><span class="mono">VT-26-0063</span><span style="font-size: 12px; color: #6B7A72;">G-2608-0063 · importada 31/08</span></label></div>
+            <div class="head"><span class="p">Origem · vira MESCLADA</span><label style="display: flex; gap: 8px; align-items: center; font-size: 14px;"><input type="radio" name="main"><span class="mono">VT-26-0064</span><span style="font-size: 12px; color: #6B7A72;">G-2608-0064 · importada 31/08</span></label></div>
+
+            <div class="k">Paciente</div><div class="same">P-1018</div><div class="same">P-1018</div>
+            <div class="k">Convênio · carteirinha</div><div class="same">Plano Bem · 559004112</div><div class="same">Plano Bem · 559004112</div>
+            <div class="k">Procedimento</div><div class="same">20103301 · Consulta ortopédica</div><div class="same">20103301 · Consulta ortopédica</div>
+            <div class="k">Data do atendimento</div><div class="same num" style="font-weight: 500;">11/08/2026</div><div class="same num" style="font-weight: 500;">11/08/2026</div>
+            <div class="k">Valor</div><div class="same num" style="font-weight: 500;">R$ 90,00</div><div class="same num" style="font-weight: 500;">R$ 90,00</div>
+            <div class="k">Nº autorização</div><div class="diff pick"><input type="radio" name="aut" checked aria-label="Usar AUT553120">AUT553120</div><div class="diff"><input type="radio" name="aut" aria-label="Usar AUT553102">AUT553102</div>
+            <div class="k">Validade</div><div class="diff pick"><input type="radio" name="val" checked aria-label="Usar 30/08/2026"><span class="num" style="font-weight: 500;">30/08/2026</span></div><div class="diff"><input type="radio" name="val" aria-label="Usar 03/08/2026"><span class="num" style="font-weight: 500;">03/08/2026</span></div>
+            <div class="k">Profissional</div><div class="same">Dra. Marina Lopes · CRM-SP 112390</div><div class="same">Dra. Marina Lopes · CRM-SP 112390</div>
+            <div class="k">Observação</div><div class="diff"><input type="radio" name="obs" aria-label="Usar observação vazia"><span style="color: #6B7A72;">—</span></div><div class="diff pick"><input type="radio" name="obs" checked aria-label="Usar observação do 0064">“Relançada porque a primeira ficou com nº errado.”</div>
+            <div class="k">Data de lançamento</div><div class="same num" style="font-weight: 500;">12/08/2026</div><div class="same num" style="font-weight: 500;">14/08/2026</div>
+            <div class="k" style="border-bottom: 0;">Evidências</div><div class="same" style="border-bottom: 0;">1 · importação</div><div class="same" style="border-bottom: 0;">1 · importação</div>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: 12px; color: #6B7A72;">7 campos iguais mantidos automaticamente · 3 divergentes escolhidos acima · o histórico e as evidências dos dois protocolos ficam acessíveis no principal.</p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="card" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+          <div><h2 class="h">O que vai acontecer</h2><p class="sub">Uma transação. Se qualquer passo falhar, nada muda.</p></div>
+          <div style="display: flex; flex-direction: column;">
+            <div class="li"><b>1</b>Nova versão v2 em VT-26-0063 com os campos escolhidos</div>
+            <div class="li"><b>2</b>Registro do merge com a resolução campo a campo</div>
+            <div class="li"><b>3</b>VT-26-0064 marcada como MESCLADA; nada é apagado</div>
+            <div class="li"><b>4</b>Evidências vinculadas sem duplicar arquivos</div>
+            <div class="li"><b>5</b>Eventos gravados nos dois protocolos</div>
+            <div class="li"><b>6</b>Nova validação da v2 · risco contado uma vez</div>
+          </div>
+        </div>
+        <div class="card" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+          <div class="f"><label for="why">Justificativa <span style="color: #8F2B22;">*</span></label><textarea id="why" rows="3">Mesma consulta lançada duas vezes; a segunda corrigiu o número da autorização.</textarea></div>
+          <button type="button" class="btn pri">Mesclar em VT-26-0063</button>
+          <button type="button" class="btn">Não é duplicidade · manter os dois</button>
+          <p style="margin: 0; font-size: 11.5px; color: #6B7A72; line-height: 1.5;">Somente o Financeiro executa merge. Reverter um merge fica fora desta versão.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

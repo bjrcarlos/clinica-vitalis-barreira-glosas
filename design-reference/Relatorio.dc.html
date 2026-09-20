@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório executivo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Instrument Sans',sans-serif;background:#F4F3ED;color:#14241E;-webkit-font-smoothing:antialiased}
+a{color:#0F3B2E;text-decoration:none}a:hover{color:#1B6B4F}
+.side{width:236px;flex-shrink:0;background:#FBFAF6;border-right:1px solid #E6E4DB;display:flex;flex-direction:column;padding:24px 16px;box-sizing:border-box}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 10px 26px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em;color:#0F3B2E}
+.brand i{width:28px;height:28px;border-radius:8px;background:#0F3B2E;display:flex;align-items:center;justify-content:center}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:14px;color:#3E5249;font-weight:500}
+.nav a:hover{background:#EEF6F0;color:#0F3B2E}
+.nav a.on{background:#DDF3E4;color:#0F3B2E;font-weight:600}
+.nav a.on svg{stroke:#0F3B2E}
+.nav svg{width:18px;height:18px;stroke:#5C7266;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav .n{margin-left:auto;font-size:11px;font-weight:600;background:#F1E4C6;color:#7A4B0C;border-radius:999px;padding:2px 8px;font-variant-numeric:tabular-nums}
+.who{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px 10px;border-top:1px solid #E6E4DB}
+.who b{display:block;font-size:13px;font-weight:600}.who span{font-size:12px;color:#6B7A72}
+.av{width:34px;height:34px;border-radius:50%;background:#0F3B2E;color:#CFF1DB;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:13px}
+.top{display:flex;align-items:center;gap:14px;padding:16px 36px;border-bottom:1px solid #E6E4DB;background:#FBFAF6}
+.search{flex-grow:1;max-width:440px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E3E1D8;border-radius:999px;padding:9px 14px;font-size:13px;color:#7B877F}
+.search input{border:0;outline:0;background:transparent;font:inherit;flex-grow:1;color:#14241E}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;background:#fff;border:1px solid #E3E1D8;color:#3E5249}
+.pill i{width:7px;height:7px;border-radius:50%;background:#2FA86A}
+.clock{margin-left:auto;font-size:12px;color:#6B7A72;text-align:right;line-height:1.35}
+.num{font-family:'Bricolage Grotesque',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.03em;font-weight:600}
+.card{background:#fff;border:1px solid #E3E1D8;border-radius:18px}
+.h{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:16px;letter-spacing:-.01em;margin:0}
+.sub{font-size:12px;color:#6B7A72;margin:2px 0 0}
+.blk{display:flex;flex-direction:column;gap:6px;border-radius:18px;padding:22px 22px 18px;box-sizing:border-box;position:relative;transition:transform .18s ease,box-shadow .18s ease}
+.blk:hover{transform:translateY(-2px);box-shadow:0 12px 28px -14px rgba(15,59,46,.35)}
+.blk .k{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+.blk .v{font-size:46px;line-height:1}
+.blk .d{font-size:13px;line-height:1.4;opacity:.85}
+.blk .arr{position:absolute;right:18px;top:18px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center}
+.arr svg{width:14px;height:14px;stroke:#0F3B2E;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.bar{display:flex;align-items:center;gap:10px;font-size:13px}
+.bar .l{width:172px;color:#3E5249}
+.bar .t{flex-grow:1;height:10px;border-radius:999px;background:#EFEDE5;overflow:hidden}
+.bar .t i{display:block;height:100%;border-radius:999px;background:#0F3B2E}
+.bar .c{width:26px;text-align:right;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#7B877F;text-align:left;padding:0 0 10px;border-bottom:1px solid #EFEDE5}
+td{padding:11px 0;border-bottom:1px solid #F1F0EA;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;border-radius:999px;padding:4px 9px;white-space:nowrap}
+.st.fix{background:#FFF1D6;color:#7A4B0C}.st.rev{background:#E9E3FF;color:#4B3A9E}.st.no{background:#FCE3DF;color:#8F2B22}.st.ok{background:#DDF3E4;color:#155C3F}
+.mono{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;letter-spacing:-.01em}
+.area{font-size:11px;color:#6B7A72}
+</style>
+</helmet>
+<div style="width: 1440px; height: 960px; display: flex; box-sizing: border-box; overflow: hidden;">
+  <aside class="side">
+    <div class="brand"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CFF1DB" stroke-width="2.4" stroke-linecap="round"><path d="M4 12h5l2-5 3 10 2-5h4"/></svg></i>Vitalis</div>
+    <nav class="nav" aria-label="Navegação principal">
+      <a class="on" href="Relatorio.dc.html"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 15l5-5 4 4 7-7"/></svg>Relatório</a>
+      <a href="Guias.dc.html"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Todas as guias</a>
+      <a href="Pendencias.dc.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Minhas pendências<span class="n">9</span></a>
+      <a href="Importar.dc.html"><svg viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>Importar</a>
+      <a href="NovaGuia.dc.html"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nova guia</a>
+      <a href="Regras.dc.html"><svg viewBox="0 0 24 24"><path d="M6 4h9l4 4v12H6z"/><path d="M9 13h6M9 17h6"/></svg>Regras</a>
+    </nav>
+    <div class="who"><div class="av">RN</div><div><b>Dr. Renato</b><span>Direção · leitura</span></div></div>
+  </aside>
+  <main style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0;">
+    <header class="top">
+      <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" placeholder="Buscar protocolo, id da guia, paciente…" aria-label="Buscar"></label>
+      <span class="pill"><i></i>Regras agosto/2026 ativas</span>
+      <div class="clock"><b style="color:#14241E">Terça, 22/09/2026</b><br>Semana de 14 a 20/09 · horário de Brasília</div>
+    </header>
+    <section style="padding: 28px 36px 0; display: flex; flex-direction: column; gap: 22px; flex-grow: 1; box-sizing: border-box;">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between;">
+        <div>
+          <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 30px; letter-spacing: -0.03em; line-height: 1.1;">Bom dia, <em style="font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; color: #1B6B4F;">Dr. Renato</em></h1>
+          <p style="margin: 6px 0 0; font-size: 14px; color: #6B7A72;">O que a barreira verificou antes de qualquer guia chegar ao convênio. Clique num bloco para ver quais guias compõem o número.</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" style="font: inherit; font-size: 13px; font-weight: 600; padding: 9px 14px; border-radius: 999px; border: 1px solid #E3E1D8; background: #fff; color: #3E5249; cursor: pointer;">Semana anterior</button>
+          <button type="button" style="font: inherit; font-size: 13px; font-weight: 600; padding: 9px 14px; border-radius: 999px; border: 1px solid #0F3B2E; background: #0F3B2E; color: #fff; cursor: pointer;">Esta semana</button>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
+        <a class="blk" href="Guias.dc.html" style="background: linear-gradient(160deg, #C9F2D8, #A9E9C3); color: #0F3B2E;">
+          <span class="arr"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
+          <span class="k">1 · Verificadas</span>
+          <span class="v num">80</span>
+          <span class="d">guias passaram pelas regras de agosto/2026 · 3 unidades</span>
+        </a>
+        <a class="blk" href="Guias.dc.html" style="background: linear-gradient(160deg, #FFE9BF, #FFD98F); color: #5A3608;">
+          <span class="arr"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
+          <span class="k">2 · Exigem atenção</span>
+          <span class="v num">31</span>
+          <span class="d">não estão OK ou têm tarefa que impede a liberação</span>
+        </a>
+        <a class="blk" href="Guias.dc.html" style="background: linear-gradient(160deg, #FFD6CF, #F8B8AE); color: #6E1F17;">
+          <span class="arr"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
+          <span class="k">3 · Detectado em risco</span>
+          <span class="v num" style="font-size: 38px;">R$ 2.318,00</span>
+          <span class="d">valor das 31 guias no momento da detecção · cada guia contada uma vez</span>
+        </a>
+        <a class="blk" href="Guias.dc.html" style="background: #fff; border: 1px solid #E3E1D8; color: #14241E;">
+          <span class="arr" style="background: #F1F0EA;"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
+          <span class="k" style="color: #6B7A72;">4 · Destino do risco</span>
+          <span style="display: flex; gap: 14px; align-items: baseline;">
+            <span class="v num" style="font-size: 30px; color: #155C3F;">R$ 1.104</span>
+            <span class="v num" style="font-size: 30px; color: #8F2B22;">R$ 1.214</span>
+          </span>
+          <span style="display: flex; height: 8px; border-radius: 999px; overflow: hidden; margin-top: 2px;"><i style="width: 47.6%; background: #2FA86A;"></i><i style="flex-grow: 1; background: #E0574A;"></i></span>
+          <span class="d" style="display: flex; justify-content: space-between; color: #6B7A72;"><span>tratado · 19 guias</span><span>ainda pendente · 12</span></span>
+        </a>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1.15fr 0.85fr 1.35fr; gap: 16px; flex-grow: 1; padding-bottom: 28px;">
+        <div class="card" style="padding: 22px; display: flex; flex-direction: column; gap: 16px;">
+          <div><h2 class="h">Principais motivos</h2><p class="sub">Ocorrências brutas nas 80 guias · uma guia pode ter mais de um</p></div>
+          <div style="display: flex; flex-direction: column; gap: 11px;">
+            <div class="bar"><span class="l">Autorização vencida</span><span class="t"><i style="width: 100%;"></i></span><span class="c num">13</span></div>
+            <div class="bar"><span class="l">Limite de sessões excedido</span><span class="t"><i style="width: 46%;"></i></span><span class="c num">6</span></div>
+            <div class="bar"><span class="l">Observação com impacto</span><span class="t"><i style="width: 38%; background: #7C5CD6;"></i></span><span class="c num">5</span></div>
+            <div class="bar"><span class="l">Procedimento não coberto</span><span class="t"><i style="width: 38%; background: #E0574A;"></i></span><span class="c num">5</span></div>
+            <div class="bar"><span class="l">Nº de autorização ausente</span><span class="t"><i style="width: 31%;"></i></span><span class="c num">4</span></div>
+            <div class="bar"><span class="l">Registro profissional ausente</span><span class="t"><i style="width: 15%;"></i></span><span class="c num">2</span></div>
+            <div class="bar"><span class="l">CID obrigatório ausente</span><span class="t"><i style="width: 15%;"></i></span><span class="c num">2</span></div>
+            <div class="bar"><span class="l">Data fora do padrão</span><span class="t"><i style="width: 15%; background: #B9B4A3;"></i></span><span class="c num">2</span></div>
+            <div class="bar"><span class="l">Possível duplicidade</span><span class="t"><i style="width: 15%; background: #B9B4A3;"></i></span><span class="c num">2</span></div>
+          </div>
+        </div>
+        <div class="card" style="padding: 22px; display: flex; flex-direction: column; gap: 16px;">
+          <div><h2 class="h">Quem resolve</h2><p class="sub">Pendências abertas por área responsável</p></div>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <a href="Pendencias.dc.html" style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 14px; background: #DDF3E4;">
+              <span style="display: flex; justify-content: space-between; align-items: baseline;"><b style="font-size: 14px;">Secretaria</b><span class="num" style="font-size: 30px; color: #0F3B2E;">14</span></span>
+              <span style="font-size: 12px; color: #3E5249;">corrigir campos, anexar autorização, confirmar dados</span>
+              <span style="font-size: 12px; font-weight: 600; color: #155C3F;">R$ 892,00 em risco · mais antiga há 6 dias</span>
+            </a>
+            <a href="Pendencias.dc.html" style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 14px; background: #F1EEFF;">
+              <span style="display: flex; justify-content: space-between; align-items: baseline;"><b style="font-size: 14px;">Financeiro</b><span class="num" style="font-size: 30px; color: #4B3A9E;">9</span></span>
+              <span style="font-size: 12px; color: #3E5249;">revisar ambiguidades, decidir destino, tratar duplicidade</span>
+              <span style="font-size: 12px; font-weight: 600; color: #4B3A9E;">R$ 322,00 em risco · mais antiga há 9 dias</span>
+            </a>
+          </div>
+          <p style="margin: auto 0 0; font-size: 12px; color: #6B7A72; line-height: 1.45;">8 guias já saíram da fila: 5 liberadas após correção, 2 encerradas como particular, 1 cancelada.</p>
+        </div>
+        <div class="card" style="padding: 22px; display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;"><div><h2 class="h">Pendências mais antigas</h2><p class="sub">Aguardando ação há mais tempo</p></div><a href="Guias.dc.html" style="font-size: 13px; font-weight: 600; color: #1B6B4F;">Ver todas →</a></div>
+          <table>
+            <thead><tr><th>Protocolo</th><th>Próxima ação</th><th>Área</th><th style="text-align: right;">Valor</th><th style="text-align: right;">Há</th></tr></thead>
+            <tbody>
+              <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0042</a><div class="area">G-2608-0042 · Norte</div></td><td><span class="st rev">Revisão humana</span><div class="area">observação cita nova autorização</div></td><td>Financeiro</td><td class="num" style="text-align: right;">R$ 70,00</td><td class="num" style="text-align: right; color: #8F2B22;">9 d</td></tr>
+              <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0011</a><div class="area">G-2608-0011 · Sul</div></td><td><span class="st fix">Corrigir</span><div class="area">autorização vencida em 12/08</div></td><td>Secretaria</td><td class="num" style="text-align: right;">R$ 62,00</td><td class="num" style="text-align: right; color: #8F2B22;">8 d</td></tr>
+              <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0057</a><div class="area">G-2608-0057 · Centro</div></td><td><span class="st no">Não faturar</span><div class="area">infiltração não coberta · Plano Bem</div></td><td>Financeiro</td><td class="num" style="text-align: right;">R$ 140,00</td><td class="num" style="text-align: right; color: #7A4B0C;">7 d</td></tr>
+              <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0019</a><div class="area">G-2608-0019 · Sul</div></td><td><span class="st fix">Corrigir</span><div class="area">sessão 15 de 10 autorizadas</div></td><td>Secretaria</td><td class="num" style="text-align: right;">R$ 62,00</td><td class="num" style="text-align: right; color: #7A4B0C;">6 d</td></tr>
+              <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0063</a><div class="area">G-2608-0063 · Norte</div></td><td><span class="st rev">Revisão humana</span><div class="area">possível duplicidade com VT-26-0064</div></td><td>Financeiro</td><td class="num" style="text-align: right;">R$ 90,00</td><td class="num" style="text-align: right;">5 d</td></tr>
+              <tr><td><a class="mono" href="Protocolo.dc.html">VT-26-0008</a><div class="area">G-2608-0008 · Centro</div></td><td><span class="st fix">Corrigir</span><div class="area">CID obrigatório ausente</div></td><td>Secretaria</td><td class="num" style="text-align: right;">R$ 55,00</td><td class="num" style="text-align: right;">4 d</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

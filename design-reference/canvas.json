@@ -1,0 +1,125 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Guias.dc.html": {
+      "h": 960,
+      "is_interactive": true,
+      "title": "2 · Todas as guias",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "Importar.dc.html": {
+      "h": 960,
+      "is_interactive": true,
+      "title": "5 · Importar CSV/XLSX",
+      "w": 1440,
+      "x": 1520,
+      "y": 1440
+    },
+    "Merge.dc.html": {
+      "h": 960,
+      "is_interactive": true,
+      "title": "8 · Merge de duplicidade",
+      "w": 1440,
+      "x": 1520,
+      "y": 2520
+    },
+    "NovaGuia.dc.html": {
+      "h": 960,
+      "is_interactive": true,
+      "title": "6 · Nova guia",
+      "w": 1440,
+      "x": 3040,
+      "y": 1440
+    },
+    "Pendencias.dc.html": {
+      "h": 960,
+      "is_interactive": true,
+      "title": "4 · Minhas pendências + MCP",
+      "w": 1440,
+      "x": 0,
+      "y": 1440
+    },
+    "Protocolo.dc.html": {
+      "h": 1320,
+      "is_interactive": true,
+      "title": "3 · Página do protocolo",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "Regras.dc.html": {
+      "h": 960,
+      "is_interactive": true,
+      "title": "7 · Regras",
+      "w": 1440,
+      "x": 0,
+      "y": 2520
+    },
+    "Relatorio.dc.html": {
+      "h": 960,
+      "is_interactive": true,
+      "title": "1 · Relatório (Dr. Renato)",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "Dashboard.dc.html": {
+      "h": 960,
+      "is_interactive": true,
+      "title": "0 · Dashboard",
+      "w": 1440,
+      "x": 4560,
+      "y": 0
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-09-20T18:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "t1": {
+      "kind": "title1",
+      "maxW": 6000,
+      "text": "Barreira de Glosas — Vitalis · fluxo principal: relatório → lista → protocolo",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "t2": {
+      "kind": "title1",
+      "maxW": 4480,
+      "text": "Operação diária: pendências por área, entrada de guias",
+      "w": 240,
+      "x": 0,
+      "y": 1140
+    },
+    "t3": {
+      "kind": "title1",
+      "maxW": 2960,
+      "text": "Governança: regras versionadas e merge de duplicidade",
+      "w": 240,
+      "x": 0,
+      "y": 2220
+    }
+  },
+  "order": [
+    "Dashboard.dc.html",
+    "Relatorio.dc.html",
+    "Guias.dc.html",
+    "Protocolo.dc.html",
+    "Pendencias.dc.html",
+    "Importar.dc.html",
+    "NovaGuia.dc.html",
+    "Regras.dc.html",
+    "Merge.dc.html"
+  ],
+  "pages": [],
+  "title": "Barreira de Glosas Vitalis"
+}

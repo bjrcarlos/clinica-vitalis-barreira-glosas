@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Minhas pendências</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Instrument Sans',sans-serif;background:#F4F3ED;color:#14241E;-webkit-font-smoothing:antialiased}
+a{color:#0F3B2E;text-decoration:none}a:hover{color:#1B6B4F}
+.side{width:236px;flex-shrink:0;background:#FBFAF6;border-right:1px solid #E6E4DB;display:flex;flex-direction:column;padding:24px 16px;box-sizing:border-box}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 10px 26px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em;color:#0F3B2E}
+.brand i{width:28px;height:28px;border-radius:8px;background:#0F3B2E;display:flex;align-items:center;justify-content:center}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:14px;color:#3E5249;font-weight:500}
+.nav a:hover{background:#EEF6F0;color:#0F3B2E}
+.nav a.on{background:#DDF3E4;color:#0F3B2E;font-weight:600}
+.nav a.on svg{stroke:#0F3B2E}
+.nav svg{width:18px;height:18px;stroke:#5C7266;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav .n{margin-left:auto;font-size:11px;font-weight:600;background:#F1E4C6;color:#7A4B0C;border-radius:999px;padding:2px 8px;font-variant-numeric:tabular-nums}
+.who{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px 10px;border-top:1px solid #E6E4DB}
+.who b{display:block;font-size:13px;font-weight:600}.who span{font-size:12px;color:#6B7A72}
+.av{width:34px;height:34px;border-radius:50%;background:#0F3B2E;color:#CFF1DB;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:13px}
+.top{display:flex;align-items:center;gap:14px;padding:16px 36px;border-bottom:1px solid #E6E4DB;background:#FBFAF6}
+.search{flex-grow:1;max-width:440px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E3E1D8;border-radius:999px;padding:9px 14px;font-size:13px;color:#7B877F}
+.search input{border:0;outline:0;background:transparent;font:inherit;flex-grow:1;color:#14241E}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;background:#fff;border:1px solid #E3E1D8;color:#3E5249}
+.pill i{width:7px;height:7px;border-radius:50%;background:#2FA86A}
+.clock{margin-left:auto;font-size:12px;color:#6B7A72;text-align:right;line-height:1.35}
+.num{font-family:'Bricolage Grotesque',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.03em;font-weight:600}
+.card{background:#fff;border:1px solid #E3E1D8;border-radius:18px}
+.h{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:16px;letter-spacing:-.01em;margin:0}
+.sub{font-size:12px;color:#6B7A72;margin:2px 0 0}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;border-radius:999px;padding:4px 9px;white-space:nowrap}
+.st.fix{background:#FFF1D6;color:#7A4B0C}.st.rev{background:#E9E3FF;color:#4B3A9E}.st.no{background:#FCE3DF;color:#8F2B22}.st.ok{background:#DDF3E4;color:#155C3F}
+.mono{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;letter-spacing:-.01em}
+.row{display:grid;grid-template-columns:104px minmax(0,1fr) 96px 92px 104px;gap:14px;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F0EA;font-size:13px}
+.row>div{min-width:0}
+.row .t{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.row .t b{font-size:13.5px}
+.row:hover{background:#FBFAF6}
+.row .m{font-size:12px;color:#6B7A72;margin-top:3px;line-height:1.4}
+.go{font:inherit;font-size:12px;font-weight:600;padding:8px 12px;border-radius:999px;border:1px solid #0F3B2E;background:#0F3B2E;color:#fff;text-align:center;display:block}
+.go:hover{background:#1B6B4F;color:#fff}
+.chip{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;font-weight:500;padding:7px 12px;border-radius:999px;border:1px solid #E3E1D8;background:#fff;color:#3E5249;cursor:pointer}
+.chip.on{background:#0F3B2E;border-color:#0F3B2E;color:#fff}
+.code{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;line-height:1.55;color:#CFF1DB;background:#0F2A22;border-radius:12px;padding:16px 18px;white-space:pre;overflow:hidden}
+.code .k{color:#8FD9B0}.code .s{color:#FFD98F}.code .c{color:#7FA894}
+</style>
+</helmet>
+<div style="width: 1440px; height: 960px; display: flex; box-sizing: border-box; overflow: hidden;">
+  <aside class="side">
+    <div class="brand"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CFF1DB" stroke-width="2.4" stroke-linecap="round"><path d="M4 12h5l2-5 3 10 2-5h4"/></svg></i>Vitalis</div>
+    <nav class="nav" aria-label="Navegação principal">
+      <a href="Relatorio.dc.html"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 15l5-5 4 4 7-7"/></svg>Relatório</a>
+      <a href="Guias.dc.html"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Todas as guias</a>
+      <a class="on" href="Pendencias.dc.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Minhas pendências<span class="n">9</span></a>
+      <a href="Importar.dc.html"><svg viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>Importar</a>
+      <a href="NovaGuia.dc.html"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nova guia</a>
+      <a href="Regras.dc.html"><svg viewBox="0 0 24 24"><path d="M6 4h9l4 4v12H6z"/><path d="M9 13h6M9 17h6"/></svg>Regras</a>
+    </nav>
+    <div class="who"><div class="av">AF</div><div><b>Ana Ferraz</b><span>Financeiro</span></div></div>
+  </aside>
+  <main style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0;">
+    <header class="top">
+      <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" placeholder="Buscar protocolo, id da guia, paciente…" aria-label="Buscar"></label>
+      <span class="pill"><i></i>Regras agosto/2026 ativas</span>
+      <div class="clock"><b style="color:#14241E">Terça, 22/09/2026</b><br>14:32:07 · horário de Brasília</div>
+    </header>
+    <section style="padding: 28px 36px; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; flex-grow: 1; box-sizing: border-box; min-height: 0; align-items: start;">
+      <div style="display: flex; flex-direction: column; gap: 18px; min-width: 0;">
+        <div style="display: flex; align-items: flex-end; justify-content: space-between;">
+          <div>
+            <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 30px; letter-spacing: -0.03em; line-height: 1.1;">Pendências do <em style="font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; color: #4B3A9E;">Financeiro</em></h1>
+            <p style="margin: 6px 0 0; font-size: 14px; color: #6B7A72;">A área vem da sua credencial, não de um filtro. <b style="color: #14241E;">9 pendências · R$ 752,00</b> aguardando decisão sua.</p>
+          </div>
+          <div style="display: flex; gap: 8px;"><button type="button" class="chip on">Mais antigas primeiro</button><button type="button" class="chip">Maior valor</button></div>
+        </div>
+
+        <div class="card" style="overflow: hidden;">
+          <div class="row" style="padding: 12px 22px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #7B877F; background: #FBFAF6;"><span>Protocolo</span><span>O que decidir</span><span>Desde</span><span style="text-align: right;">Valor</span><span></span></div>
+          <div class="row"><a class="mono" href="Protocolo.dc.html">VT-26-0042</a><div><div class="t"><b>Confirmar a nova autorização citada na observação</b><span class="st rev">Revisão humana</span></div><div class="m">IA leu: “autorização nova, número ainda não lançado” · decide você</div></div><span class="num" style="font-weight: 500;">13/09 · 9 d</span><span class="num" style="text-align: right;">R$ 70,00</span><a class="go" href="Protocolo.dc.html">Revisar</a></div>
+          <div class="row"><a class="mono" href="Protocolo.dc.html">VT-26-0057</a><div><div class="t"><b>Decidir destino: particular ou cancelar</b><span class="st no">Não faturar</span></div><div class="m">Infiltração articular não coberta pelo Plano Bem · regra agosto/2026</div></div><span class="num" style="font-weight: 500;">15/09 · 7 d</span><span class="num" style="text-align: right;">R$ 140,00</span><a class="go" href="Protocolo.dc.html">Decidir</a></div>
+          <div class="row"><a class="mono" href="Protocolo.dc.html">VT-26-0063</a><div><div class="t"><b>Comparar com VT-26-0064 e mesclar, se for a mesma consulta</b><span class="st rev">Duplicidade</span></div><div class="m">mesmo paciente, procedimento e data · valores iguais</div></div><span class="num" style="font-weight: 500;">17/09 · 5 d</span><span class="num" style="text-align: right;">R$ 90,00</span><a class="go" href="Merge.dc.html">Comparar</a></div>
+          <div class="row"><a class="mono" href="Protocolo.dc.html">VT-26-0031</a><div><div class="t"><b>Observação indica faturamento particular</b><span class="st rev">Revisão humana</span></div><div class="m">“Paciente vai pagar particular, plano não cobre retorno” · campo diz Plano Bem</div></div><span class="num" style="font-weight: 500;">17/09 · 5 d</span><span class="num" style="text-align: right;">R$ 90,00</span><a class="go" href="Protocolo.dc.html">Revisar</a></div>
+          <div class="row"><a class="mono" href="Protocolo.dc.html">VT-26-0076</a><div><div class="t"><b>Registrar envio com comprovante</b><span class="st ok">Liberada</span></div><div class="m">liberada em 19/09 · ainda sem protocolo do convênio anexado</div></div><span class="num" style="font-weight: 500;">19/09 · 3 d</span><span class="num" style="text-align: right;">R$ 62,00</span><a class="go" href="Protocolo.dc.html">Enviar</a></div>
+          <div class="row"><a class="mono" href="Protocolo.dc.html">VT-26-0070</a><div><div class="t"><b>Procedimento lançado difere do realizado</b><span class="st rev">Revisão humana</span></div><div class="m">observação: “fez reavaliação, não sessão” · IA classificou PROCEDURE_MISMATCH</div></div><span class="num" style="font-weight: 500;">19/09 · 3 d</span><span class="num" style="text-align: right;">R$ 62,00</span><a class="go" href="Protocolo.dc.html">Revisar</a></div>
+          <div style="padding: 12px 20px; font-size: 12px; color: #6B7A72; background: #FBFAF6;">Mostrando 6 de 9 · <a href="Pendencias.dc.html" style="font-weight: 600; color: #1B6B4F;">ver todas</a></div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="card" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+          <div><h2 class="h">Mesma lista pelo MCP</h2><p class="sub">A tool <b>minhas_pendencias</b> devolve exatamente estes itens para o agente autenticado como Financeiro — e nunca os da Secretaria.</p></div>
+          <div class="code"><span class="c">// minhas_pendencias · credencial: financeiro</span>
+{
+  <span class="k">"area"</span>: <span class="s">"FINANCEIRO"</span>,
+  <span class="k">"quantidade"</span>: 9,
+  <span class="k">"valor_centavos"</span>: 75200,
+  <span class="k">"itens"</span>: [
+    {
+      <span class="k">"protocolo"</span>: <span class="s">"VT-26-0042"</span>,
+      <span class="k">"motivo"</span>: <span class="s">"Observação cita nova autorização"</span>,
+      <span class="k">"pendente_desde"</span>: <span class="s">"13/09/2026 11:02:44"</span>,
+      <span class="k">"valor_centavos"</span>: 7000,
+      <span class="k">"link_revisao"</span>: <span class="s">"https://vitalis.example/r/eyJ…"</span>,
+      <span class="k">"expira_em"</span>: <span class="s">"22/09/2026 15:32:07"</span>
+    }
+    <span class="c">// … 8 itens</span>
+  ]
+}</div>
+          <p style="margin: 0; font-size: 12px; color: #6B7A72; line-height: 1.5;">O link abre a tela de revisão. A decisão continua sendo feita por uma pessoa, aqui.</p>
+        </div>
+        <div class="card" style="padding: 20px; display: flex; flex-direction: column; gap: 8px; background: #F1EEFF; border-color: #E2DBFF;">
+          <b style="font-size: 14px; color: #4B3A9E;">Nenhuma tool libera, envia, encerra ou mescla.</b>
+          <span style="font-size: 12px; color: #3E5249; line-height: 1.5;">consultar_regra · verificar_guia · registrar_guia (só Secretaria) · minhas_pendencias · consultar_historico</span>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

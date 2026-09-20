@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Nova guia</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Instrument Sans',sans-serif;background:#F4F3ED;color:#14241E;-webkit-font-smoothing:antialiased}
+a{color:#0F3B2E;text-decoration:none}a:hover{color:#1B6B4F}
+.side{width:236px;flex-shrink:0;background:#FBFAF6;border-right:1px solid #E6E4DB;display:flex;flex-direction:column;padding:24px 16px;box-sizing:border-box}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 10px 26px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em;color:#0F3B2E}
+.brand i{width:28px;height:28px;border-radius:8px;background:#0F3B2E;display:flex;align-items:center;justify-content:center}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:14px;color:#3E5249;font-weight:500}
+.nav a:hover{background:#EEF6F0;color:#0F3B2E}
+.nav a.on{background:#DDF3E4;color:#0F3B2E;font-weight:600}
+.nav a.on svg{stroke:#0F3B2E}
+.nav svg{width:18px;height:18px;stroke:#5C7266;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav .n{margin-left:auto;font-size:11px;font-weight:600;background:#F1E4C6;color:#7A4B0C;border-radius:999px;padding:2px 8px;font-variant-numeric:tabular-nums}
+.who{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px 10px;border-top:1px solid #E6E4DB}
+.who b{display:block;font-size:13px;font-weight:600}.who span{font-size:12px;color:#6B7A72}
+.av{width:34px;height:34px;border-radius:50%;background:#0F3B2E;color:#CFF1DB;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:13px}
+.top{display:flex;align-items:center;gap:14px;padding:16px 36px;border-bottom:1px solid #E6E4DB;background:#FBFAF6}
+.search{flex-grow:1;max-width:440px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E3E1D8;border-radius:999px;padding:9px 14px;font-size:13px;color:#7B877F}
+.search input{border:0;outline:0;background:transparent;font:inherit;flex-grow:1;color:#14241E}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;background:#fff;border:1px solid #E3E1D8;color:#3E5249}
+.pill i{width:7px;height:7px;border-radius:50%;background:#2FA86A}
+.clock{margin-left:auto;font-size:12px;color:#6B7A72;text-align:right;line-height:1.35}
+.num{font-family:'Bricolage Grotesque',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.03em;font-weight:600}
+.card{background:#fff;border:1px solid #E3E1D8;border-radius:18px}
+.h{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:16px;letter-spacing:-.01em;margin:0}
+.sub{font-size:12px;color:#6B7A72;margin:2px 0 0}
+.f{display:flex;flex-direction:column;gap:6px}
+.f label{font-size:12px;font-weight:600;color:#3E5249}
+.f label i{font-style:normal;color:#8F2B22;margin-left:2px}
+.f input,.f select,.f textarea{font:inherit;font-size:14px;padding:10px 12px;border:1px solid #E3E1D8;border-radius:10px;background:#fff;color:#14241E;outline:0;box-sizing:border-box;width:100%}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:#0F3B2E;box-shadow:0 0 0 3px #DDF3E4}
+.f .hint{font-size:11.5px;color:#6B7A72}
+.f.warn input{border-color:#E0B565;background:#FFFBF0}
+.f.warn .hint{color:#7A4B0C;font-weight:500}
+.f.bad input{border-color:#E0574A;background:#FFF7F5}
+.f.bad .hint{color:#8F2B22;font-weight:500}
+.btn{font:inherit;font-size:13px;font-weight:600;padding:11px 18px;border-radius:12px;border:1px solid #E3E1D8;background:#fff;color:#14241E;cursor:pointer}
+.btn.pri{background:#0F3B2E;border-color:#0F3B2E;color:#fff}.btn.pri:hover{background:#1B6B4F}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:13px;padding:10px 0;border-bottom:1px solid #F1F0EA}
+.chk:last-child{border-bottom:0}
+.chk i{width:18px;height:18px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-style:normal;margin-top:1px}
+.chk i.ok{background:#DDF3E4;color:#155C3F}.chk i.no{background:#FCE3DF;color:#8F2B22}.chk i.w{background:#FFF1D6;color:#7A4B0C}.chk i.q{background:#F1F0EA;color:#7B877F}
+.chk .m{font-size:12px;color:#6B7A72}
+</style>
+</helmet>
+<div style="width: 1440px; height: 960px; display: flex; box-sizing: border-box; overflow: hidden;">
+  <aside class="side">
+    <div class="brand"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CFF1DB" stroke-width="2.4" stroke-linecap="round"><path d="M4 12h5l2-5 3 10 2-5h4"/></svg></i>Vitalis</div>
+    <nav class="nav" aria-label="Navegação principal">
+      <a href="Relatorio.dc.html"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 15l5-5 4 4 7-7"/></svg>Relatório</a>
+      <a href="Guias.dc.html"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Todas as guias</a>
+      <a href="Pendencias.dc.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Minhas pendências<span class="n">14</span></a>
+      <a href="Importar.dc.html"><svg viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>Importar</a>
+      <a class="on" href="NovaGuia.dc.html"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nova guia</a>
+      <a href="Regras.dc.html"><svg viewBox="0 0 24 24"><path d="M6 4h9l4 4v12H6z"/><path d="M9 13h6M9 17h6"/></svg>Regras</a>
+    </nav>
+    <div class="who"><div class="av">JP</div><div><b>Júlia Prado</b><span>Secretaria · Sul</span></div></div>
+  </aside>
+  <main style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0;">
+    <header class="top">
+      <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" placeholder="Buscar protocolo, id da guia, paciente…" aria-label="Buscar"></label>
+      <span class="pill"><i></i>Regras agosto/2026 ativas</span>
+      <div class="clock"><b style="color:#14241E">Terça, 22/09/2026</b><br>14:32:07 · horário de Brasília</div>
+    </header>
+    <section style="padding: 28px 36px; display: grid; grid-template-columns: 1fr 360px; gap: 18px; flex-grow: 1; box-sizing: border-box; min-height: 0; align-items: start;">
+      <form class="card" style="padding: 26px 28px; display: flex; flex-direction: column; gap: 22px;">
+        <div>
+          <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 30px; letter-spacing: -0.03em; line-height: 1.1;">Nova guia</h1>
+          <p style="margin: 6px 0 0; font-size: 14px; color: #6B7A72;">Você não precisa decorar a regra de cada convênio: os campos obrigatórios mudam conforme o convênio escolhido, e a verificação roda ao lado enquanto você preenche.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 18px;">
+          <div class="f"><label for="id">id_guia (origem)<i>*</i></label><input id="id" type="text" value="G-2609-0102"></div>
+          <div class="f"><label for="un">Unidade<i>*</i></label><select id="un"><option>Sul</option><option>Norte</option><option>Centro</option></select></div>
+          <div class="f"><label for="dt">Data do atendimento<i>*</i></label><input id="dt" type="text" value="22/09/2026"><span class="hint">dd/mm/aaaa</span></div>
+          <div class="f"><label for="pa">Paciente<i>*</i></label><input id="pa" type="text" value="P-1052"></div>
+          <div class="f"><label for="cv">Convênio<i>*</i></label><select id="cv"><option>Vitalcard</option><option>Plano Bem</option></select><span class="hint">Vitalcard exige: autorização, validade, registro, carteirinha e CID</span></div>
+          <div class="f"><label for="ca">Carteirinha<i>*</i></label><input id="ca" type="text" value="884410270"></div>
+          <div class="f" style="grid-column: span 2;"><label for="pr">Procedimento<i>*</i></label><select id="pr"><option>50000470 · Sessão de fisioterapia musculoesquelética · R$ 62,00</option><option>50000560 · Sessão de fisioterapia neurofuncional · R$ 70,00</option><option>50000012 · Reavaliação fisioterapêutica · R$ 55,00</option><option>20103301 · Consulta ortopédica · R$ 90,00</option><option>40201015 · Infiltração articular · R$ 140,00</option></select></div>
+          <div class="f bad"><label for="cid">CID<i>*</i></label><input id="cid" type="text" value="" placeholder="ex.: M79.7"><span class="hint">Obrigatório para Vitalcard</span></div>
+          <div class="f"><label for="au">Nº da autorização<i>*</i></label><input id="au" type="text" value="AUT991204"></div>
+          <div class="f warn"><label for="va">Validade da autorização<i>*</i></label><input id="va" type="text" value="10/09/2026"><span class="hint">Vencida há 12 dias em relação ao atendimento</span></div>
+          <div class="f"><label for="se">Sessão nº / limite<i>*</i></label><div style="display: flex; gap: 8px; align-items: center;"><input id="se" type="text" value="8" style="width: 80px;"><span style="color: #6B7A72;">de</span><input type="text" value="10" aria-label="Limite de sessões" style="width: 80px;"></div></div>
+          <div class="f"><label for="pf">Profissional<i>*</i></label><input id="pf" type="text" value="Bruno Castanho"></div>
+          <div class="f"><label for="rg">Registro profissional<i>*</i></label><input id="rg" type="text" value="CREFITO-3 204411-F"></div>
+          <div class="f"><label for="vl">Valor<i>*</i></label><input id="vl" type="text" value="R$ 62,00"><span class="hint">referência do convênio: R$ 62,00</span></div>
+          <div class="f" style="grid-column: span 3;"><label for="ob">Observação da recepção</label><textarea id="ob" rows="2">Paciente disse que a autorização foi renovada ontem, número novo ainda não chegou.</textarea><span class="hint">Texto livre. A IA só interpreta; quem decide é uma pessoa.</span></div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; padding-top: 4px; border-top: 1px solid #F1F0EA;">
+          <span style="font-size: 12px; color: #6B7A72;">Ao salvar: protocolo + versão 1 + validação + tarefas. Você não libera nem envia.</span>
+          <span style="margin-left: auto;"></span>
+          <button type="button" class="btn">Cancelar</button>
+          <button type="button" class="btn pri">Salvar e verificar</button>
+        </div>
+      </form>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="card" style="padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+          <div><h2 class="h">Verificação prévia</h2><p class="sub">Mesmo motor da importação e do MCP, sem gravar nada.</p></div>
+          <div style="padding: 12px 14px; border-radius: 12px; background: #FFF1D6; color: #5A3608; font-size: 13px; line-height: 1.45;"><b>Se salvar agora: CORRIGIR</b><br>2 problemas objetivos e 1 observação para revisão.</div>
+          <div style="display: flex; flex-direction: column;">
+            <div class="chk"><i class="no">✕</i><div><b>CID obrigatório ausente</b><div class="m">Vitalcard · campos obrigatórios</div></div></div>
+            <div class="chk"><i class="no">✕</i><div><b>Autorização vencida na data do atendimento</b><div class="m">validade 10/09 · atendimento 22/09 · vale até o dia, inclusive</div></div></div>
+            <div class="chk"><i class="w">!</i><div><b>Observação cita nova autorização</b><div class="m">irá para revisão humana do Financeiro; a IA não aprova</div></div></div>
+            <div class="chk"><i class="ok">✓</i><div><b>Sessão 8 de 10</b><div class="m">dentro do limite Vitalcard</div></div></div>
+            <div class="chk"><i class="ok">✓</i><div><b>Procedimento coberto · valor confere</b><div class="m">50000470 · R$ 62,00</div></div></div>
+            <div class="chk"><i class="q">?</i><div><b>Duplicidade</b><div class="m">verificada ao salvar, contra os 80 protocolos</div></div></div>
+          </div>
+        </div>
+        <div class="card" style="padding: 18px 20px; font-size: 12px; color: #6B7A72; line-height: 1.5;">Datas e valores em formato inequívoco são normalizados com aviso. O que você digitou fica guardado como valor original.</div>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
