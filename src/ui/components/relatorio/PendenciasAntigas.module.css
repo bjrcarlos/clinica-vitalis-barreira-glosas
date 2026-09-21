@@ -1,0 +1,9 @@
+.link {
+  color: var(--cor-texto);
+}
+
+.legenda {
+  font-size: 11px;
+  color: var(--cor-texto-3);
+  margin-top: 2px;
+}

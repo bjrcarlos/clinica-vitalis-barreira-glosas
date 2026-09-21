@@ -13,3 +13,7 @@ dist
 coverage
 *.log
 .DS_Store
+
+# artefatos de ferramentas de teste
+.playwright-mcp/
+.vitest/

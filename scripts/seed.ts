@@ -58,7 +58,7 @@ const { mkdirSync, readFileSync, writeFileSync } = await import("node:fs");
 const { dirname, join, resolve: resolvePath } = await import("node:path");
 const { fileURLToPath } = await import("node:url");
 
-const { parseCsv } = await import("../src/application/import/parse-csv.ts");
+const { parseCsv } = await import("../src/domain/parse-csv.ts");
 const { registrarGuia } = await import("../src/application/register-guide.ts");
 const { normalizarGuia } = await import("../src/domain/normalize.ts");
 const { montarConjuntoRegras } = await import("../src/rules/rule-set.ts");

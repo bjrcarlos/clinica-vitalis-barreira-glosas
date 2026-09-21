@@ -1,0 +1,95 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.destaque {
+  font-family: var(--fonte-destaque);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--cor-primaria-clara);
+}
+
+.subtitulo {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: var(--cor-texto-3);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.grade1,
+.grade2 {
+  display: grid;
+  grid-template-columns: 1.65fr 1fr;
+  gap: 14px;
+}
+
+.painel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cabecalhoPainel {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.tituloCard {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.subCard {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--cor-texto-3);
+}
+
+.verTodas {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cor-primaria-clara);
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grade1,
+  .grade2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .kpis {
+    grid-template-columns: 1fr;
+  }
+}

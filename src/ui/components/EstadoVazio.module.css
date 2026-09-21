@@ -1,0 +1,26 @@
+.vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--cor-texto-3);
+}
+
+.titulo {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--cor-texto);
+}
+
+.descricao {
+  font-size: 13px;
+  max-width: 40ch;
+  line-height: 1.5;
+}
+
+.acao {
+  margin-top: 6px;
+}

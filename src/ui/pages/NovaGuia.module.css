@@ -1,0 +1,149 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+.subtitulo {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--cor-texto-3);
+}
+
+.erro {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--raio-item);
+  background: var(--cor-nao-faturar-bg);
+  color: var(--cor-nao-faturar-txt);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 18px;
+  align-items: start;
+}
+
+.formulario {
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-card);
+  padding: 26px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gradeCampos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 18px;
+}
+
+.campoLargo {
+  grid-column: span 2;
+}
+
+.campoTotal {
+  grid-column: 1 / -1;
+}
+
+.rodapeFormulario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--cor-divisoria);
+}
+
+.notaRodape {
+  font-size: 12px;
+  color: var(--cor-texto-3);
+}
+
+.botaoPrimario {
+  margin-left: auto;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 11px 18px;
+  border-radius: var(--raio-item);
+  border: 1px solid var(--cor-primaria);
+  background: var(--cor-primaria);
+  color: #fff;
+  cursor: pointer;
+}
+
+.botaoPrimario:hover:not(:disabled) {
+  background: var(--cor-primaria-clara);
+  border-color: var(--cor-primaria-clara);
+}
+
+.botaoPrimario:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.colunaLateral {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cartaoLateral {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--cor-texto-3);
+  line-height: 1.5;
+}
+
+.h2 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--cor-texto);
+}
+
+.paragrafoLateral {
+  margin: 0;
+}
+
+.listaChips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 2px 7px;
+  background: var(--cor-corrigir-bg);
+  color: var(--cor-corrigir-txt);
+}
+
+.cartaoJaExistia {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cartaoJaExistia a {
+  font-weight: 600;
+  align-self: flex-start;
+}

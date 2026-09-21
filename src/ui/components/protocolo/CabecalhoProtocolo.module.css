@@ -1,0 +1,119 @@
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.linhaTitulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.numero {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.estadoValidacao {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sufixoVersao {
+  font-size: 12px;
+  color: var(--cor-texto-3);
+}
+
+.meta {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--cor-texto-3);
+}
+
+.linhaAcao {
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.banner {
+  flex-grow: 1;
+  min-width: 260px;
+  padding: 16px 18px;
+  border-radius: var(--raio-bloco);
+  border: 1px solid var(--cor-borda);
+}
+
+.bannerTitulo {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.bannerTexto {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tomOk {
+  background: var(--cor-ok-bg);
+  color: var(--cor-ok-txt);
+  border-color: var(--cor-ok-txt);
+}
+
+.tomCorrigir {
+  background: var(--cor-corrigir-bg);
+  color: var(--cor-corrigir-txt);
+  border-color: var(--cor-corrigir-txt);
+}
+
+.tomRevisao {
+  background: var(--cor-revisao-bg);
+  color: var(--cor-revisao-txt);
+  border-color: var(--cor-revisao-txt);
+}
+
+.tomNaoFaturar {
+  background: var(--cor-nao-faturar-bg);
+  color: var(--cor-nao-faturar-txt);
+  border-color: var(--cor-nao-faturar-txt);
+}
+
+.risco {
+  width: 200px;
+  flex-shrink: 0;
+  padding: 14px 18px;
+  border-radius: var(--raio-bloco);
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-divisoria-forte);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.riscoRotulo {
+  font-size: 11px;
+  color: var(--cor-texto-4);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.riscoValor {
+  font-size: 24px;
+  color: var(--cor-nao-faturar-txt);
+}
+
+.riscoNota {
+  font-size: 11px;
+  color: var(--cor-texto-3);
+}

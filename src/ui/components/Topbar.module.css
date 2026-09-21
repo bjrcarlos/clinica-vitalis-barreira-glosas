@@ -1,0 +1,64 @@
+.topo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 36px;
+  border-bottom: 1px solid var(--cor-borda-suave);
+  background: var(--cor-superficie);
+}
+
+.busca {
+  flex-grow: 1;
+  max-width: 440px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-pill);
+  padding: 9px 14px;
+  font-size: 13px;
+  color: var(--cor-texto-4);
+}
+
+.busca input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  flex-grow: 1;
+  color: var(--cor-texto);
+}
+
+.selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--raio-pill);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  color: var(--cor-texto-2);
+  white-space: nowrap;
+}
+
+.selo i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cor-verde-ok);
+}
+
+.relogio {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--cor-texto-3);
+  text-align: right;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.relogio b {
+  color: var(--cor-texto);
+}

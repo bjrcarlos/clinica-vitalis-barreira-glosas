@@ -1,4 +1,4 @@
-import type { GuiaBruta } from "../../domain/guide";
+import type { GuiaBruta } from "./guide";
 
 /** Cabeçalho oficial de `guias.csv` (Fase 1), nesta ordem exata. */
 export const CABECALHO_GUIA_CSV = [
@@ -49,6 +49,12 @@ interface LinhaTokenizada {
  * inteiro, sem tentar mapear linhas de dados a colunas erradas. Uma linha de dados cujo
  * número de campos diverge do cabeçalho é rejeitada individualmente; as demais continuam
  * sendo processadas.
+ *
+ * Movido de `src/application/import/parse-csv.ts` para cá na auditoria da Fase 2: é uma
+ * função pura (sem I/O, sem D1, sem relógio) que a UI já precisava reaproveitar
+ * (`previaImportacao.ts`, `Importar.tsx`, `NovaGuia.tsx`, `FormularioCorrecao.tsx`) — importar
+ * de `application` direto violava a regra de dependência do CLAUDE.md (`ui → application →
+ * domain+rules`); `domain` é a camada isenta desse bloqueio por conter só funções puras.
  */
 export function parseCsv(texto: string): ResultadoParseCsv {
   const linhas = tokenizar(texto);

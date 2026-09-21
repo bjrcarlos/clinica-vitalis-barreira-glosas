@@ -32,8 +32,8 @@ A direção visual já está decidida e desenhada. As nove telas de referência 
   /* texto */
   --cor-texto: #14241E;
   --cor-texto-2: #3E5249;
-  --cor-texto-3: #6B7A72;
-  --cor-texto-4: #7B877F;
+  --cor-texto-3: #52604F;
+  --cor-texto-4: #5A6660;
 
   /* verde institucional */
   --cor-primaria: #0F3B2E;
@@ -112,6 +112,6 @@ O par de badge `#FFF1D6` / `#7A4B0C` é **texto sobre fundo claro**, não marca 
 
 - Elementos reais: `<button>`, `<a href>`, `<input>` + `<label>`. Nunca `onClick` em `div`.
 - `aria-label` em botão que é só ícone; `aria-live` no resultado de validação.
-- Contraste mínimo 4.5:1 para texto normal. Os pares de badge acima já foram escolhidos para passar.
+- Contraste mínimo 4.5:1 para texto normal. Os pares de badge acima já foram escolhidos para passar. `--cor-texto-3`/`--cor-texto-4` foram escurecidos na Fase 2 (auditoria) em relação ao design-reference original — os valores originais (#6B7A72/#7B877F) reprovavam WCAG 2.1 (3,36–4,32:1) nos tamanhos em que aparecem (11–13px, abaixo do limiar de "texto grande").
 - Nada de animação que não seja `transform`/`opacity`. Respeitar `prefers-reduced-motion`.
 - Layout precisa sobreviver a 1280px e a telas menores: a referência foi desenhada em 1440px.

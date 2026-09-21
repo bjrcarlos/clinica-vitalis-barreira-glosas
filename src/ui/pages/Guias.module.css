@@ -1,0 +1,182 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.subtitulo {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--cor-texto-3);
+}
+
+.acoesTopo {
+  display: flex;
+  gap: 8px;
+}
+
+.barraFiltros {
+  display: flex;
+}
+
+.buscaCampo {
+  flex-grow: 1;
+  max-width: 440px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-pill);
+  padding: 9px 14px;
+  font-size: 13px;
+}
+
+.buscaCampo input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  flex-grow: 1;
+  color: var(--cor-texto);
+}
+
+.somenteLeitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.linhaChips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.divisoria {
+  width: 1px;
+  height: 22px;
+  background: var(--cor-borda);
+  margin: 0 4px;
+}
+
+.filtroSelect,
+.filtroPeriodo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cor-texto-2);
+  padding: 6px 12px;
+  border-radius: var(--raio-pill);
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-card);
+}
+
+.filtroSelect select,
+.filtroPeriodo input {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: var(--cor-texto);
+}
+
+.filtroPeriodo input {
+  width: 128px;
+}
+
+.limpar {
+  margin-left: auto;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-primaria-clara);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 6px 0;
+}
+
+.cartaoTabela {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/**
+ * Abaixo de ~1024px as 9 colunas não cabem no container do card. Em vez de escondê-las
+ * (overflow-x: hidden no cartão, que deixava Próxima ação/Fluxo/Área/Valor/Versão
+ * inacessíveis), a tabela rola horizontalmente dentro do próprio card — o card mantém
+ * `overflow: hidden` só para o arredondamento das bordas.
+ */
+.wrapperRolagem {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--cor-borda) transparent;
+}
+
+.wrapperRolagem table {
+  min-width: 760px;
+}
+
+.wrapperRolagem::-webkit-scrollbar {
+  height: 8px;
+}
+
+.wrapperRolagem::-webkit-scrollbar-thumb {
+  background: var(--cor-borda);
+  border-radius: var(--raio-pill);
+}
+
+.erro,
+.carregando {
+  margin: 0;
+  padding: 24px;
+  font-size: 13px;
+  color: var(--cor-texto-3);
+}
+
+.erro {
+  color: var(--cor-nao-faturar-txt);
+}
+
+.linkProtocolo {
+  display: block;
+}
+
+.linhaSecundaria {
+  font-size: 11px;
+  color: var(--cor-texto-3);
+  margin-top: 2px;
+}
+
+.rodapeTabela {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  border-top: 1px solid var(--cor-divisoria-forte);
+  font-size: 13px;
+  color: var(--cor-texto-3);
+}

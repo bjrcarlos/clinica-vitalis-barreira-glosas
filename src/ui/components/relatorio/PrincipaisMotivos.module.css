@@ -1,0 +1,44 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.linha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.rotulo {
+  width: 172px;
+  flex-shrink: 0;
+  color: var(--cor-texto-2);
+}
+
+.trilho {
+  flex-grow: 1;
+  height: 10px;
+  border-radius: var(--raio-pill);
+  background: var(--trilho);
+  overflow: hidden;
+}
+
+.trilho i {
+  display: block;
+  height: 100%;
+  border-radius: var(--raio-pill);
+  background: var(--cor-primaria);
+}
+
+.contagem {
+  width: 26px;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .rotulo {
+    width: 120px;
+  }
+}

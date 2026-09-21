@@ -1,0 +1,30 @@
+.estado {
+  font-size: 12px;
+  color: var(--cor-texto-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ponto {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.neutro {
+  background: var(--dado-neutro);
+}
+
+.liberada {
+  background: var(--cor-verde-ok);
+}
+
+.enviada {
+  background: var(--cor-primaria);
+}
+
+.mesclada {
+  background: var(--dado-revisao);
+}

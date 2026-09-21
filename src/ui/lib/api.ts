@@ -1,0 +1,197 @@
+/**
+ * Cliente HTTP tipado para as rotas internas em `/api` (contrato fixado pelo orquestrador
+ * da Fase 2; ver docs/PRD-SDD.md §24 e §27).
+ *
+ * SUPOSIÇÃO DECLARADA (20/09/2026): a tarefa pede tipos vindos de `src/http/contracts.ts`,
+ * mas esse arquivo não existe nesta sessão — está sendo escrito em paralelo por outro agente
+ * desta mesma fase (`src/http/handlers/` já existe, vazio). Não é seguro inventar nomes de
+ * tipos de um arquivo que não li. Por isso cada função abaixo aceita um parâmetro de tipo
+ * genérico para a resposta esperada (default `unknown`, nunca `any`), e os filtros de busca
+ * usam os enums reais do domínio (`ValidacaoStatus`/`FluxoStatus`/`Area`, já verificados
+ * nesta sessão em `src/domain/statuses.ts`) em vez de campos inventados. Quando
+ * `src/http/contracts.ts` existir, cada chamador troca o genérico solto por um tipo
+ * importado de lá; a assinatura das funções não deveria precisar mudar.
+ */
+import type { Area, FluxoStatus, ValidacaoStatus } from "../../domain/statuses";
+
+/** Envelope de erro estável (CLAUDE.md): `{ erro: { codigo, mensagem } }`, mensagem curta em português. */
+export interface ErroApi {
+  readonly codigo: string;
+  readonly mensagem: string;
+}
+
+/**
+ * Códigos de erro estáveis já fixados para esta fase (CLAUDE.md). Lista fechada apenas para
+ * referência/`switch`; o servidor pode devolver outros códigos estáveis fora desta fase
+ * (merge, IA) — por isso `ErroApi.codigo` continua tipado como `string`, não como este union.
+ */
+export const CODIGOS_ERRO_CONHECIDOS = [
+  "ROLE_NOT_ALLOWED",
+  "INVALID_STATE_TRANSITION",
+  "OPEN_BLOCKING_TASKS",
+  "GUIDE_NOT_READY",
+  "EVIDENCE_REQUIRED",
+] as const;
+
+/** Erro lançado por toda chamada deste cliente — sempre carrega `codigo` e uma `mensagem` exibível. */
+export class ApiError extends Error {
+  readonly codigo: string;
+
+  constructor(erro: ErroApi) {
+    super(erro.mensagem);
+    this.name = "ApiError";
+    this.codigo = erro.codigo;
+  }
+}
+
+function isErroEnvelope(valor: unknown): valor is { erro: ErroApi } {
+  if (typeof valor !== "object" || valor === null || !("erro" in valor)) return false;
+  const erro = (valor as { erro: unknown }).erro;
+  return (
+    typeof erro === "object" &&
+    erro !== null &&
+    typeof (erro as { codigo?: unknown }).codigo === "string" &&
+    typeof (erro as { mensagem?: unknown }).mensagem === "string"
+  );
+}
+
+interface OpcoesRequisicao {
+  readonly method: "GET" | "POST";
+  readonly corpo?: unknown;
+  readonly signal?: AbortSignal;
+}
+
+async function requisitar<T>(caminho: string, opcoes: OpcoesRequisicao): Promise<T> {
+  let resposta: Response;
+  try {
+    resposta = await fetch(`/api${caminho}`, {
+      method: opcoes.method,
+      credentials: "same-origin",
+      signal: opcoes.signal,
+      headers: opcoes.corpo === undefined ? undefined : { "Content-Type": "application/json" },
+      body: opcoes.corpo === undefined ? undefined : JSON.stringify(opcoes.corpo),
+    });
+  } catch {
+    throw new ApiError({
+      codigo: "FALHA_DE_REDE",
+      mensagem: "Não foi possível conectar ao servidor. Verifique a conexão e tente novamente.",
+    });
+  }
+
+  const texto = await resposta.text();
+  let corpo: unknown = null;
+  if (texto.length > 0) {
+    try {
+      corpo = JSON.parse(texto);
+    } catch {
+      throw new ApiError({
+        codigo: "RESPOSTA_INVALIDA",
+        mensagem: "O servidor respondeu em um formato inesperado.",
+      });
+    }
+  }
+
+  if (!resposta.ok) {
+    if (isErroEnvelope(corpo)) throw new ApiError(corpo.erro);
+    throw new ApiError({ codigo: "ERRO_HTTP", mensagem: `Falha inesperada (HTTP ${resposta.status}).` });
+  }
+
+  return corpo as T;
+}
+
+/** Camada genérica — usar diretamente quando nenhuma das funções nomeadas abaixo servir. */
+export const api = {
+  get: <T = unknown>(caminho: string, signal?: AbortSignal): Promise<T> =>
+    requisitar<T>(caminho, { method: "GET", signal }),
+  post: <T = unknown>(caminho: string, corpo?: unknown, signal?: AbortSignal): Promise<T> =>
+    requisitar<T>(caminho, { method: "POST", corpo, signal }),
+};
+
+/** Papel funcional da identidade da demonstração (PRD §8: OAuth fora de escopo). DIRECAO é só leitura. */
+export type PapelSessao = "SECRETARIA" | "FINANCEIRO" | "DIRECAO";
+
+/** `POST /api/session` — troca a identidade funcional da demonstração (cookie HttpOnly assinado). */
+export function trocarSessao(papel: PapelSessao): Promise<void> {
+  return api.post<void>("/session", { papel });
+}
+
+/** `GET /api/report` — quatro blocos do RF-14, motivos, distribuição por área, pendências antigas. */
+export function obterRelatorio<T = unknown>(signal?: AbortSignal): Promise<T> {
+  return api.get<T>("/report", signal);
+}
+
+/** Filtros de `GET /api/protocols` — campos fixados no contrato da Fase 2. Sem filtros, devolve as 80. */
+export interface FiltrosProtocolos {
+  readonly statusValidacao?: ValidacaoStatus;
+  readonly statusFluxo?: FluxoStatus;
+  readonly area?: Area;
+  readonly unidade?: string;
+  readonly convenio?: string;
+  readonly atendimentoDe?: string;
+  readonly atendimentoAte?: string;
+  readonly busca?: string;
+  readonly pagina?: number;
+  readonly tamanho?: number;
+}
+
+const CHAVE_QUERY_POR_FILTRO: Record<keyof FiltrosProtocolos, string> = {
+  statusValidacao: "status_validacao",
+  statusFluxo: "status_fluxo",
+  area: "area",
+  unidade: "unidade",
+  convenio: "convenio",
+  atendimentoDe: "atendimento_de",
+  atendimentoAte: "atendimento_ate",
+  busca: "busca",
+  pagina: "pagina",
+  tamanho: "tamanho",
+};
+
+function paraQueryString(filtros: FiltrosProtocolos): string {
+  const parametros = new URLSearchParams();
+  for (const chave of Object.keys(filtros) as (keyof FiltrosProtocolos)[]) {
+    const valor = filtros[chave];
+    if (valor === undefined || valor === null || valor === "") continue;
+    parametros.set(CHAVE_QUERY_POR_FILTRO[chave], String(valor));
+  }
+  const query = parametros.toString();
+  return query.length > 0 ? `?${query}` : "";
+}
+
+/** `GET /api/protocols` — sem filtro, devolve todos os protocolos (RF-14). */
+export function listarProtocolos<T = unknown>(filtros: FiltrosProtocolos = {}, signal?: AbortSignal): Promise<T> {
+  return api.get<T>(`/protocols${paraQueryString(filtros)}`, signal);
+}
+
+/** `GET /api/protocols/:numero` — detalhe completo do protocolo. */
+export function obterProtocolo<T = unknown>(numeroProtocolo: string, signal?: AbortSignal): Promise<T> {
+  return api.get<T>(`/protocols/${encodeURIComponent(numeroProtocolo)}`, signal);
+}
+
+/** `POST /api/protocols` — cadastro individual (papel SECRETARIA, verificado pelo servidor via cookie). */
+export function cadastrarProtocolo<TResposta = unknown, TDados = unknown>(dados: TDados): Promise<TResposta> {
+  return api.post<TResposta>("/protocols", dados);
+}
+
+/** `POST /api/protocols/:numero/versions` — correção: nova versão, diff e revalidação (papel SECRETARIA). */
+export function corrigirProtocolo<TResposta = unknown, TDados = unknown>(
+  numeroProtocolo: string,
+  dados: TDados,
+): Promise<TResposta> {
+  return api.post<TResposta>(`/protocols/${encodeURIComponent(numeroProtocolo)}/versions`, dados);
+}
+
+/** `POST /api/protocols/:numero/release` — libera para envio (papel FINANCEIRO), só se a trava permitir. */
+export function liberarProtocolo<T = unknown>(numeroProtocolo: string): Promise<T> {
+  return api.post<T>(`/protocols/${encodeURIComponent(numeroProtocolo)}/release`);
+}
+
+/** `POST /api/imports` — importação de CSV (papel SECRETARIA). */
+export function importarArquivo<TResposta = unknown, TDados = unknown>(dados: TDados): Promise<TResposta> {
+  return api.post<TResposta>("/imports", dados);
+}
+
+/** `GET /api/rules` — regra ativa, versão, hash e origem. */
+export function obterRegraAtiva<T = unknown>(signal?: AbortSignal): Promise<T> {
+  return api.get<T>("/rules", signal);
+}

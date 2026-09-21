@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { normalizarGuia } from "../src/domain/normalize";
-import { parseCsv, CABECALHO_GUIA_CSV } from "../src/application/import/parse-csv";
+import { parseCsv, CABECALHO_GUIA_CSV } from "../src/domain/parse-csv";
 import type { GuiaBruta } from "../src/domain/guide";
 
 /** Guia crua válida de referência (espelha `G-2608-0001` de `guias.csv`); testes sobrescrevem só o campo em foco. */

@@ -1,0 +1,47 @@
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--cor-nao-faturar-bg);
+  border-color: var(--cor-nao-faturar-txt);
+}
+
+.titulo {
+  margin: 0;
+  font-size: 15px;
+}
+
+.motivo {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cor-nao-faturar-txt);
+  line-height: 1.5;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+}
+
+.lista li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.icone {
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.atendido {
+  color: var(--cor-verde-texto);
+}
+
+.pendente {
+  color: var(--cor-nao-faturar-txt);
+}

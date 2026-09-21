@@ -1,0 +1,92 @@
+.bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-radius: var(--raio-card);
+  padding: 22px 22px 18px;
+  box-sizing: border-box;
+  position: relative;
+  text-decoration: none;
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  color: var(--cor-texto);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.bloco:hover,
+.bloco:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-hover);
+}
+
+.seta {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--cor-divisoria-forte);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seta svg {
+  width: 14px;
+  height: 14px;
+}
+
+.rotulo {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cor-texto-3);
+}
+
+.numeros {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+}
+
+.valor {
+  font-size: 30px;
+}
+
+.tratado {
+  color: var(--cor-verde-texto);
+}
+
+.pendente {
+  color: var(--cor-nao-faturar-txt);
+}
+
+.trilho {
+  display: flex;
+  height: 8px;
+  border-radius: var(--raio-pill);
+  overflow: hidden;
+  margin-top: 2px;
+  background: var(--trilho);
+}
+
+.tratadoBarra {
+  background: var(--dado-ok);
+}
+
+.pendenteBarra {
+  background: var(--dado-nao-faturar);
+}
+
+.neutro {
+  background: var(--dado-neutro);
+}
+
+.legenda {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--cor-texto-3);
+}

@@ -1,0 +1,10 @@
+.card {
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-card);
+  padding: 22px;
+}
+
+.semPadding {
+  padding: 0;
+}

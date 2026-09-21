@@ -1,0 +1,45 @@
+.lista {
+  display: flex;
+  gap: 22px;
+}
+
+.etapa {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--cor-texto-4);
+  font-weight: 500;
+}
+
+.marcador {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid var(--cor-borda);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-family: var(--fonte-titulo);
+  flex-shrink: 0;
+}
+
+.concluida {
+  color: var(--cor-verde-texto);
+}
+.concluida .marcador {
+  background: var(--cor-mint);
+  border-color: var(--cor-mint);
+  color: var(--cor-verde-texto);
+}
+
+.atual {
+  color: var(--cor-texto);
+  font-weight: 600;
+}
+.atual .marcador {
+  background: var(--cor-primaria);
+  border-color: var(--cor-primaria);
+  color: #fff;
+}

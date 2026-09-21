@@ -1,0 +1,76 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.risco {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cor-texto-2);
+}
+
+.resumo {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--cor-texto-2);
+}
+
+.listaProblemas {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--cor-divisoria);
+}
+
+.problema {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--cor-divisoria);
+  font-size: 13px;
+}
+
+.problema:last-child {
+  border-bottom: 0;
+}
+
+.problemaCabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.area {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cor-texto-4);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.subproblemas {
+  margin: 6px 0 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--cor-texto-3);
+  list-style: disc;
+}
+
+.link {
+  align-self: flex-start;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--cor-primaria-clara);
+}

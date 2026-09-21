@@ -1,0 +1,77 @@
+/**
+ * Tokens de design — Barreira de Glosas Vitalis.
+ * Fonte da verdade: docs/DESIGN.md. Não redefinir estes valores em outro lugar;
+ * componentes e páginas consomem só `var(--token)`.
+ */
+:root {
+  /* superfícies */
+  --cor-fundo: #F4F3ED;
+  --cor-superficie: #FBFAF6; /* sidebar, topbar, cabeçalho de tabela */
+  --cor-card: #FFFFFF;
+  --cor-borda: #E3E1D8;
+  --cor-borda-suave: #E6E4DB;
+  --cor-divisoria: #F1F0EA;
+  --cor-divisoria-forte: #EFEDE5;
+
+  /* texto */
+  --cor-texto: #14241E;
+  --cor-texto-2: #3E5249;
+  /* Escurecidos em relação ao design-reference original (#6B7A72/#7B877F): reprovavam WCAG
+     2.1 (3,36–4,32:1) contra --cor-fundo/--cor-superficie, abaixo do mínimo 4.5:1 exigido por
+     docs/DESIGN.md para os tamanhos em que aparecem (11–13px, ex. cabeçalho de tabela, rótulo
+     de estatística) — não qualificam como "texto grande" (que pediria só 3:1). Estes dois
+     passam >=4.5:1 contra --cor-fundo, --cor-superficie e --cor-card (medido, WCAG 2.1). */
+  --cor-texto-3: #52604F;
+  --cor-texto-4: #5A6660;
+
+  /* verde institucional */
+  --cor-primaria: #0F3B2E;
+  --cor-primaria-clara: #1B6B4F;
+  --cor-mint: #DDF3E4;
+  --cor-mint-hover: #EEF6F0;
+  --cor-verde-ok: #2FA86A;
+  --cor-verde-texto: #155C3F;
+  --cor-verde-sobre-escuro: #CFF1DB;
+
+  /* estados de validação */
+  --cor-corrigir-bg: #FFF1D6;
+  --cor-corrigir-txt: #7A4B0C;
+  --cor-revisao-bg: #E9E3FF;
+  --cor-revisao-txt: #4B3A9E;
+  --cor-nao-faturar-bg: #FCE3DF;
+  --cor-nao-faturar-txt: #8F2B22;
+  --cor-ok-bg: #DDF3E4;
+  --cor-ok-txt: #155C3F;
+
+  /* gradientes dos blocos do relatório */
+  --grad-verificadas: linear-gradient(160deg, #C9F2D8, #A9E9C3); /* texto #0F3B2E */
+  --grad-atencao: linear-gradient(160deg, #FFE9BF, #FFD98F); /* texto #5A3608 */
+  --grad-risco: linear-gradient(160deg, #FFD6CF, #F8B8AE); /* texto #6E1F17 */
+
+  /* barras e séries */
+  --serie-verde: #0F3B2E;
+  --serie-roxo: #7C5CD6;
+  --serie-vermelho: #E0574A;
+  --serie-neutra: #B9B4A3;
+  --trilho: #EFEDE5;
+
+  /* forma */
+  --raio-card: 18px;
+  --raio-bloco: 14px;
+  --raio-item: 10px;
+  --raio-pill: 999px;
+  --sidebar-largura: 236px;
+  --sombra-hover: 0 12px 28px -14px rgba(15, 59, 46, .35);
+
+  /* tipografia */
+  --fonte-titulo: "Bricolage Grotesque", sans-serif;
+  --fonte-corpo: "Instrument Sans", sans-serif;
+  --fonte-destaque: "Instrument Serif", serif;
+
+  /* cores de dados (gráficos) — validadas para daltonismo e contraste; usar só estes valores em rosca/linha/área/barra */
+  --dado-ok: #2FA86A;
+  --dado-corrigir: #C7841C;
+  --dado-revisao: #7C5CD6;
+  --dado-nao-faturar: #E0574A;
+  --dado-neutro: #B9B4A3;
+}

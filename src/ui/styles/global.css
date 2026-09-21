@@ -1,16 +1,98 @@
-:root {
-  color-scheme: light;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+@import "./tokens.css";
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@1&display=swap");
+
+/* Reset mínimo */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-body {
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+figure {
   margin: 0;
-  padding: 2rem;
-  background: #f5f6f8;
-  color: #1a1a1a;
 }
 
-header h1 {
-  font-size: 1.5rem;
-  margin: 0 0 0.5rem;
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Tipografia e estilos de base */
+body {
+  font-family: var(--fonte-corpo);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: var(--cor-primaria);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--cor-primaria-clara);
+}
+
+/* Números: sempre tabulares e com o aperto de letras da identidade visual (docs/DESIGN.md) */
+.num {
+  font-family: var(--fonte-titulo);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+}
+
+/* Foco visível — nunca remover o outline, só estilizá-lo */
+:focus-visible {
+  outline: 2px solid var(--cor-primaria-clara);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

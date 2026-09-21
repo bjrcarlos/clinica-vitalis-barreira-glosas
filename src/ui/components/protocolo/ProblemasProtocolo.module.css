@@ -1,0 +1,116 @@
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 16px;
+}
+
+.subtitulo {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--cor-texto-3);
+}
+
+.contagem {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--cor-texto-3);
+}
+
+.vazio {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cor-texto-3);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aberto,
+.resolvido {
+  border: 1px solid var(--cor-divisoria-forte);
+  border-radius: var(--raio-bloco);
+  padding: 14px 16px;
+}
+
+.aberto {
+  border-color: var(--cor-corrigir-txt);
+  background: var(--cor-fundo);
+}
+
+.resolvido {
+  opacity: 0.78;
+}
+
+.resumo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.resumo::-webkit-details-marker {
+  display: none;
+}
+
+.selo,
+.seloResolvido {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--raio-pill);
+  padding: 4px 9px;
+  white-space: nowrap;
+}
+
+.selo {
+  background: var(--cor-corrigir-bg);
+  color: var(--cor-corrigir-txt);
+}
+
+.seloResolvido {
+  background: var(--cor-ok-bg);
+  color: var(--cor-ok-txt);
+}
+
+.tituloProblema {
+  font-size: 14px;
+}
+
+.codigo {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--cor-texto-4);
+}
+
+.subproblemas {
+  margin: 10px 0 0 6px;
+  padding-left: 16px;
+  border-left: 1.5px solid var(--cor-borda);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--cor-texto-2);
+}
+
+.referencia {
+  color: var(--cor-texto-4);
+  font-size: 12px;
+}

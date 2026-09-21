@@ -1,0 +1,90 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.aviso {
+  margin: 0;
+  font-size: 12px;
+  color: var(--cor-texto-3);
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--cor-texto-2);
+}
+
+.campo input,
+.campo textarea {
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--cor-texto);
+  background: var(--cor-card);
+  resize: vertical;
+}
+
+.campo input:focus-visible,
+.campo textarea:focus-visible {
+  outline: 2px solid var(--cor-primaria-clara);
+  outline-offset: 1px;
+}
+
+.erro {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--cor-nao-faturar-txt);
+}
+
+.acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.cancelar,
+.salvar {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.cancelar {
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  color: var(--cor-texto);
+}
+
+.salvar {
+  background: var(--cor-primaria);
+  border: 1px solid var(--cor-primaria);
+  color: #fff;
+}
+
+.salvar:disabled,
+.cancelar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .grade {
+    grid-template-columns: 1fr;
+  }
+}

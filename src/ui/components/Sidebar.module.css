@@ -1,0 +1,84 @@
+.sidebar {
+  width: var(--sidebar-largura);
+  flex-shrink: 0;
+  background: var(--cor-superficie);
+  border-right: 1px solid var(--cor-borda-suave);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px 26px;
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  color: var(--cor-primaria);
+}
+
+.marcaIcone {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--cor-primaria);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--raio-item);
+  font-size: 14px;
+  color: var(--cor-texto-2);
+  font-weight: 500;
+}
+
+.link svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.link:hover {
+  background: var(--cor-mint-hover);
+  color: var(--cor-primaria);
+}
+
+.link.ativo {
+  background: var(--cor-mint);
+  color: var(--cor-primaria);
+  font-weight: 600;
+}
+
+.contador {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  background: #F1E4C6;
+  color: var(--cor-corrigir-txt);
+  border-radius: var(--raio-pill);
+  padding: 2px 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rodape {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--cor-borda-suave);
+}

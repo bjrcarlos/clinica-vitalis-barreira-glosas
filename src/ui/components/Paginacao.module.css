@@ -1,0 +1,32 @@
+.paginacao {
+  display: flex;
+  gap: 6px;
+}
+
+.seta,
+.pagina {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: var(--raio-pill);
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-card);
+  color: var(--cor-texto-2);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.seta:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.pagina.atual {
+  background: var(--cor-primaria);
+  border-color: var(--cor-primaria);
+  color: #fff;
+}

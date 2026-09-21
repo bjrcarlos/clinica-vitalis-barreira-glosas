@@ -12,7 +12,7 @@ Execução faseada conforme `docs/PRD-SDD.md` §33–35. Cada fase roda com cont
 |---|---|---|
 | 0 | Fundação, scaffold, schema D1 | concluída com ressalvas (ver `phase-0-handoff.md` §5–6) |
 | 1 | Núcleo determinístico e dados (80 guias) | concluída com ressalvas (ver `phase-1-handoff.md` §7–8) |
-| 2 | Produto utilizável (relatório, lista, protocolo, correção) | não iniciada |
+| 2 | Produto utilizável (relatório, lista, protocolo, correção) | concluída com ressalvas (ver `phase-2-handoff.md` §7–8) |
 | 3 | Governança, evidência e merge | não iniciada |
 | 4 | IA, MCP e Skill | não iniciada |
 | 5 | Entrega, deploy e demonstração | não iniciada |
@@ -40,6 +40,24 @@ Execução faseada conforme `docs/PRD-SDD.md` §33–35. Cada fase roda com cont
 - Fase 1: nesta fase nenhum problema de validação é `bloqueante: false` — todo `Problema` vira
   uma `Tarefa` bloqueante (RF-09 exige zero pendência aberta para liberar); granularidade mais
   fina de bloqueio fica para fase futura, se necessário.
+- Fase 2: as 9 rotas de `/api/*` (PRD §24) estão implementadas e testadas ponta a ponta contra
+  `wrangler dev` local (relatório, lista, detalhe, cadastro, correção, liberação, importação,
+  regras, sessão) — nenhuma decide regra de negócio, todas chamam o motor/casos de uso da Fase 1.
+  Detalhe completo, exemplos reais de resposta e o mapa de telas em `phase-2-handoff.md` §1–4.
+- Fase 2: identidade da demonstração via cookie HttpOnly assinado com HMAC-SHA256
+  (`LINK_SIGNING_KEY`), papel resolvido uma vez por requisição no roteador
+  (`src/http/routes.ts`) e injetado em todo handler — nenhum handler de mutação lê papel do
+  corpo, exceto `POST /api/session` (propósito da rota). Ver `phase-2-handoff.md` §3.3 para onde
+  a Fase 3 engancha o mesmo padrão em envio/encerramento.
+- Fase 2: dependência nova `read-excel-file@9.3.10` (exata), só no bundle do cliente, carregada
+  por `import()` dinâmico — converte `.xlsx` para CSV e reusa `parseCsv` (Fase 1) em vez de um
+  segundo parser. `src/application/import/parse-csv.ts` (Fase 1) foi movido para
+  `src/domain/parse-csv.ts` (função pura, a UI precisava importá-la sem violar
+  `ui → application → domain+rules`).
+- Fase 2: a duplicidade-contra-si-mesma de `registrarGuia` (achado da Fase 1, não corrigido na
+  origem) foi contida por um wrapper local (`semAutoDuplicidade`,
+  `src/http/handlers/create-protocol.ts`) usado por cadastro e importação — a causa raiz em
+  `src/application/register-guide.ts` continua sem conserto; ver `phase-2-handoff.md` §5/§8.
 
 ## Pendências de decisão do dono
 
@@ -80,3 +98,18 @@ Execução faseada conforme `docs/PRD-SDD.md` §33–35. Cada fase roda com cont
   dá exit 0 — é o resultado que vale. Se um portão de fase futura reportar erro de
   typecheck via hook automático, rodar o script sem o prefixo `rtk` antes de assumir
   regressão real.
+- **`src/application/register-guide.ts` ainda checa duplicidade depois de criar o protocolo**
+  (achado da Fase 1, contido mas não corrigido na Fase 2 — ver acima). Duas rotas HTTP dependem
+  hoje de um wrapper de contorno em vez da ordem certa no caso de uso; consertar a origem é
+  seguro e pequeno, mas ainda não foi feito porque nenhuma das duas fases teve o arquivo no
+  escopo.
+- **Nenhum commit da Fase 2 foi feito** — o repositório já tem histórico (4 commits, até
+  `dcb962b` da Fase 1), mas toda a Fase 2 existe só como *working tree* não commitado (handlers,
+  contrato HTTP, identidade, UI, testes novos — `git status --short` no fim da Fase 2 lista a
+  árvore completa). Ninguém commitou por instrução explícita do orquestrador em ambas as fases.
+  Até o primeiro commit acontecer, qualquer `git checkout -- .`/`reset --hard` acidental perderia
+  todo o trabalho desta fase sem deixar rastro em nenhum commit — decisão de quando commitar é
+  do orquestrador, não desta fase.
+- **`.playwright-mcp/` e `.vitest/`** (diretórios não rastreados, provavelmente artefato de
+  ferramenta) não estão no `.gitignore` — risco de serem commitados por engano no primeiro
+  commit da Fase 2 se ninguém decidir antes.

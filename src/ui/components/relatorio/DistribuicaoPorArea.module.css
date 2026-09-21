@@ -1,0 +1,48 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: var(--raio-bloco);
+  text-decoration: none;
+  color: var(--cor-texto);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.cartao:hover,
+.cartao:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-hover);
+}
+
+.cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.cabecalho b {
+  font-size: 14px;
+}
+
+.quantidade {
+  font-size: 30px;
+  color: var(--cor-primaria);
+}
+
+.descricao {
+  font-size: 12px;
+  color: var(--cor-texto-2);
+}
+
+.rodape {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cor-verde-texto);
+}

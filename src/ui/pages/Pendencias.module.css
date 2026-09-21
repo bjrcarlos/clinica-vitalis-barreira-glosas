@@ -1,0 +1,147 @@
+.pagina {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 18px;
+  align-items: start;
+}
+
+.coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.destaque {
+  font-family: var(--fonte-destaque);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--cor-revisao-txt);
+}
+
+.subtitulo {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--cor-texto-3);
+}
+
+.ordenacao {
+  display: flex;
+  gap: 8px;
+}
+
+.erro,
+.carregando {
+  margin: 0;
+  padding: 24px;
+  font-size: 13px;
+  color: var(--cor-texto-3);
+}
+
+.erro {
+  color: var(--cor-nao-faturar-txt);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) 120px 96px 84px;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--cor-divisoria);
+  font-size: 13px;
+}
+
+.linha:last-child {
+  border-bottom: 0;
+}
+
+.protocolo {
+  font-weight: 600;
+}
+
+.oQueDecidir {
+  min-width: 0;
+}
+
+.linhaTitulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.contexto {
+  font-size: 12px;
+  color: var(--cor-texto-3);
+  margin-top: 3px;
+}
+
+.desde,
+.valor {
+  font-weight: 500;
+}
+
+.ir {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: var(--raio-pill);
+  border: 1px solid var(--cor-primaria);
+  background: var(--cor-primaria);
+  color: #fff;
+  text-align: center;
+}
+
+.ir:hover {
+  background: var(--cor-primaria-clara);
+  color: #fff;
+}
+
+.lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.identidade {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tituloLateral {
+  margin: 0;
+  font-size: 14px;
+}
+
+@media (max-width: 1000px) {
+  .pagina {
+    grid-template-columns: 1fr;
+  }
+
+  .linha {
+    grid-template-columns: 1fr;
+    row-gap: 6px;
+  }
+}

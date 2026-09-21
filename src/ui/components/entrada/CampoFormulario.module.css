@@ -1,0 +1,64 @@
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cor-texto-2);
+}
+
+.obrigatorio {
+  font-style: normal;
+  color: var(--cor-nao-faturar-txt);
+  margin-left: 2px;
+}
+
+.campo :global(input),
+.campo :global(select),
+.campo :global(textarea) {
+  font: inherit;
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-item);
+  background: var(--cor-card);
+  color: var(--cor-texto);
+  outline: 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.campo :global(input):focus,
+.campo :global(select):focus,
+.campo :global(textarea):focus {
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 3px var(--cor-mint);
+}
+
+.dica {
+  font-size: 11.5px;
+  color: var(--cor-texto-3);
+}
+
+.atencao :global(input),
+.atencao :global(select) {
+  border-color: #e0b565;
+  background: #fffbf0;
+}
+.atencao .dica {
+  color: var(--cor-corrigir-txt);
+  font-weight: 500;
+}
+
+.alerta :global(input),
+.alerta :global(select) {
+  border-color: var(--cor-nao-faturar-txt);
+  background: #fff7f5;
+}
+.alerta .dica {
+  color: var(--cor-nao-faturar-txt);
+  font-weight: 500;
+}

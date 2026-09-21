@@ -1,0 +1,70 @@
+.kpi {
+  border-radius: var(--raio-card);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-decoration: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.kpi:hover,
+.kpi:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-hover);
+}
+
+.icone {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icone svg {
+  width: 17px;
+  height: 17px;
+}
+
+.rotulo {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.valor {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.legenda {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.verde {
+  background: var(--grad-verificadas);
+  color: #0f3b2e;
+}
+
+.atencao {
+  background: var(--grad-atencao);
+  color: #5a3608;
+}
+
+.risco {
+  background: var(--grad-risco);
+  color: #6e1f17;
+}
+
+.claro {
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  color: var(--cor-texto);
+}
+
+.claro .icone {
+  background: var(--cor-divisoria-forte);
+}
