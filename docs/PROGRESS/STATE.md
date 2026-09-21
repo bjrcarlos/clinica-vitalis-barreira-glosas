@@ -11,7 +11,7 @@ Execução faseada conforme `docs/PRD-SDD.md` §33–35. Cada fase roda com cont
 | Fase | Objetivo | Estado |
 |---|---|---|
 | 0 | Fundação, scaffold, schema D1 | concluída com ressalvas (ver `phase-0-handoff.md` §5–6) |
-| 1 | Núcleo determinístico e dados (80 guias) | não iniciada |
+| 1 | Núcleo determinístico e dados (80 guias) | concluída com ressalvas (ver `phase-1-handoff.md` §7–8) |
 | 2 | Produto utilizável (relatório, lista, protocolo, correção) | não iniciada |
 | 3 | Governança, evidência e merge | não iniciada |
 | 4 | IA, MCP e Skill | não iniciada |
@@ -31,6 +31,15 @@ Execução faseada conforme `docs/PRD-SDD.md` §33–35. Cada fase roda com cont
   arquivo na Fase 0: `react`/`react-dom` 19.3.0, `react-router-dom` 7.18.4, `zod` 4.6.5,
   `typescript` 7.0.2, `vite` 8.3.0, `wrangler` 4.135.0, `vitest` 5.0.1,
   `@cloudflare/workers-types` 5.20260920.1.
+- Fase 1: seed determinístico (`scripts/seed.ts`) gera SQL a partir dos casos de uso reais
+  (`registrarGuia`+`validarGuia`) com adapters em memória, nunca fala com D1 direto; reexecução
+  é segura porque o SQL gerado limpa e reinsere as 7 tabelas que ele popula, dentro de uma
+  transação. Ids internos do seed são derivados do `id_guia` de origem (nunca
+  `crypto.randomUUID()`), para o SQL sair byte-a-byte igual a cada execução — confirmado nesta
+  sessão com `diff` entre duas execuções.
+- Fase 1: nesta fase nenhum problema de validação é `bloqueante: false` — todo `Problema` vira
+  uma `Tarefa` bloqueante (RF-09 exige zero pendência aberta para liberar); granularidade mais
+  fina de bloqueio fica para fase futura, se necessário.
 
 ## Pendências de decisão do dono
 
@@ -49,8 +58,21 @@ Execução faseada conforme `docs/PRD-SDD.md` §33–35. Cada fase roda com cont
 
 ## Riscos abertos
 
-- `@cloudflare/vitest-pool-workers` pode ficar caro de configurar; fallback documentado é teste de integração contra `wrangler dev` local.
+- `@cloudflare/vitest-pool-workers` pode ficar caro de configurar; fallback documentado é teste de integração contra `wrangler dev` local. Fase 1 cobriu os repositórios D1 contra `node:sqlite` + migração real (`tests/repositories.test.ts`), o que reduz a urgência mas não substitui o runtime do Worker.
 - Compatibilidade de versão entre `zod` e o MCP SDK precisa ser travada no lockfile na fase que introduzir o MCP.
+- **`docs/BASELINE.md` ficou desatualizado assim que foi escrito** (achado da Fase 1, ver
+  `phase-1-handoff.md` §7–8): ele documenta um bug de filtro de duplicidade (`carteirinha` em vez
+  de `paciente` em `RepositorioVersoesD1`/`scripts/seed.ts`) que **já estava corrigido no código
+  em disco** no momento em que foi lido nesta sessão — os dois arquivos já comparam `paciente`.
+  Quem usar `docs/BASELINE.md` como referência de números precisa reconferir contra o D1 ao vivo
+  antes de confiar nele; os números atuais e corretos estão em `phase-1-handoff.md` §4.
+- **Achado não corrigido**: `registrarGuia` (`src/application/register-guide.ts`) cria o
+  protocolo antes de consultar candidatos a duplicidade, e `RepositorioVersoesD1` (D1 real) não
+  exclui o próprio protocolo da busca — só não aparece nos 80 protocolos semeados porque o seed
+  usa um adapter em memória com exclusão por identidade de objeto. Ligar `registrarGuia` a
+  `RepositorioVersoesD1` de verdade (Fase 2/3, cadastro/importação pela UI) vai fazer toda guia
+  nova se marcar como `POSSIVEL_DUPLICIDADE` dela mesma até isso ser corrigido. Detalhe e
+  conserto sugerido em `phase-1-handoff.md` §8.
 - **RTK (hook global de proxy de comandos) reescreve mal `pnpm typecheck` quando o comando
   é um script composto** (`tsc -p a && tsc -p b`): medido na Fase 0, `rtk pnpm typecheck`
   caiu num `tsc --noEmit` sem `-p`, contra o `tsconfig.json` base, gerando 23 erros falsos
