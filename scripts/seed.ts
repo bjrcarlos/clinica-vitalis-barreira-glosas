@@ -16,13 +16,13 @@
  *   - Ordem de processamento = ordem das linhas em `guias.csv` (estável).
  *
  * REEXECUÇÃO SEGURA (decisão registrada, pedida pelo orquestrador): o SQL gerado abre com
- * `DELETE FROM` nas 7 tabelas que este seed popula, dentro de uma única transação, antes de
+ * `DELETE FROM` nas tabelas que este seed popula e nas tabelas de governança dependentes, dentro de uma única transação, antes de
  * reinserir tudo. Alternativa descartada: `INSERT OR REPLACE`/`ON CONFLICT` por tabela — mas
  * `protocols.protocol_number` é derivado sequencialmente (VT-26-0001..0080) a partir da
  * ordem de inserção, e a chave natural de dedup de fato é "este seed inteiro", não uma
  * linha por vez. Limpar e reinserir é mais simples, óbvio de auditar, e idempotente: aplicar
- * o mesmo `seed.sql` duas vezes termina no mesmo estado. Não toca `evidence_objects`,
- * `evidence_links` nem `protocol_merges` — fora do escopo desta fase.
+ * o mesmo `seed.sql` duas vezes termina no mesmo estado. Os vínculos/objetos de evidência e
+ * merges também são limpos antes de recriar os protocolos, para a demonstração ser restaurável.
  *
  * COMO RODAR: `node --experimental-transform-types scripts/seed.ts [--out <path>] [--clock <iso>]`
  * (Node 24; `--experimental-transform-types` é necessário porque as classes de
@@ -645,11 +645,14 @@ function montarSql(estado: EstadoSeed): string {
   partes.push(
     "-- Seed determinístico da Fase 1 — gerado por scripts/seed.ts.",
     "-- NÃO EDITAR À MÃO: rode `pnpm run seed:local` para regenerar.",
-    "-- Reexecução segura: limpa as 7 tabelas desta carga e reinsere tudo (ver comentário",
-    "-- de topo de scripts/seed.ts para o porquê). evidence_objects, evidence_links e",
-    "-- protocol_merges não são tocados (fora do escopo da Fase 1).",
+    "-- Reexecução segura: limpa as tabelas desta carga e as tabelas de governança dependentes",
+    "-- antes de reinserir tudo (ver comentário de topo de scripts/seed.ts para o porquê).",
+    "-- Evidências e merges também são limpos para restaurar a demonstração de forma idempotente.",
     "BEGIN TRANSACTION;",
     "",
+    "DELETE FROM evidence_links;",
+    "DELETE FROM evidence_objects;",
+    "DELETE FROM protocol_merges;",
     "DELETE FROM tasks;",
     "DELETE FROM workflow_events;",
     "DELETE FROM validation_issues;",

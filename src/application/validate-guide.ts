@@ -13,7 +13,25 @@ export type MotorValidacao = (
   guia: GuiaNormalizada,
   regras: ConjuntoRegras,
   candidatosDuplicidade: readonly CandidatoDuplicidade[],
+  interpretacaoIA?: InterpretacaoObservacaoIA | null,
 ) => ResultadoValidacao;
+
+export type CategoriaObservacaoIA =
+  | "NEW_AUTHORIZATION_NOT_REGISTERED"
+  | "VERBAL_AUTHORIZATION_OR_PROTOCOL"
+  | "PRIVATE_BILLING"
+  | "PROCEDURE_MISMATCH"
+  | "RESCHEDULE_VALIDITY_CONFLICT"
+  | "NO_OPERATIONAL_SIGNAL";
+
+export interface InterpretacaoObservacaoIA {
+  readonly has_operational_signal: boolean;
+  readonly category: CategoriaObservacaoIA;
+  readonly summary: string;
+  readonly requires_human_review: boolean;
+  readonly suggested_owner: "SECRETARIA" | "FINANCEIRO";
+  readonly evidence_excerpt: string;
+}
 
 export interface ValidarGuiaEntrada {
   readonly protocoloId: string;
@@ -22,6 +40,12 @@ export interface ValidarGuiaEntrada {
   readonly regras: ConjuntoRegras;
   readonly candidatosDuplicidade: readonly CandidatoDuplicidade[];
   readonly origem: Origem;
+  readonly interpretacaoIA?: InterpretacaoObservacaoIA | null;
+  readonly aiStatus?: "NAO_EXECUTADA" | "CONCLUIDA" | "FALHOU";
+  readonly aiModel?: string | null;
+  readonly aiPromptVersion?: string | null;
+  readonly aiInputJson?: string | null;
+  readonly aiOutputJson?: string | null;
 }
 
 export interface ValidarGuiaDependencias {
@@ -58,7 +82,7 @@ export async function validarGuia(
   deps: ValidarGuiaDependencias,
 ): Promise<ValidarGuiaSaida> {
   const iniciadoEmUtc = deps.relogio.agoraUtc();
-  const resultado = deps.motor(entrada.guia, entrada.regras, entrada.candidatosDuplicidade);
+  const resultado = deps.motor(entrada.guia, entrada.regras, entrada.candidatosDuplicidade, entrada.interpretacaoIA);
   const concluidoEmUtc = deps.relogio.agoraUtc();
 
   const execucaoSalva = await deps.validacoes.salvarExecucao({
@@ -67,6 +91,11 @@ export async function validarGuia(
     resultado,
     iniciadoEmUtc,
     concluidoEmUtc,
+    aiStatus: entrada.aiStatus,
+    aiModel: entrada.aiModel,
+    aiPromptVersion: entrada.aiPromptVersion,
+    aiInputJson: entrada.aiInputJson,
+    aiOutputJson: entrada.aiOutputJson,
   });
 
   // `Tarefa` (domínio) não carrega o código do `Problema` que a originou — grava-se sem

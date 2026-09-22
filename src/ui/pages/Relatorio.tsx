@@ -10,6 +10,7 @@ import { PendenciasAntigas } from "../components/relatorio/PendenciasAntigas";
 import { PrincipaisMotivos } from "../components/relatorio/PrincipaisMotivos";
 import { saudacaoPorHorario } from "../components/relatorio/saudacao";
 import { useRelatorio } from "../components/relatorio/useRelatorio";
+import { nomeDaIdentidadeAtual } from "../components/TrocaDePapel";
 import { formatarCentavos, formatarDataHoraBrasilia } from "../lib/format";
 import styles from "./Relatorio.module.css";
 
@@ -50,7 +51,7 @@ export function Relatorio() {
       <div className={styles.cabecalho}>
         <div>
           <h1 className={styles.titulo}>
-            {saudacaoPorHorario()}, <em className={styles.destaque}>Vitalis</em>
+            {saudacaoPorHorario()}, <em className={styles.destaque}>{nomeDaIdentidadeAtual()}</em>
           </h1>
           <p className={styles.subtitulo}>
             O que a barreira verificou antes de qualquer guia chegar ao convênio. Clique num bloco para ver quais

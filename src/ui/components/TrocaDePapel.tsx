@@ -15,6 +15,27 @@ const OPCOES: ReadonlyArray<{ valor: PapelSessao; rotulo: string }> = [
 ];
 
 /**
+ * Nome fictício por trás de cada identidade funcional da demonstração (PRD §8) — mesmos nomes de
+ * `design-reference/*.dc.html` (avatar + nome na sidebar: "Dr. Renato" para Direção, "Ana Ferraz"
+ * para Financeiro, "Júlia Prado" para Secretaria). Não é dado de negócio, nada aqui é persistido
+ * em D1 — é só o rótulo que a saudação do relatório usa no lugar do nome do sistema.
+ */
+export const NOME_POR_PAPEL: Readonly<Record<PapelSessao, string>> = {
+  DIRECAO: "Dr. Renato",
+  FINANCEIRO: "Ana Ferraz",
+  SECRETARIA: "Júlia Prado",
+};
+
+/**
+ * Nome de quem está por trás da identidade funcional atual. Mesma fonte que o seletor usa para
+ * lembrar a última troca entre reloads (`lerPapelSalvo`/`localStorage`, conveniência só deste
+ * navegador) — sem cookie salvo ainda, a identidade padrão é Direção.
+ */
+export function nomeDaIdentidadeAtual(): string {
+  return NOME_POR_PAPEL[lerPapelSalvo() ?? "DIRECAO"];
+}
+
+/**
  * O cookie de sessão (`vitalis_sessao`) é HttpOnly — por desenho, o JavaScript do cliente nunca
  * o lê (só o servidor verifica a assinatura). Sem isso, um F5 sempre reabre a SPA sem saber que
  * papel o cookie ainda carrega e o seletor volta para "Direção" por padrão, mesmo que a sessão

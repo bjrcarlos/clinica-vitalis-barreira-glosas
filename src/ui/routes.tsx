@@ -7,6 +7,7 @@ import { Pendencias } from "./pages/Pendencias";
 import { Importar } from "./pages/Importar";
 import { NovaGuia } from "./pages/NovaGuia";
 import { Regras } from "./pages/Regras";
+import { Merge } from "./pages/Merge";
 
 /**
  * Rotas da Fase 2 (docs/PRD-SDD.md §24, escopo fixado pelo orquestrador). Cada página é hoje
@@ -33,6 +34,7 @@ export function AppRoutes() {
       <Route path="/importar" element={<Importar />} />
       <Route path="/nova-guia" element={<NovaGuia />} />
       <Route path="/regras" element={<Regras />} />
+      <Route path="/merge" element={<Merge />} />
     </Routes>
   );
 }

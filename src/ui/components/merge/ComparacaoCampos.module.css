@@ -1,0 +1,138 @@
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 16px;
+}
+
+.subtitulo {
+  margin: 0;
+  font-size: 12px;
+  color: var(--cor-texto-3);
+}
+
+.semDivergencia {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--raio-item);
+  background: var(--cor-ok-bg);
+  color: var(--cor-ok-txt);
+  font-size: 13px;
+}
+
+.listaDivergentes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.campo {
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-item);
+  padding: 10px 12px 12px;
+  margin: 0;
+  background: var(--cor-corrigir-bg);
+}
+
+.rotuloCampo {
+  padding: 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cor-corrigir-txt);
+}
+
+.opcoesCampo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.opcaoCampo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--raio-item);
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-card);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.opcaoCampo input[type="radio"] {
+  accent-color: var(--cor-primaria);
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.opcaoCampo span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.opcaoCampo small {
+  font-size: 11px;
+  color: var(--cor-texto-3);
+}
+
+.opcaoEscolhida {
+  background: var(--cor-mint);
+  border-color: var(--cor-primaria);
+  font-weight: 600;
+}
+
+.iguais {
+  border-top: 1px solid var(--cor-divisoria);
+  padding-top: 10px;
+}
+
+.iguais summary {
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--cor-texto-2);
+}
+
+.listaIguais {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.listaIguais li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12.5px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--cor-divisoria);
+}
+
+.listaIguais li:last-child {
+  border-bottom: 0;
+}
+
+.rotuloIgual {
+  color: var(--cor-texto-3);
+}
+
+@media (max-width: 700px) {
+  .opcoesCampo {
+    grid-template-columns: 1fr;
+  }
+}

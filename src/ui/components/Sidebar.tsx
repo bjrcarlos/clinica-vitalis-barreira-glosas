@@ -58,6 +58,7 @@ const ITENS: readonly ItemNav[] = [
   { rota: "/importar", rotulo: "Importar", icone: ICONE_IMPORTAR },
   { rota: "/nova-guia", rotulo: "Nova guia", icone: ICONE_NOVA_GUIA },
   { rota: "/regras", rotulo: "Regras", icone: ICONE_REGRAS },
+  { rota: "/merge", rotulo: "Merge", icone: ICONE_GUIAS },
 ];
 
 /** Coluna de navegação de 236px — item ativo em mint, contador de pendências em pílula âmbar. */

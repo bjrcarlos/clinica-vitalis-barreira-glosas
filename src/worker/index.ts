@@ -1,4 +1,4 @@
-import { Roteador, respostaJsonErro, type ManipuladorRota } from "../http/routes";
+import { Roteador, respostaJsonErro, registrarRotasFase3, type ManipuladorRota } from "../http/routes";
 import { manipularRelatorio } from "../http/handlers/report";
 import { manipularListaProtocolos } from "../http/handlers/protocols-list";
 import { manipularDetalheProtocolo } from "../http/handlers/protocol-detail";
@@ -8,6 +8,12 @@ import { manipularCriacaoVersaoProtocolo } from "../http/handlers/create-version
 import { manipularLiberacaoProtocolo } from "../http/handlers/release";
 import { manipularImportacaoGuias } from "../http/handlers/imports";
 import { manipularTrocaSessao } from "../http/handlers/session";
+import { manipularAnexarEvidencia, manipularBaixarEvidencia, manipularInvalidarEvidencia } from "../http/handlers/evidence";
+import { manipularDecidirRevisao } from "../http/handlers/review-decision";
+import { manipularRegistrarEnvio } from "../http/handlers/send";
+import { manipularEncerrarParticular, manipularEncerrarCancelado } from "../http/handlers/close";
+import { manipularCompararMerge, manipularExecutarMerge } from "../http/handlers/merges";
+import { manipularMcp } from "../mcp/server";
 
 export interface Env {
   DB: D1Database;
@@ -44,6 +50,18 @@ const roteador = new Roteador()
   .get("/api/rules", manipularRegrasAtivas)
   .post("/api/session", manipularTrocaSessao);
 
+registrarRotasFase3(roteador, {
+  anexarEvidencia: manipularAnexarEvidencia,
+  baixarEvidencia: manipularBaixarEvidencia,
+  invalidarEvidencia: manipularInvalidarEvidencia,
+  decidirRevisao: manipularDecidirRevisao,
+  registrarEnvio: manipularRegistrarEnvio,
+  encerrarParticular: manipularEncerrarParticular,
+  encerrarCancelado: manipularEncerrarCancelado,
+  compararMerge: manipularCompararMerge,
+  executarMerge: manipularExecutarMerge,
+});
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -58,6 +76,11 @@ export default {
           AI: Boolean(env.AI),
         },
       });
+    }
+
+    if (url.pathname === "/mcp") {
+      if (request.method !== "POST") return respostaJsonErro(405, "METODO_NAO_PERMITIDO", "Método não permitido para esta rota.");
+      return manipularMcp(request, env);
     }
 
     if (url.pathname.startsWith("/api/")) {

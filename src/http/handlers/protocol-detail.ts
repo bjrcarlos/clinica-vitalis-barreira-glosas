@@ -7,7 +7,7 @@ import {
 } from "../contracts";
 import { normalizarGuia } from "../../domain/normalize";
 import type { GuiaBruta } from "../../domain/guide";
-import type { Area } from "../../domain/statuses";
+import { apresentarValidacaoStatus, type Area, type ValidacaoStatus } from "../../domain/statuses";
 import type { CodigoProblema } from "../../domain/validation";
 
 /** Espelha `CODIGOS_REQUISITO_LIBERACAO` de `../contracts` — não exportado como tipo próprio de lá. */
@@ -104,6 +104,32 @@ interface LinhaEvento {
   readonly recorded_at_utc: string;
 }
 
+interface LinhaEvidencia {
+  readonly id: string;
+  readonly original_filename: string;
+  readonly content_type: string;
+  readonly size_bytes: number;
+  readonly sha256: string;
+  readonly uploaded_by_role: string;
+  readonly uploaded_by_principal: string;
+  readonly uploaded_at_utc: string;
+  readonly invalidated_at_utc: string | null;
+  readonly invalidation_reason: string | null;
+}
+
+interface LinhaMerge {
+  readonly id: string;
+  readonly source_protocol_id: string;
+  readonly source_protocol_number: string;
+  readonly target_protocol_id: string;
+  readonly target_protocol_number: string;
+  readonly target_version_number: number;
+  readonly field_resolution_json: string;
+  readonly reason: string;
+  readonly performed_by_principal: string;
+  readonly performed_at_utc: string;
+}
+
 function mapearDiff(bruto: unknown): { campo: string; valor_anterior: string | null; valor_novo: string | null }[] {
   if (!Array.isArray(bruto)) return [];
   return bruto.map((item) => {
@@ -119,12 +145,54 @@ function mapearDiff(bruto: unknown): { campo: string; valor_anterior: string | n
   });
 }
 
-const DESCRICAO_REQUISITO: Readonly<Record<CodigoRequisitoLiberacao, string>> = {
-  VALIDACAO_ATUAL_OK: "A versão atual da guia está com status OK.",
-  SEM_PROBLEMA_ABERTO: "Não há problema aberto nesta guia.",
-  SEM_REVISAO_HUMANA_PENDENTE: "Não há revisão humana pendente.",
-  SEM_TAREFA_BLOQUEANTE_ABERTA: "Não há tarefa bloqueante aberta.",
+/** Rótulo do requisito em sua forma positiva (o que precisa ser verdade para liberar). */
+const ROTULO_REQUISITO: Readonly<Record<CodigoRequisitoLiberacao, string>> = {
+  VALIDACAO_ATUAL_OK: "Versão atual precisa estar OK",
+  SEM_PROBLEMA_ABERTO: "Nenhum problema aberto nesta guia",
+  SEM_REVISAO_HUMANA_PENDENTE: "Nenhuma revisão humana pendente",
+  SEM_TAREFA_BLOQUEANTE_ABERTA: "Nenhuma tarefa bloqueante aberta",
 };
+
+function pluralizar(quantidade: number, singular: string, plural: string): string {
+  return quantidade === 1 ? singular : plural;
+}
+
+interface ContextoRequisitos {
+  readonly statusValidacaoAtual: ValidacaoStatus;
+  readonly problemasAbertos: number;
+  readonly revisoesHumanasPendentes: number;
+  readonly tarefasBloqueantes: number;
+}
+
+/** "1 problema aberto" / "2 problemas abertos" — sem o "há", para poder combinar vários sob um só "há" na frase principal. */
+function quantidadeRequisito(codigo: Exclude<CodigoRequisitoLiberacao, "VALIDACAO_ATUAL_OK">, contexto: ContextoRequisitos): string {
+  switch (codigo) {
+    case "SEM_PROBLEMA_ABERTO":
+      return `${contexto.problemasAbertos} ${pluralizar(contexto.problemasAbertos, "problema aberto", "problemas abertos")}`;
+    case "SEM_REVISAO_HUMANA_PENDENTE":
+      return `${contexto.revisoesHumanasPendentes} ${pluralizar(contexto.revisoesHumanasPendentes, "revisão humana pendente", "revisões humanas pendentes")}`;
+    case "SEM_TAREFA_BLOQUEANTE_ABERTA":
+      return `${contexto.tarefasBloqueantes} ${pluralizar(contexto.tarefasBloqueantes, "tarefa bloqueante", "tarefas bloqueantes")}`;
+  }
+}
+
+/**
+ * Estado real de um requisito não atendido, em português — nunca repete o rótulo positivo do
+ * requisito como se fosse fato (esse era o defeito: "a versão atual da guia está com status ok"
+ * aparecia mesmo quando ela NÃO estava OK). Usado na linha de cada requisito (§ lista); a frase
+ * principal (`motivo`) combina os "há N ..." num só "há", ver `quantidadeRequisito`.
+ */
+function estadoRequisito(codigo: CodigoRequisitoLiberacao, contexto: ContextoRequisitos): string {
+  if (codigo === "VALIDACAO_ATUAL_OK") return `hoje está ${apresentarValidacaoStatus(contexto.statusValidacaoAtual)}`;
+  return `há ${quantidadeRequisito(codigo, contexto)}`;
+}
+
+/** Junta itens em português: "a", "a e b", "a, b e c". */
+function juntarComE(itens: readonly string[]): string {
+  if (itens.length === 0) return "";
+  if (itens.length === 1) return itens[0];
+  return `${itens.slice(0, -1).join(", ")} e ${itens[itens.length - 1]}`;
+}
 
 export async function montarDetalheProtocolo(
   db: D1Database,
@@ -140,7 +208,7 @@ export async function montarDetalheProtocolo(
     throw new ErroDominio("PROTOCOLO_NAO_ENCONTRADO", "Protocolo não encontrado.", 404);
   }
 
-  const [versoesResultado, execucaoAtual, problemasResultado, tarefasResultado, eventosResultado] =
+  const [versoesResultado, execucaoAtual, problemasResultado, tarefasResultado, eventosResultado, evidenciasResultado, mergeResultado, envioResultado] =
     await Promise.all([
       db
         .prepare(`SELECT * FROM guide_versions WHERE protocol_id = ? ORDER BY version_number ASC`)
@@ -182,6 +250,36 @@ export async function montarDetalheProtocolo(
         .prepare(`SELECT * FROM workflow_events WHERE protocol_id = ? ORDER BY recorded_at_utc DESC, occurred_at_utc DESC`)
         .bind(protocolo.id)
         .all<LinhaEvento>(),
+
+      db
+        .prepare(`SELECT eo.id, eo.original_filename, eo.content_type, eo.size_bytes, eo.sha256,
+                         eo.uploaded_by_role, eo.uploaded_by_principal, eo.uploaded_at_utc,
+                         eo.invalidated_at_utc, eo.invalidation_reason
+                  FROM evidence_links el JOIN evidence_objects eo ON eo.id = el.evidence_id
+                  WHERE el.protocol_id = ? ORDER BY eo.uploaded_at_utc ASC`)
+        .bind(protocolo.id)
+        .all<LinhaEvidencia>(),
+
+      db
+        .prepare(`SELECT pm.id, pm.source_protocol_id, sp.protocol_number AS source_protocol_number,
+                         pm.target_protocol_id, tp.protocol_number AS target_protocol_number,
+                         gv.version_number AS target_version_number, pm.field_resolution_json,
+                         pm.reason, pm.performed_by_principal, pm.performed_at_utc
+                  FROM protocol_merges pm
+                  JOIN protocols sp ON sp.id = pm.source_protocol_id
+                  JOIN protocols tp ON tp.id = pm.target_protocol_id
+                  JOIN guide_versions gv ON gv.id = pm.target_version_id
+                  WHERE pm.source_protocol_id = ? OR pm.target_protocol_id = ?
+                  ORDER BY pm.performed_at_utc DESC LIMIT 1`)
+        .bind(protocolo.id, protocolo.id)
+        .first<LinhaMerge>(),
+
+      db
+        .prepare(`SELECT occurred_at_utc, recorded_at_utc, metadata_json, actor_principal
+                  FROM workflow_events WHERE protocol_id = ? AND event_type = 'ENVIO'
+                  ORDER BY recorded_at_utc DESC LIMIT 1`)
+        .bind(protocolo.id)
+        .first<{ occurred_at_utc: string; recorded_at_utc: string; metadata_json: string; actor_principal: string }>(),
     ]);
 
   if (execucaoAtual === null) {
@@ -266,29 +364,91 @@ export async function montarDetalheProtocolo(
     metadata: JSON.parse(linha.metadata_json),
   }));
 
-  const temProblemaAberto = problemasResultado.results.some((linha) => linha.status === "ABERTO");
-  const temRevisaoHumanaPendente = problemasResultado.results.some(
+  const evidencias: ProtocoloDetalheResposta["evidencias"] = evidenciasResultado.results.map((linha) => ({
+    id: linha.id,
+    nome_exibicao: linha.original_filename,
+    tipo_mime: linha.content_type as ProtocoloDetalheResposta["evidencias"][number]["tipo_mime"],
+    tamanho_bytes: linha.size_bytes,
+    sha256: linha.sha256,
+    anexado_por_papel: linha.uploaded_by_role as ProtocoloDetalheResposta["evidencias"][number]["anexado_por_papel"],
+    anexado_por_principal: linha.uploaded_by_principal,
+    anexado_em_utc: linha.uploaded_at_utc,
+    invalidada_em_utc: linha.invalidated_at_utc,
+    motivo_invalidacao: linha.invalidation_reason,
+  }));
+
+  const merge = mergeResultado === null ? null : {
+    id: mergeResultado.id,
+    protocolo_origem_id: mergeResultado.source_protocol_id,
+    numero_protocolo_origem: mergeResultado.source_protocol_number,
+    protocolo_principal_id: mergeResultado.target_protocol_id,
+    numero_protocolo_principal: mergeResultado.target_protocol_number,
+    numero_versao_resultante: mergeResultado.target_version_number,
+    resolucao_campos: JSON.parse(mergeResultado.field_resolution_json),
+    motivo: mergeResultado.reason,
+    executado_por_principal: mergeResultado.performed_by_principal,
+    executado_em_utc: mergeResultado.performed_at_utc,
+  };
+
+  const envio = envioResultado === null ? null : (() => {
+    const metadata = JSON.parse(envioResultado.metadata_json) as { evidence_id?: unknown };
+    return {
+      ocorrido_em_utc: envioResultado.occurred_at_utc,
+      registrado_em_utc: envioResultado.recorded_at_utc,
+      evidence_id: typeof metadata.evidence_id === "string" ? metadata.evidence_id : "",
+      registrado_por_principal: envioResultado.actor_principal,
+    };
+  })();
+
+  const problemasAbertosCount = problemasResultado.results.filter((linha) => linha.status === "ABERTO").length;
+  const revisoesHumanasPendentesCount = problemasResultado.results.filter(
     (linha) => linha.status === "ABERTO" && linha.recommended_action === "REVISAR",
-  );
-  const temTarefaBloqueanteAberta = tarefasResultado.results.some(
+  ).length;
+  const tarefasBloqueantesCount = tarefasResultado.results.filter(
     (linha) => linha.status === "ABERTA" && linha.blocking === 1,
-  );
-  const validacaoAtualOk = protocolo.validation_status === "OK";
+  ).length;
+  const statusValidacaoAtual = protocolo.validation_status as ValidacaoStatus;
+  const validacaoAtualOk = statusValidacaoAtual === "OK";
+  const contextoEstado = {
+    statusValidacaoAtual,
+    problemasAbertos: problemasAbertosCount,
+    revisoesHumanasPendentes: revisoesHumanasPendentesCount,
+    tarefasBloqueantes: tarefasBloqueantesCount,
+  };
 
   const codigosRequisito: { codigo: CodigoRequisitoLiberacao; atendido: boolean }[] = [
     { codigo: "VALIDACAO_ATUAL_OK", atendido: validacaoAtualOk },
-    { codigo: "SEM_PROBLEMA_ABERTO", atendido: !temProblemaAberto },
-    { codigo: "SEM_REVISAO_HUMANA_PENDENTE", atendido: !temRevisaoHumanaPendente },
-    { codigo: "SEM_TAREFA_BLOQUEANTE_ABERTA", atendido: !temTarefaBloqueanteAberta },
+    { codigo: "SEM_PROBLEMA_ABERTO", atendido: problemasAbertosCount === 0 },
+    { codigo: "SEM_REVISAO_HUMANA_PENDENTE", atendido: revisoesHumanasPendentesCount === 0 },
+    { codigo: "SEM_TAREFA_BLOQUEANTE_ABERTA", atendido: tarefasBloqueantesCount === 0 },
   ];
-  const requisitos = codigosRequisito.map((r) => ({ ...r, descricao: DESCRICAO_REQUISITO[r.codigo] }));
+  // Cada linha mostra o requisito e o ESTADO REAL — nunca o rótulo positivo sozinho (esse era o
+  // defeito: um requisito não atendido aparecia com a mesma frase de quando está atendido).
+  const requisitos = codigosRequisito.map((r) => ({
+    ...r,
+    descricao: `${ROTULO_REQUISITO[r.codigo]} — ${r.atendido ? "atendido" : estadoRequisito(r.codigo, contextoEstado)}`,
+  }));
   const podeLiberar = requisitos.every((r) => r.atendido);
-  const faltantes = requisitos.filter((r) => !r.atendido);
-  const motivo = podeLiberar
-    ? null
-    : faltantes.length === 1
-      ? `Travada: ${DESCRICAO_REQUISITO[faltantes[0].codigo].toLowerCase()}`
-      : `Travada: faltam ${faltantes.length} requisitos — ${faltantes.map((f) => DESCRICAO_REQUISITO[f.codigo].toLowerCase()).join("; ")}.`;
+  const faltantes = codigosRequisito.filter((r) => !r.atendido);
+
+  // "Travada: a versão atual está como Corrigir, há 1 problema aberto e 1 tarefa bloqueante." —
+  // a validação vira sua própria cláusula; os demais requisitos faltantes (todos no formato
+  // "há N ...") se juntam numa única cláusula "há X, Y e Z", nunca uma lista de fatos positivos.
+  const clausulas: string[] = [];
+  const faltaValidacao = faltantes.some((f) => f.codigo === "VALIDACAO_ATUAL_OK");
+  if (faltaValidacao) {
+    clausulas.push(`a versão atual está como ${apresentarValidacaoStatus(statusValidacaoAtual)}`);
+  }
+  const quantidades = faltantes
+    .filter((f) => f.codigo !== "VALIDACAO_ATUAL_OK")
+    .map((f) => quantidadeRequisito(f.codigo as Exclude<CodigoRequisitoLiberacao, "VALIDACAO_ATUAL_OK">, contextoEstado));
+  if (quantidades.length > 0) {
+    clausulas.push(`há ${juntarComE(quantidades)}`);
+  }
+  // As duas cláusulas (validação e "há ...") são naturezas diferentes — junta por vírgula, nunca
+  // "e" (só o "há X, Y e Z" interno usa "e"): "Travada: a versão atual está como Corrigir, há 1
+  // problema aberto e 1 tarefa bloqueante."
+  const motivo = podeLiberar ? null : `Travada: ${clausulas.join(", ")}.`;
 
   const resposta: ProtocoloDetalheResposta = {
     protocolo: {
@@ -327,6 +487,9 @@ export async function montarDetalheProtocolo(
     tarefas,
     eventos,
     trava_liberacao: { pode_liberar: podeLiberar, motivo, requisitos },
+    evidencias,
+    merge,
+    envio,
   };
 
   return esquemaProtocoloDetalheResposta.parse(resposta);

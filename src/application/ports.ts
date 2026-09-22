@@ -64,6 +64,11 @@ export interface ExecucaoValidacao {
   readonly resultado: ResultadoValidacao;
   readonly iniciadoEmUtc: string;
   readonly concluidoEmUtc: string;
+  readonly aiStatus?: "NAO_EXECUTADA" | "CONCLUIDA" | "FALHOU";
+  readonly aiModel?: string | null;
+  readonly aiPromptVersion?: string | null;
+  readonly aiInputJson?: string | null;
+  readonly aiOutputJson?: string | null;
 }
 
 /** Identificadores atribuídos pelo armazenamento à execução e a cada problema, na ordem de `resultado.problemas`. */

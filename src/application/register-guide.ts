@@ -14,6 +14,12 @@ export interface RegistrarGuiaEntrada {
   readonly criadoPorPrincipal: string;
   readonly origem: Origem;
   readonly regras: ConjuntoRegras;
+  readonly interpretacaoIA?: import("./validate-guide").InterpretacaoObservacaoIA | null;
+  readonly aiStatus?: "NAO_EXECUTADA" | "CONCLUIDA" | "FALHOU";
+  readonly aiModel?: string | null;
+  readonly aiPromptVersion?: string | null;
+  readonly aiInputJson?: string | null;
+  readonly aiOutputJson?: string | null;
 }
 
 export interface RegistrarGuiaDependencias {
@@ -48,6 +54,12 @@ export async function registrarGuia(
     }
   }
 
+  // Consulta os candidatos antes de criar a própria linha do protocolo. Em D1, a busca por
+  // chave composta enxergaria a versão recém-criada e marcaria toda guia manual/importada como
+  // duplicada dela mesma. O seed em memória escondia esse defeito por comparar identidade de
+  // objeto; a ordem correta vale para todos os adapters.
+  const candidatosDuplicidade = await deps.versoes.listarCandidatosDuplicidade(entrada.guiaNormalizada);
+
   const ocorridoEmUtc = deps.relogio.agoraUtc();
   const criado = await deps.protocolos.criarComVersaoInicial({
     idGuiaOrigem: entrada.idGuiaOrigem,
@@ -78,8 +90,6 @@ export async function registrarGuia(
     },
   });
 
-  const candidatosDuplicidade = await deps.versoes.listarCandidatosDuplicidade(entrada.guiaNormalizada);
-
   const validacao = await validarGuia(
     {
       protocoloId: criado.protocoloId,
@@ -88,6 +98,12 @@ export async function registrarGuia(
       regras: entrada.regras,
       candidatosDuplicidade,
       origem: entrada.origem,
+      interpretacaoIA: entrada.interpretacaoIA,
+      aiStatus: entrada.aiStatus,
+      aiModel: entrada.aiModel,
+      aiPromptVersion: entrada.aiPromptVersion,
+      aiInputJson: entrada.aiInputJson,
+      aiOutputJson: entrada.aiOutputJson,
     },
     deps.validarGuiaDependencias,
   );

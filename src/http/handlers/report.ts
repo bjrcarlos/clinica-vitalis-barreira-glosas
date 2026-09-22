@@ -1,7 +1,7 @@
 import type { ManipuladorRota } from "../routes";
 import { esquemaRelatorioResposta, type RelatorioResposta } from "../contracts";
 import type { Area } from "../../domain/statuses";
-import type { CodigoProblema } from "../../domain/validation";
+import { apresentarCodigoProblema, type CodigoProblema } from "../../domain/validation";
 
 /**
  * GET /api/report — PRD-SDD §27. Lê exclusivamente o que o motor (Fase 1) já gravou em D1;
@@ -23,7 +23,6 @@ interface LinhaRisco {
 
 interface LinhaMotivo {
   readonly codigo: string;
-  readonly titulo: string;
   readonly ocorrencias: number;
   readonly numeros: string | null;
 }
@@ -144,7 +143,7 @@ export async function montarRelatorio(db: D1Database): Promise<RelatorioResposta
 
     db
       .prepare(
-        `SELECT vi.code AS codigo, MIN(vi.title) AS titulo, COUNT(*) AS ocorrencias,
+        `SELECT vi.code AS codigo, COUNT(*) AS ocorrencias,
                 GROUP_CONCAT(DISTINCT p.protocol_number) AS numeros
          FROM validation_issues vi
          JOIN validation_runs vr ON vr.id = vi.validation_run_id
@@ -190,8 +189,20 @@ export async function montarRelatorio(db: D1Database): Promise<RelatorioResposta
                 p.current_risk_cents AS risco_cents,
                 (SELECT MIN(t2.created_at_utc) FROM tasks t2
                    WHERE t2.protocol_id = p.id AND t2.status = 'ABERTA' AND t2.blocking = 1) AS aberta_desde_utc,
-                (SELECT vr2.summary FROM validation_runs vr2
-                   WHERE vr2.guide_version_id = gv.id ORDER BY vr2.finished_at_utc DESC LIMIT 1) AS resumo
+                -- Título do problema ABERTO de maior gravidade do protocolo (nunca o resumo
+                -- inteiro do motor) — mesma ordem de precedência de RN-06/PRECEDENCIA_VALIDACAO_STATUS
+                -- (não faturar > revisão humana > corrigir). O resumo completo continua disponível
+                -- em GET /api/protocols/:numero (resultado_validacao_atual.resumo).
+                (SELECT vi2.title FROM validation_issues vi2
+                   JOIN validation_runs vr2 ON vr2.id = vi2.validation_run_id
+                   WHERE vr2.protocol_id = p.id AND vi2.status = 'ABERTO'
+                   ORDER BY CASE vi2.recommended_action
+                              WHEN 'NAO_FATURAR' THEN 0
+                              WHEN 'REVISAR' THEN 1
+                              WHEN 'CORRIGIR' THEN 2
+                              ELSE 3
+                            END, vi2.created_at_utc ASC
+                   LIMIT 1) AS resumo
          FROM protocols p
          JOIN guide_versions gv ON gv.id = p.current_version_id
          WHERE p.workflow_status != 'MESCLADA'
@@ -234,7 +245,10 @@ export async function montarRelatorio(db: D1Database): Promise<RelatorioResposta
     risco_pendente_cents: metrica(somar(riscoPendenteResultado.results), riscoPendenteResultado.results),
     principais_motivos: motivosResultado.results.map((linha) => ({
       codigo: linha.codigo as CodigoProblema,
-      titulo: linha.titulo,
+      // Rótulo GENÉRICO por código (nunca o `title` de uma ocorrência específica, que pode citar
+      // dados de uma guia — ex. "Faltam campos obrigatórios para Plano Bem" — e induziria a
+      // achar que todas as ocorrências agregadas aqui são daquele mesmo convênio/guia).
+      titulo: apresentarCodigoProblema(linha.codigo as CodigoProblema),
       ocorrencias: linha.ocorrencias,
       protocol_numbers: separarNumeros(linha.numeros).sort(),
     })),

@@ -1,0 +1,59 @@
+.sobreposicao {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 36, 30, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+
+.painel {
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-card);
+  padding: 22px;
+  width: 100%;
+  max-width: 460px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  box-shadow: var(--sombra-hover);
+}
+
+.painel:focus-visible {
+  outline: 2px solid var(--cor-primaria-clara);
+  outline-offset: 2px;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 17px;
+}
+
+.fechar {
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  color: var(--cor-texto-3);
+  flex-shrink: 0;
+}
+
+.fechar:hover {
+  border-color: var(--cor-primaria);
+  color: var(--cor-texto);
+}

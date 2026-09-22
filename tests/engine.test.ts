@@ -23,7 +23,7 @@ function carregarRegras() {
 }
 
 // --- Guias base sintéticas, uma por convênio, cada uma válida (status OK) por construção. ---
-// Vitalcard: campos_obrigatorios inclui cid; validade máxima 30 dias; limite 10 sessões;
+// Vitalcard: campos_obrigatorios inclui cid; prazo de envio 30 dias; limite 10 sessões;
 // cobre 50000470 (fisioterapia musculoesquelética, R$ 62,00).
 const GUIA_BASE_VITALCARD: GuiaNormalizada = {
   id_guia: "G-TESTE-0001",
@@ -62,7 +62,7 @@ function guiaSaudeInterior(overrides: Partial<GuiaNormalizada> = {}): GuiaNormal
   };
 }
 
-// Plano Bem: exige cid; validade máxima 60 dias; limite 12 sessões; NÃO cobre infiltração
+// Plano Bem: exige cid; prazo de envio 30 dias; limite 12 sessões; NÃO cobre infiltração
 // articular (40201015) — usada no teste de procedimento não coberto.
 function guiaPlanoBem(overrides: Partial<GuiaNormalizada> = {}): GuiaNormalizada {
   return {
@@ -111,6 +111,16 @@ describe("validarGuia — validade da autorização (RN-03, RF-05)", () => {
     ]);
   });
 
+  it("2b. uma validade distante não gera uma janela máxima sem data de concessão", () => {
+    const regras = carregarRegras();
+    const guia = guiaVitalcard({ autorizacao_validade: "2026-12-31" });
+
+    const resultado = validarGuia(guia, regras, []);
+
+    expect(resultado.problemas.some((p) => p.codigo === "AUTORIZACAO_VALIDADE_ACIMA_DO_MAXIMO")).toBe(false);
+    expect(resultado.problemas.some((p) => p.codigo === "PRAZO_ENVIO_EXCEDIDO")).toBe(false);
+  });
+
   it("11. controle negativo: detecta sabotagem que trocar a comparação de inclusiva para exclusiva", () => {
     // Esta suíte falha se `authorization.ts` for alterado de `if (diasJanela < 0)` para
     // `if (diasJanela <= 0)` (ou equivalente) — a sabotagem que tornaria o vencimento no
@@ -132,6 +142,42 @@ describe("validarGuia — validade da autorização (RN-03, RF-05)", () => {
 
     expect(noMesmoDia.problemas.some((p) => p.codigo === "AUTORIZACAO_VENCIDA")).toBe(false);
     expect(umDiaDepois.problemas.some((p) => p.codigo === "AUTORIZACAO_VENCIDA")).toBe(true);
+  });
+});
+
+describe("validarGuia — prazo de envio (RN-09)", () => {
+  it("aceita o próprio dia limite, contado desde o atendimento", () => {
+    const regras = carregarRegras();
+    const guia = guiaVitalcard({
+      data_atendimento: "2026-08-10",
+      data_lancamento: "2026-09-09",
+    });
+
+    const resultado = validarGuia(guia, regras, []);
+
+    expect(resultado.problemas.some((p) => p.codigo === "PRAZO_ENVIO_EXCEDIDO")).toBe(false);
+  });
+
+  it("gera revisão humana bloqueante quando o lançamento passa do prazo", () => {
+    const regras = carregarRegras();
+    const guia = guiaVitalcard({
+      data_atendimento: "2026-08-10",
+      data_lancamento: "2026-09-10",
+    });
+
+    const resultado = validarGuia(guia, regras, []);
+    const problema = resultado.problemas.find((p) => p.codigo === "PRAZO_ENVIO_EXCEDIDO");
+
+    expect(problema?.acao_recomendada).toBe("REVISAR");
+    expect(problema?.area_responsavel).toBe("FINANCEIRO");
+    expect(problema?.subproblemas).toContainEqual({ rotulo: "data limite para envio", valor: "2026-09-09" });
+    expect(resultado.status).toBe("REVISAO_HUMANA");
+    expect(resultado.tarefas).toContainEqual({
+      tipo: "PRAZO_ENVIO_EXCEDIDO",
+      titulo: "Prazo de envio excedido para Vitalcard",
+      area: "FINANCEIRO",
+      bloqueante: true,
+    });
   });
 });
 

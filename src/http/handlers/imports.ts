@@ -15,7 +15,7 @@ import type { PapelSessao } from "../../infrastructure/auth/session";
 import { criarRepositoriosD1 } from "../../infrastructure/d1/repositories";
 import { GeradorIdCrypto } from "../../infrastructure/id";
 import { RelogioReal } from "../../infrastructure/clock";
-import { carregarRegrasAtivas, semAutoDuplicidade } from "./create-protocol";
+import { carregarRegrasAtivas } from "./create-protocol";
 
 /**
  * POST /api/imports — RF-01, papel SECRETARIA. Recebe CSV (texto) ou JSON já estruturado
@@ -144,7 +144,7 @@ export async function importarGuias(
         },
         {
           protocolos: repos.protocolos,
-          versoes: semAutoDuplicidade(repos.versoes),
+          versoes: repos.versoes,
           eventos: repos.eventos,
           relogio,
           validarGuiaDependencias: {

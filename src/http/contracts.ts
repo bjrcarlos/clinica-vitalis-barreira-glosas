@@ -50,6 +50,7 @@ const CODIGOS_PROBLEMA = [
   "DATA_FORA_DO_PADRAO",
   "POSSIVEL_DUPLICIDADE",
   "OBSERVACAO_NAO_INTERPRETADA",
+  "PRAZO_ENVIO_EXCEDIDO",
 ] as const satisfies readonly CodigoProblema[];
 export const esquemaCodigoProblema = z.enum(CODIGOS_PROBLEMA);
 
@@ -74,6 +75,16 @@ export const esquemaNumeroProtocolo = z
 
 /** Data de calendário no formato canônico do domínio (`YYYY-MM-DD`). */
 export const esquemaDataIso = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data deve estar no formato YYYY-MM-DD.");
+
+/**
+ * Instante UTC completo, como `Relogio`/`new Date().toISOString()` produz — usado em ações que
+ * podem ser retroativas (RF-11: `ocorrido_em_utc` grava quando o fato aconteceu, separado de
+ * `registrado_em_utc`, quando foi gravado; Fase 3 introduz o primeiro caso em que o CLIENTE
+ * informa um `ocorrido_em_utc`, em `POST /api/protocols/:numero/send`).
+ */
+export const esquemaInstanteIso = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$/, "Instante deve estar em UTC ISO 8601 (ex.: 2026-09-20T14:00:00.000Z).");
 
 // --- Guia bruta (entrada de cadastro/correção) e guia normalizada (saída). ---
 
@@ -145,11 +156,20 @@ export const esquemaProblema = z.object({
   referencia_regra: z.string(),
 });
 
-/** `Problema` com o estado de ciclo de vida que só existe persistido (`validation_issues`) — usado no detalhe do protocolo, que mostra abertos e resolvidos de todas as versões (PRD §12.2/RF-07). */
+/**
+ * `Problema` com o estado de ciclo de vida que só existe persistido (`validation_issues`) — usado
+ * no detalhe do protocolo, que mostra abertos e resolvidos de todas as versões (PRD §12.2/RF-07).
+ * `INVALIDADO` foi acrescentado na Fase 3 (PRD §19.5 já documentava os três valores de
+ * `validation_issues.status`: "aberto, resolvido ou invalidado") — é o destino de um problema em
+ * `REVISAO_HUMANA` que `POST /api/protocols/:numero/review-decisions` decide como falso positivo,
+ * sem passar por nova versão de guia. `resolvido_em_utc` cobre os dois fechamentos (resolvido por
+ * correção ou invalidado por decisão humana); não há uma segunda coluna de motivo aqui — o motivo
+ * da invalidação fica no evento `REVISAO` associado (`workflow_events.reason`), não no problema.
+ */
 export const esquemaProblemaHistorico = esquemaProblema.extend({
   id: z.string(),
   numero_versao_origem: z.number().int().positive(),
-  status: z.enum(["ABERTO", "RESOLVIDO"]),
+  status: z.enum(["ABERTO", "RESOLVIDO", "INVALIDADO"]),
   resolvido_em_utc: z.string().nullable(),
 });
 
@@ -368,6 +388,67 @@ export const esquemaListaProtocolosResposta = z.object({
 });
 export type ListaProtocolosResposta = z.infer<typeof esquemaListaProtocolosResposta>;
 
+// --- Evidências, merge e envio (RF-09/RF-12/RF-13, PRD §19.8-19.10/§25/§26) — building blocks ---
+// --- definidos aqui porque `esquemaProtocoloDetalheResposta`, logo abaixo, já os embute. ---
+
+/** Os três tipos MIME aceitos para evidência (RF-12, PRD §25.2). */
+export const TIPOS_MIME_EVIDENCIA_ACEITOS = ["application/pdf", "image/jpeg", "image/png"] as const;
+export const esquemaTipoMimeEvidencia = z.enum(TIPOS_MIME_EVIDENCIA_ACEITOS);
+
+/**
+ * Limite de tamanho por arquivo de evidência, em bytes (RF-12: "até 10 MB"). O handler de
+ * `POST /api/protocols/:numero/evidence` confere isto ANTES de começar a ler o corpo e DE NOVO
+ * durante a leitura (streaming) — nunca confiando isoladamente no cabeçalho `Content-Length`
+ * nem em `file.size` do multipart (PRD §25.2).
+ */
+export const LIMITE_EVIDENCIA_BYTES = 10 * 1024 * 1024;
+
+/** Espelha `evidence_objects` (PRD §19.8) como aparece no detalhe do protocolo — metadados de exibição, nunca o binário. */
+export const esquemaEvidenciaWire = z.object({
+  id: z.string(),
+  nome_exibicao: z.string(),
+  tipo_mime: esquemaTipoMimeEvidencia,
+  tamanho_bytes: z.number().int().positive().max(LIMITE_EVIDENCIA_BYTES),
+  sha256: z.string(),
+  anexado_por_papel: esquemaArea,
+  anexado_por_principal: z.string(),
+  anexado_em_utc: z.string(),
+  invalidada_em_utc: z.string().nullable(),
+  motivo_invalidacao: z.string().nullable(),
+});
+
+/**
+ * Uma escolha de campo dentro de um merge (RF-13, PRD §26.2): o valor do lado escolhido, ou
+ * `null` quando o campo vazio é a escolha. Serve tanto para gravar (`protocol_merges.
+ * field_resolution_json`) quanto para o corpo de `POST /api/merges/commit`.
+ */
+export const esquemaResolucaoCampoMerge = z.object({
+  campo: z.string(),
+  valor_escolhido: z.string().nullable(),
+});
+
+/** Espelha `protocol_merges` (PRD §19.10) como aparece no detalhe do protocolo principal. */
+export const esquemaMergeWire = z.object({
+  id: z.string(),
+  protocolo_origem_id: z.string(),
+  numero_protocolo_origem: esquemaNumeroProtocolo,
+  protocolo_principal_id: z.string(),
+  numero_protocolo_principal: esquemaNumeroProtocolo,
+  numero_versao_resultante: z.number().int().positive(),
+  resolucao_campos: z.array(esquemaResolucaoCampoMerge),
+  motivo: z.string(),
+  executado_por_principal: z.string(),
+  executado_em_utc: z.string(),
+});
+
+/** Estado de envio ao convênio (RF-09/RN-04): `ocorrido_em_utc` pode ser retroativo, `registrado_em_utc` nunca é — a interface mostra os dois quando divergem. */
+export const esquemaEnvioWire = z.object({
+  ocorrido_em_utc: z.string(),
+  registrado_em_utc: z.string(),
+  evidence_id: z.string(),
+  registrado_por_principal: z.string(),
+});
+
 // --- GET /api/protocols/:numero ---
 
 export const esquemaProtocoloDetalheResposta = z.object({
@@ -378,6 +459,16 @@ export const esquemaProtocoloDetalheResposta = z.object({
   tarefas: z.array(esquemaTarefaComEstado),
   eventos: z.array(esquemaEvento),
   trava_liberacao: esquemaTravaLiberacao,
+  // --- Fase 3: acrescentados sem remover nenhum campo da Fase 2 (§4 do handoff da Fase 2).
+  // `.optional()` de propósito: nenhum agente desta leva foi designado para tocar
+  // `src/http/handlers/protocol-detail.ts` (fora da lista de arquivos autorizados desta tarefa,
+  // que é só `contracts.ts`+`routes.ts`) — tornar os três obrigatórios quebraria o typecheck do
+  // Worker imediatamente, porque aquele handler (Fase 2) ainda constrói a resposta sem eles.
+  // Quem estender `protocol-detail.ts` para popular evidência/merge/envio deve preencher os três
+  // sempre (nunca omitir por preguiça) e só então esta nota fica obsoleta. ---
+  evidencias: z.array(esquemaEvidenciaWire),
+  merge: esquemaMergeWire.nullable(),
+  envio: esquemaEnvioWire.nullable(),
 });
 export type ProtocoloDetalheResposta = z.infer<typeof esquemaProtocoloDetalheResposta>;
 
@@ -521,6 +612,198 @@ export const esquemaTrocarSessaoResposta = z.object({
 });
 export type TrocarSessaoResposta = z.infer<typeof esquemaTrocarSessaoResposta>;
 
+// --- POST /api/protocols/:numero/evidence (RF-12, papel SECRETARIA ou FINANCEIRO) ---
+
+/**
+ * Multipart/form-data, não JSON — o handler lê `request.formData()`, pega o campo `arquivo` (um
+ * `File` do runtime, nunca bufferizado inteiro por Zod) e valida os METADADOS extraídos com este
+ * esquema antes de calcular SHA-256 e gravar no R2 (chave `evidence/{protocol-id}/{event-id}/
+ * {uuid}-{safe-filename}` — o nome enviado nunca é a chave, só metadado de exibição, PRD §25.1).
+ * Tipo e tamanho são checados de novo pelo handler durante a leitura do corpo — nunca confiar só
+ * em `file.type`/`file.size` do multipart nem no cabeçalho `Content-Length` (PRD §25.2).
+ */
+export const esquemaMetadadosArquivoEvidencia = z.object({
+  nome_original: z
+    .string()
+    .trim()
+    .min(1, "Nome do arquivo é obrigatório.")
+    .max(255, "Nome do arquivo muito longo (máximo 255 caracteres)."),
+  tipo_mime: esquemaTipoMimeEvidencia,
+  tamanho_bytes: z.number().int().positive().max(LIMITE_EVIDENCIA_BYTES, "Arquivo excede o limite de 10 MB."),
+});
+export type MetadadosArquivoEvidencia = z.infer<typeof esquemaMetadadosArquivoEvidencia>;
+
+export const esquemaAnexarEvidenciaResposta = z.object({
+  evidencia: esquemaEvidenciaWire,
+});
+export type AnexarEvidenciaResposta = z.infer<typeof esquemaAnexarEvidenciaResposta>;
+
+// --- GET /api/evidence/:id (RF-12, PRD §25.3 — link assinado, temporário, finalidade única) ---
+
+/**
+ * O download é autorizado por um token HMAC de curta duração na query string (finalidade única,
+ * expiração, nonce) — nunca só pelo cookie de sessão. Assinar/verificar o token é infraestrutura
+ * (fora deste arquivo); aqui só se fixa que a rota exige `?token=` e que a resposta bem-sucedida
+ * é o arquivo (com `Content-Disposition` seguro e `X-Content-Type-Options: nosniff`), nunca JSON.
+ */
+export const esquemaBaixarEvidenciaConsulta = z.object({
+  token: z.string().min(1, "Token de download é obrigatório."),
+});
+export type BaixarEvidenciaConsulta = z.infer<typeof esquemaBaixarEvidenciaConsulta>;
+
+// --- POST /api/evidence/:id/invalidate (RF-12, papel SECRETARIA ou FINANCEIRO) ---
+//
+// Caminho não estava nos 8 fixados pelo orquestrador para esta fase (só anexar e baixar) — mas
+// RF-12 exige invalidação com motivo obrigatório ("uma evidência incorreta pode ser invalidada
+// com motivo e substituída por outra") e a tarefa desta fase pede explicitamente o esquema
+// pronto. Suposição declarada: mesmo arquivo de handler de `GET /api/evidence/:id`
+// (`src/http/handlers/evidence.ts`), método POST porque muda estado, mesmo papel de quem anexa.
+
+export const esquemaInvalidarEvidenciaEntrada = z.object({
+  motivo: z
+    .string()
+    .trim()
+    .min(1, "Motivo da invalidação é obrigatório.")
+    .max(1000, "Motivo da invalidação muito longo (máximo 1000 caracteres)."),
+});
+export type InvalidarEvidenciaEntrada = z.infer<typeof esquemaInvalidarEvidenciaEntrada>;
+
+export const esquemaInvalidarEvidenciaResposta = z.object({
+  evidencia: esquemaEvidenciaWire,
+});
+export type InvalidarEvidenciaResposta = z.infer<typeof esquemaInvalidarEvidenciaResposta>;
+
+// --- POST /api/protocols/:numero/review-decisions (RN-06, papel FINANCEIRO) ---
+
+/**
+ * Decide um problema em `REVISAO_HUMANA` (PRD §19.5: `validation_issues.status` vira `ABERTO`,
+ * `RESOLVIDO` ou `INVALIDADO`). `CONFIRMAR_PROBLEMA` registra a decisão como evento `REVISAO`
+ * sem fechar o problema (ele continua bloqueando liberação); `INVALIDAR_PROBLEMA` fecha como
+ * falso positivo (`status` vira `INVALIDADO`, deixa de bloquear `SEM_REVISAO_HUMANA_PENDENTE`).
+ */
+const DECISOES_REVISAO_HUMANA = ["CONFIRMAR_PROBLEMA", "INVALIDAR_PROBLEMA"] as const;
+export const esquemaDecisaoRevisaoHumana = z.enum(DECISOES_REVISAO_HUMANA);
+
+export const esquemaDecidirRevisaoEntrada = z.object({
+  problema_id: z.string().min(1, "Identificador do problema é obrigatório."),
+  decisao: esquemaDecisaoRevisaoHumana,
+  motivo: z
+    .string()
+    .trim()
+    .min(1, "Motivo da decisão é obrigatório.")
+    .max(1000, "Motivo da decisão muito longo (máximo 1000 caracteres)."),
+});
+export type DecidirRevisaoEntrada = z.infer<typeof esquemaDecidirRevisaoEntrada>;
+
+export const esquemaDecidirRevisaoResposta = z.object({
+  protocolo: esquemaProtocoloResumo,
+  problema: esquemaProblemaHistorico,
+});
+export type DecidirRevisaoResposta = z.infer<typeof esquemaDecidirRevisaoResposta>;
+
+// --- POST /api/protocols/:numero/send (RF-09/RN-04, papel FINANCEIRO) ---
+
+/**
+ * Liberar não é enviar (RF-09). Exige protocolo em `LIBERADA_PARA_ENVIO`, `ocorrido_em_utc`
+ * (pode ser retroativo) e `evidence_id` de uma evidência válida (não invalidada) já vinculada a
+ * este protocolo — sem evidência, o handler recusa com `EVIDENCE_REQUIRED` (já mapeado para 409
+ * em `src/http/routes.ts`). O evento grava `ocorrido_em_utc` e `registrado_em_utc` separados; a
+ * interface mostra os dois quando divergem. `ocorrido_em_utc` normaliza para o padrão `_utc` já
+ * usado em `esquemaEvento`/`esquemaVersaoProtocolo` neste arquivo (o orquestrador citou o campo
+ * como "ocorrido_em" em prosa, sem fixar a grafia exata).
+ */
+export const esquemaRegistrarEnvioEntrada = z.object({
+  ocorrido_em_utc: esquemaInstanteIso,
+  evidence_id: z.string().min(1, "Evidência do envio é obrigatória."),
+});
+export type RegistrarEnvioEntrada = z.infer<typeof esquemaRegistrarEnvioEntrada>;
+
+export const esquemaRegistrarEnvioResposta = z.object({
+  protocolo: esquemaProtocoloResumo,
+  envio: esquemaEnvioWire,
+});
+export type RegistrarEnvioResposta = z.infer<typeof esquemaRegistrarEnvioResposta>;
+
+// --- POST /api/protocols/:numero/close-private e /close-cancelled (RN-07, papel FINANCEIRO) ---
+
+/**
+ * Mesmo formato para os dois destinos finais — RN-07 exige motivo por extenso em ambos. A rota
+ * chamada (não um campo no corpo) decide qual `FluxoStatus` resulta: `ENCERRADA_PARTICULAR` ou
+ * `ENCERRADA_CANCELADA`.
+ */
+export const esquemaEncerrarProtocoloEntrada = z.object({
+  motivo: z
+    .string()
+    .trim()
+    .min(1, "Motivo do encerramento é obrigatório.")
+    .max(2000, "Motivo do encerramento muito longo (máximo 2000 caracteres)."),
+});
+export type EncerrarProtocoloEntrada = z.infer<typeof esquemaEncerrarProtocoloEntrada>;
+
+export const esquemaEncerrarProtocoloResposta = z.object({
+  protocolo: esquemaProtocoloResumo,
+});
+export type EncerrarProtocoloResposta = z.infer<typeof esquemaEncerrarProtocoloResposta>;
+
+// --- POST /api/merges/compare (RF-13, PRD §26, papel FINANCEIRO) ---
+
+export const esquemaCompararMergeEntrada = z.object({
+  numero_protocolo_a: esquemaNumeroProtocolo,
+  numero_protocolo_b: esquemaNumeroProtocolo,
+});
+export type CompararMergeEntrada = z.infer<typeof esquemaCompararMergeEntrada>;
+
+/** Identifica um dos dois lados da comparação — só o suficiente para a tela e para `commit` referenciar de volta, nunca o protocolo completo. */
+export const esquemaProtocoloReferenciaMerge = z.object({
+  protocolo_id: z.string(),
+  numero_protocolo: esquemaNumeroProtocolo,
+  id_guia_origem: z.string().nullable(),
+});
+
+/** Um campo comparado entre os dois protocolos (PRD §26.2: campos iguais mantidos automaticamente, divergentes exigem escolha explícita no `commit`). */
+export const esquemaCampoComparadoMerge = z.object({
+  campo: z.string(),
+  valor_a: z.string().nullable(),
+  valor_b: z.string().nullable(),
+  igual: z.boolean(),
+});
+
+export const esquemaCompararMergeResposta = z.object({
+  protocolo_a: esquemaProtocoloReferenciaMerge,
+  protocolo_b: esquemaProtocoloReferenciaMerge,
+  campos_iguais: z.array(esquemaCampoComparadoMerge),
+  campos_divergentes: z.array(esquemaCampoComparadoMerge),
+  suspeita_duplicidade_aberta: z.boolean(),
+});
+export type CompararMergeResposta = z.infer<typeof esquemaCompararMergeResposta>;
+
+// --- POST /api/merges/commit (RF-13, PRD §26, papel FINANCEIRO) ---
+
+/**
+ * Pré-condições revalidadas pelo handler na hora (nunca confiar no que `compare` devolveu antes):
+ * dois protocolos ativos e distintos, nenhum já mesclado, escolha explícita do principal, e
+ * suspeita aberta OU esta justificativa manual. `resolucao_campos` cobre só os campos
+ * divergentes que `compare` apontou — campos iguais nunca aparecem aqui porque são mantidos
+ * automaticamente (PRD §26.2).
+ */
+export const esquemaExecutarMergeEntrada = z.object({
+  numero_protocolo_principal: esquemaNumeroProtocolo,
+  numero_protocolo_origem: esquemaNumeroProtocolo,
+  resolucao_campos: z.array(esquemaResolucaoCampoMerge),
+  motivo: z
+    .string()
+    .trim()
+    .min(1, "Justificativa do merge é obrigatória.")
+    .max(2000, "Justificativa do merge muito longa (máximo 2000 caracteres)."),
+});
+export type ExecutarMergeEntrada = z.infer<typeof esquemaExecutarMergeEntrada>;
+
+export const esquemaExecutarMergeResposta = z.object({
+  protocolo_principal: esquemaProtocoloResumo,
+  merge: esquemaMergeWire,
+});
+export type ExecutarMergeResposta = z.infer<typeof esquemaExecutarMergeResposta>;
+
 // --- Formato de erro comum a toda rota (CLAUDE.md: sem stack trace, mensagem curta em PT-BR). ---
 
 export const esquemaRespostaErro = z.object({
@@ -549,6 +832,12 @@ export type TravaLiberacaoWire = z.infer<typeof esquemaTravaLiberacao>;
 export type ProtocoloResumoWire = z.infer<typeof esquemaProtocoloResumo>;
 export type ProtocoloListagemItemWire = z.infer<typeof esquemaProtocoloListagemItem>;
 export type ResultadoValidacaoResumoWire = z.infer<typeof esquemaResultadoValidacaoResumo>;
+export type EvidenciaWire = z.infer<typeof esquemaEvidenciaWire>;
+export type ResolucaoCampoMergeWire = z.infer<typeof esquemaResolucaoCampoMerge>;
+export type MergeWire = z.infer<typeof esquemaMergeWire>;
+export type EnvioWire = z.infer<typeof esquemaEnvioWire>;
+export type ProtocoloReferenciaMergeWire = z.infer<typeof esquemaProtocoloReferenciaMerge>;
+export type CampoComparadoMergeWire = z.infer<typeof esquemaCampoComparadoMerge>;
 
 // Reexportado para quem monta o roteador precisar reconhecer erro de validação de entrada sem
 // importar `zod` de novo só por causa do tipo do erro.

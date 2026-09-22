@@ -142,7 +142,7 @@ export async function cadastrarProtocolo(
     },
     {
       protocolos: repos.protocolos,
-      versoes: semAutoDuplicidade(repos.versoes),
+      versoes: repos.versoes,
       eventos: repos.eventos,
       relogio,
       validarGuiaDependencias: {

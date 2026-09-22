@@ -8,7 +8,7 @@ determinístico (`src/rules/engine.ts`) contra o baseline informal do PRD (`docs
 
 ```bash
 cd "C:/Users/bjr-c/Downloads/Clinica Vitalis"
-pnpm run seed:local   # gera .wrangler/seed/seed.sql e aplica no D1 local (limpa e reinsere as 7 tabelas)
+pnpm run seed:local   # gera .wrangler/seed/seed.sql e aplica no D1 local (inclui governança dependente)
 pnpm exec wrangler d1 execute DB --local --command "SELECT code, COUNT(*) n FROM validation_issues GROUP BY code ORDER BY code;"
 pnpm exec wrangler d1 execute DB --local --command "SELECT validation_status, COUNT(*) n, SUM(current_risk_cents) risco FROM protocols GROUP BY validation_status;"
 ```
@@ -33,7 +33,7 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT validation_status, CO
 | Registros profissionais ausentes | 2 | `CAMPO_OBRIGATORIO_AUSENTE` (subproblema "registro profissional") | 2 | Sim |
 | CIDs obrigatórios ausentes | 2 | `CAMPO_OBRIGATORIO_AUSENTE` (subproblema "CID") | 2 | Sim |
 | Datas fora do padrão | 2 | não é `validation_issues` — vira `AvisoNormalizacao` em `guide_versions.diff_json` | 2 (avisos) / 0 (issues) | Critério diferente (ver §3.1) |
-| Pares de possível duplicidade | 2 | `POSSIVEL_DUPLICIDADE` | **2** (correto seria 3) | **Não — bug do motor** (ver §3.2/§4) |
+| Pares de possível duplicidade | 2 | `POSSIVEL_DUPLICIDADE` | **2** | Sim |
 | Observações com impacto operacional | 5 | `OBSERVACAO_NAO_INTERPRETADA` | 36 | Critério diferente (ver §3.3) |
 
 Códigos estáveis sem ocorrência nesta amostra (não citados pelo PRD §14, contagem zero
@@ -67,7 +67,10 @@ correta de registrar o caso — ele fica em `guide_versions.diff_json`, não em
 `validation_issues`. Não é bug; é observação registrada em §5 para a Fase 2 decidir se exibe
 esses avisos na tela do protocolo.
 
-### 3.2 Possível duplicidade — bug do motor (BLOQUEADOR)
+### 3.2 Possível duplicidade — análise histórica superada
+
+> A investigação abaixo foi registrada antes da regra conservadora de carteirinha divergente ser
+> aplicada. Ela é mantida como histórico de decisão, não como estado atual.
 
 O motor puro (`src/rules/duplicates.ts`) define o núcleo de duplicidade como
 **paciente + convênio + data de atendimento + procedimento** (carteirinha é reforço opcional,
@@ -115,6 +118,10 @@ Isso também explica por que o próprio baseline do PRD (§14, "2 pares") já es
 antes de qualquer código existir: a checagem manual original provavelmente também comparou
 carteirinha em vez de paciente, ou simplesmente não pareou 0017/0060.
 
+**Conclusão vigente:** `src/rules/duplicates.ts` descarta o par `G-2608-0017` /
+`G-2608-0060` porque as duas carteirinhas conhecidas divergem. O pré-filtro D1 e o adapter do
+seed usam `paciente`, e o baseline atual é de 2 pares, 51 guias com atenção e R$ 3.726,00.
+
 ### 3.3 Observações com impacto operacional — critério diferente, não é bug
 
 `guias.csv` tem 36 guias com `observacao_recepcao` não vazia. RF-06/RN-04 e o parâmetro fixado
@@ -142,17 +149,17 @@ fase) não vale para o par 0017/0060: a guia `G-2608-0060` deveria voltar
 
 ## 5. Totais que a Fase 2 vai exibir (RF-14, §27)
 
-Medidos no D1 local como semeado hoje (**sem** o conserto de §4 aplicado — números "pós-conserto" entre parênteses):
+Medidos no D1 local como semeado hoje:
 
 | Métrica | Valor |
 |---|---|
 | Guias verificadas (§27.1: protocolos não mesclados com validação concluída) | 80 |
-| Guias que exigem atenção (§27.2: status ≠ `OK`) | 51 (52 pós-conserto) |
-| Risco inicial (§27.3: soma de `initial_risk_cents`, uma vez por protocolo) | 372.600 centavos = **R$ 3.726,00** (378.800 centavos = R$ 3.788,00 pós-conserto) |
+| Guias que exigem atenção (§27.2: status ≠ `OK`) | 51 |
+| Risco inicial (§27.3: soma de `initial_risk_cents`, uma vez por protocolo) | 372.600 centavos = **R$ 3.726,00** |
 | Tratado (RN-05: destino final válido ou corrigido+liberado) | R$ 0,00 — nenhum dos 80 protocolos saiu de `EM_TRATAMENTO` nesta fase (liberação, envio, correção e merge são Fases 2/3) |
-| Pendente (risco atual dos protocolos ainda em tratamento) | R$ 3.726,00 (igual ao inicial, já que nada foi tratado ainda; R$ 3.788,00 pós-conserto) |
-| Por status | `OK` 29 (28 pós-conserto) · `CORRIGIR` 12 · `REVISAO_HUMANA` 34 (35 pós-conserto) · `NAO_FATURAR_CONVENIO` 5 |
-| Risco por status | `CORRIGIR` R$ 812,00 · `NAO_FATURAR_CONVENIO` R$ 550,00 · `REVISAO_HUMANA` R$ 2.364,00 (R$ 2.426,00 pós-conserto) · `OK` R$ 0,00 |
+| Pendente (risco atual dos protocolos ainda em tratamento) | R$ 3.726,00 (igual ao inicial, já que nada foi tratado ainda) |
+| Por status | `OK` 29 · `CORRIGIR` 12 · `REVISAO_HUMANA` 34 · `NAO_FATURAR_CONVENIO` 5 |
+| Risco por status | `CORRIGIR` R$ 812,00 · `NAO_FATURAR_CONVENIO` R$ 550,00 · `REVISAO_HUMANA` R$ 2.364,00 · `OK` R$ 0,00 |
 
 **Cada protocolo entra uma vez só**: `current_risk_cents`/`initial_risk_cents` são colunas de
 `protocols` (uma linha por protocolo, chave primária `id`), nunca uma soma por

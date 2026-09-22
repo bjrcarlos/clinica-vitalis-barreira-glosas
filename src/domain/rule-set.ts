@@ -20,6 +20,7 @@ export interface RegraProcedimento {
 export interface RegraConvenio {
   readonly nome: string;
   readonly campos_obrigatorios: ReadonlyArray<keyof GuiaNormalizada>;
+  /** Metadado da fonte oficial; não é aplicado sem data de concessão no payload da prova. */
   readonly validade_maxima_autorizacao_dias: number;
   readonly limite_sessoes_por_autorizacao: number;
   /** Códigos de `RegraProcedimento.codigo` cobertos por este convênio. */

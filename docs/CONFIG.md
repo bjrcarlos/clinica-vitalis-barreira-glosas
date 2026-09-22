@@ -232,17 +232,19 @@ Ele mostrará os nomes, mas nunca o conteúdo.
 ### 5. Aplicar migrações remotas
 
 ```bash
-wrangler d1 execute vitalis-glosas --remote < migrations/001_schema.sql
-wrangler d1 execute vitalis-glosas --remote < migrations/002_seed.sql
-# ... etc para todas as migrações
+corepack pnpm exec wrangler d1 migrations apply vitalis-glosas --remote
 ```
 
-Ou crie um script que aplica na ordem correta.
+O seed oficial é gerado pelo próprio caso de uso e deve ser revisado antes de ser aplicado no D1
+remoto. A execução local continua sendo `corepack pnpm seed:local`; para produção, use o SQL
+gerado por `corepack pnpm seed:sql` com `wrangler d1 execute --remote` depois de conferir o
+ambiente e o banco alvo.
 
 ### 6. Deploy
 
 ```bash
-wrangler deploy
+corepack pnpm build
+corepack pnpm exec wrangler deploy
 ```
 
 Isto faz build do Worker e da SPA, publica em produção e vincula os bindings.

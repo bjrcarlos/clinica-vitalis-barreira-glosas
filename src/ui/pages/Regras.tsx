@@ -117,7 +117,7 @@ export function Regras() {
                     <tr>
                       <Tabela.CelulaCabecalho>Convênio</Tabela.CelulaCabecalho>
                       <Tabela.CelulaCabecalho>Campos obrigatórios</Tabela.CelulaCabecalho>
-                      <Tabela.CelulaCabecalho>Validade máx. da autorização</Tabela.CelulaCabecalho>
+                      <Tabela.CelulaCabecalho>Validade máx. (informativa)</Tabela.CelulaCabecalho>
                       <Tabela.CelulaCabecalho>Limite de sessões</Tabela.CelulaCabecalho>
                       <Tabela.CelulaCabecalho>Prazo de envio</Tabela.CelulaCabecalho>
                       <Tabela.CelulaCabecalho>Procedimentos cobertos</Tabela.CelulaCabecalho>

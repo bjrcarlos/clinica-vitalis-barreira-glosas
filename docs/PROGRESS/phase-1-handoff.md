@@ -15,7 +15,7 @@ rotas HTTP, upload). Node `v24.14.0`, pnpm `9.15.0`, wrangler `4.135.0`.
   cabeçalho de `guias.csv`) e `AvisoNormalizacao`.
 - `normalize.ts` — `normalizarGuia(bruta): { guia, avisos }`, pura, nunca lança.
 - `rule-set.ts` — tipos `ConjuntoRegras`, `RegraConvenio`, `RegraProcedimento`, `DefinicoesRegras`.
-- `validation.ts` — `CodigoProblema` (os 12 códigos fixados), `Subproblema`, `Problema`,
+- `validation.ts` — `CodigoProblema` (os códigos fixados, incluindo `PRAZO_ENVIO_EXCEDIDO`), `Subproblema`, `Problema`,
   `Tarefa`, `ResultadoValidacao`, `CandidatoDuplicidade`.
 - `events.ts` — `EventoFluxo`, `TipoEvento` (auditoria append-only).
 
@@ -267,7 +267,8 @@ por problema (RN-05).
 | `CAMPO_OBRIGATORIO_AUSENTE` | Corrigir | Secretaria | Falta um campo que **este convênio** (não todos) exige — o(s) subproblema(s) listam qual(is). |
 | `PROCEDIMENTO_NAO_COBERTO` | Não faturar | Financeiro | O convênio existe e o procedimento existe, mas este convênio não cobre este procedimento — não pode ser faturado a ele; financeiro decide particular ou cancelamento (RN-07). |
 | `AUTORIZACAO_VENCIDA` | Corrigir | Secretaria | A autorização já tinha vencido na data do atendimento (comparação inclusiva — vencer no mesmo dia não conta, RN-03). |
-| `AUTORIZACAO_VALIDADE_ACIMA_DO_MAXIMO` | Revisar | Secretaria | A janela entre atendimento e validade é maior que o máximo que este convênio permite — pode ser erro de digitação da data. |
+| `AUTORIZACAO_VALIDADE_ACIMA_DO_MAXIMO` | — | — | Código legado preservado para históricos; não é emitido porque o CSV não traz data de concessão. |
+| `PRAZO_ENVIO_EXCEDIDO` | Revisar | Financeiro | A data de lançamento passou do prazo contado desde o atendimento; a tarefa é bloqueante até decisão humana. |
 | `LIMITE_SESSOES_EXCEDIDO` | Corrigir | Secretaria | O número da sessão registrado passa do limite de sessões que o convênio autoriza. |
 | `DESCRICAO_DIVERGENTE` | Revisar | Secretaria | A descrição do procedimento na guia não bate com a descrição oficial do código (tolerante a acento/caixa/espaço, mas não a sentido). |
 | `VALOR_DIVERGENTE` | Revisar | Secretaria | O valor cobrado diverge do valor de referência oficial do procedimento. |
@@ -306,17 +307,17 @@ Relógio fixo do seed: `2026-09-01T00:00:00.000Z`.
 
 | `validation_status` | Quantidade | Risco (soma `current_risk_cents`) | Em reais |
 |---|---:|---:|---:|
-| `OK` | 28 | 0 | R$ 0,00 |
+| `OK` | 29 | 0 | R$ 0,00 |
 | `CORRIGIR` | 12 | 81.200 | R$ 812,00 |
-| `REVISAO_HUMANA` | 35 | 242.600 | R$ 2.426,00 |
+| `REVISAO_HUMANA` | 34 | 236.400 | R$ 2.364,00 |
 | `NAO_FATURAR_CONVENIO` | 5 | 55.000 | R$ 550,00 |
-| **Total** | **80** | **378.800** | **R$ 3.788,00** |
+| **Total** | **80** | **372.600** | **R$ 3.726,00** |
 
-`current_risk_cents` e `initial_risk_cents` somam o mesmo total (378.800 centavos) — nenhum
+`current_risk_cents` e `initial_risk_cents` somam o mesmo total (372.600 centavos) — nenhum
 protocolo foi corrigido/tratado ainda nesta fase, então inicial == atual para todos os 80.
 
-**Problemas por código** (`validation_issues`, 71 linhas no total, distribuídas em 52 dos 80
-protocolos — a diferença 71 > 52 é sobreposição esperada, um protocolo pode ter mais de um
+**Problemas por código** (`validation_issues`, 70 linhas no total, distribuídas em 51 dos 80
+protocolos — a diferença 70 > 51 é sobreposição esperada, um protocolo pode ter mais de um
 problema, ex. `VT-26-0006` acima tem 3):
 
 | Código | Ocorrências |
@@ -326,31 +327,32 @@ problema, ex. `VT-26-0006` acima tem 3):
 | `CAMPO_OBRIGATORIO_AUSENTE` | 8 |
 | `LIMITE_SESSOES_EXCEDIDO` | 6 |
 | `PROCEDIMENTO_NAO_COBERTO` | 5 |
-| `POSSIVEL_DUPLICIDADE` | 3 |
-| `CONVENIO_DESCONHECIDO`, `PROCEDIMENTO_DESCONHECIDO`, `AUTORIZACAO_VALIDADE_ACIMA_DO_MAXIMO`, `DESCRICAO_DIVERGENTE`, `VALOR_DIVERGENTE`, `DATA_FORA_DO_PADRAO` | 0 (nenhuma das 80 guias aciona estes; `DATA_FORA_DO_PADRAO` nunca é emitido por nenhum código desta fase — ver §3.3/§5) |
+| `POSSIVEL_DUPLICIDADE` | 2 |
+| `PRAZO_ENVIO_EXCEDIDO` | 0 (nenhuma guia ultrapassa o prazo na própria data de lançamento) |
+| `CONVENIO_DESCONHECIDO`, `PROCEDIMENTO_DESCONHECIDO`, `AUTORIZACAO_VALIDADE_ACIMA_DO_MAXIMO`, `DESCRICAO_DIVERGENTE`, `VALOR_DIVERGENTE`, `DATA_FORA_DO_PADRAO` | 0 (a validade máxima é código legado não emitido; `DATA_FORA_DO_PADRAO` nunca é emitido por nenhum código desta fase — ver §3.3/§5) |
 
 Reconciliação com o baseline informal do PRD §14 (contagens brutas antes de haver código):
 `AUTORIZACAO_VENCIDA` 13/13, `LIMITE_SESSOES_EXCEDIDO` 6/6, `PROCEDIMENTO_NAO_COBERTO` 5/5,
 `CAMPO_OBRIGATORIO_AUSENTE` 8/8 (=4 autorização + 2 registro profissional + 2 CID do PRD) batem
-exatamente. `POSSIVEL_DUPLICIDADE` é 3 nesta sessão, não os "2 pares" do PRD §14 — ver §5 sobre
-`docs/BASELINE.md` estar desatualizado nesse ponto. `OBSERVACAO_NAO_INTERPRETADA` é 36, não "5":
+exatamente. `POSSIVEL_DUPLICIDADE` é 2 nesta sessão, em linha com os "2 pares" do PRD §14.
+`OBSERVACAO_NAO_INTERPRETADA` é 36, não "5":
 o PRD §14 contou observações que **um humano julgou relevantes**; o contrato desta fase (sem
 `interpretacaoIA`) exige emitir o código para **toda** observação não vazia, sem julgar
 conteúdo — 36 é o número de guias com `observacao_recepcao` não vazia em `guias.csv`, e é o
 número correto para esta fase (a triagem de relevância chega na Fase 4).
 
-**Tarefas por área** (`tasks`, 71 linhas — uma por problema, todas `blocking = 1` nesta fase):
+**Tarefas por área** (`tasks`, 70 linhas — uma por problema, todas `blocking = 1` nesta fase):
 
 | Área | Quantidade | Tipos |
 |---|---:|---|
-| `FINANCEIRO` | 44 | `OBSERVACAO_NAO_INTERPRETADA` (36), `PROCEDIMENTO_NAO_COBERTO` (5), `POSSIVEL_DUPLICIDADE` (3) |
+| `FINANCEIRO` | 43 | `OBSERVACAO_NAO_INTERPRETADA` (36), `PROCEDIMENTO_NAO_COBERTO` (5), `POSSIVEL_DUPLICIDADE` (2) |
 | `SECRETARIA` | 27 | `AUTORIZACAO_VENCIDA` (13), `CAMPO_OBRIGATORIO_AUSENTE` (8), `LIMITE_SESSOES_EXCEDIDO` (6) |
 
 **Guias verificadas / precisam de atenção** (RF-14, §27, para quando a Fase 2 montar o relatório):
 guias verificadas = 80 (todo protocolo tem ao menos uma `validation_run` concluída); precisam de
-atenção = 52 (`validation_status != 'OK'`); risco inicial = R$ 3.788,00; tratado = R$ 0,00
+atenção = 51 (`validation_status != 'OK'`); risco inicial = R$ 3.726,00; tratado = R$ 0,00
 (nenhum protocolo saiu de `EM_TRATAMENTO` nesta fase — liberação/envio/correção são Fase 2/3);
-pendente = R$ 3.788,00 (igual ao inicial, nada foi tratado ainda).
+pendente = R$ 3.726,00 (igual ao inicial, nada foi tratado ainda).
 
 ## 5. Como rodar tudo do zero
 
@@ -361,14 +363,14 @@ pnpm run typecheck                 # tsc --noEmit (app + worker), exit 0 esperad
 pnpm run test                      # vitest run, 53/53 esperado
 pnpm run build                     # dist/client + checagem do worker
 pnpm run db:migrate:local          # aplica migrations/0001_init.sql no D1 local (idempotente)
-pnpm run seed:local                # gera .wrangler/seed/seed.sql e recarrega as 7 tabelas do seed
+pnpm run seed:local                # gera .wrangler/seed/seed.sql e restaura o seed e a governança local
 pnpm run dev                       # sobe worker + assets (precisa de CLOUDFLARE_ACCOUNT_ID exportado, ver docs/CONFIG.md)
 ```
 
 `seed:local` é seguro para rodar de novo a qualquer momento: o SQL gerado abre com `DELETE FROM`
-nas 7 tabelas que ele popula (dentro de uma única transação) antes de reinserir — nunca duplica
-protocolo, nunca acumula lixo de execução anterior. Não toca `evidence_objects`,
-`evidence_links` nem `protocol_merges`.
+nas tabelas que ele popula e nas tabelas de governança dependentes (dentro de uma única transação)
+antes de reinserir — nunca duplica protocolo nem acumula lixo de execução anterior. Também limpa
+`evidence_objects`, `evidence_links` e `protocol_merges` para restaurar a demonstração.
 
 Para regenerar o SQL sem aplicar no D1 (auditoria antes de rodar): `node
 --experimental-transform-types scripts/seed.ts --out <caminho>`. Aceita `--clock <ISO>` para
@@ -409,34 +411,16 @@ mudar o relógio fixo (padrão `2026-09-01T00:00:00.000Z`).
 | Critério | Resultado |
 |---|---|
 | 80 guias carregadas | **Atende.** `SELECT COUNT(*) FROM protocols` = 80, todas com `source_guide_id` preenchido e único (`guias.csv` tem 80 linhas de dados, 0 rejeitadas pelo parser). |
-| Casos conhecidos retornam os motivos esperados | **Atende, com uma ressalva já corrigida no código.** `tests/engine.test.ts` cobre 13 cenários nomeados (validade inclusiva, campo obrigatório por convênio, limite de sessões, procedimento não coberto, descrição/valor divergente, duplicidade, observação, composição de status, cálculo de risco) incluindo um controle negativo. Contra os dados reais, 4 das 5 categorias mensuráveis do PRD §14 batem exatamente (§4); a quinta (`POSSIVEL_DUPLICIDADE`) bate 3 pares reais medidos nesta sessão contra a chave composta paciente+convênio+procedimento+data — `docs/BASELINE.md`, escrito por outro agente em paralelo, descreve isso como bug pendente (filtro por carteirinha em vez de paciente) mas **o código em disco (`src/infrastructure/d1/versions.ts`, `scripts/seed.ts`) já filtra por `paciente`, não por carteirinha** — os números medidos aqui (§4) já refletem o comportamento corrigido. `docs/BASELINE.md` precisa ser atualizado ou removido por quem tiver esse arquivo no escopo; não é meu para editar nesta tarefa. |
+| Casos conhecidos retornam os motivos esperados | **Atende.** `tests/engine.test.ts` cobre 13 cenários nomeados (validade inclusiva, campo obrigatório por convênio, limite de sessões, procedimento não coberto, descrição/valor divergente, duplicidade, observação, composição de status, cálculo de risco) incluindo um controle negativo. Contra os dados reais, as categorias do PRD §14 batem com a regra vigente: `POSSIVEL_DUPLICIDADE` = 2, pois carteirinhas conhecidas e divergentes descartam falso positivo. |
 | Uma guia nunca é somada duas vezes no risco | **Atende.** Por construção: `risco_cents` em `engine.ts` é `guia.valor_cents` (um valor escalar) ou `0`, nunca uma soma sobre `problemas` — mesmo com 3 problemas simultâneos (`VT-26-0006`, §3.2) o risco gravado é 14.000 centavos, não 42.000. Confirmado também por idempotência: `registrarGuia` com o mesmo `id_guia` de origem duas vezes não cria segundo protocolo nem roda o motor de novo (`tests/repositories.test.ts`, "registrar duas vezes o mesmo id_guia... não cria dois protocolos" — motor chamado 1 vez, não 2). Exclusão de protocolo `MESCLADA` do risco agregado do relatório é responsabilidade da Fase 2/3 (merge não existe nesta fase); a coluna por protocolo já garante a contagem única na origem. |
 
 ## 8. Dívidas e lacunas
 
-- **`docs/BASELINE.md` está desatualizado no ponto central da sua própria análise.** Ele
-  descreve `RepositorioVersoesD1.listarCandidatosDuplicidade` (e o equivalente em memória do
-  seed) como filtrando candidatos por `carteirinha` em vez de `paciente`, perdendo o par
-  `G-2608-0017`/`G-2608-0060`. Lido nesta sessão, os dois arquivos (`src/infrastructure/d1/
-  versions.ts` linha 36, `scripts/seed.ts` linha 345) **já comparam `paciente`**, não
-  `carteirinha` — os números que este handoff reporta em §4 (`POSSIVEL_DUPLICIDADE` = 3, 52
-  protocolos com pendência, risco R$ 3.788,00) são exatamente os números "pós-conserto" que o
-  próprio `BASELINE.md` §3.2/§4 previa. Não editei `BASELINE.md` (fora da lista de arquivos desta
-  tarefa) — quem tocar nele a seguir deve reconciliar com o código, não com o texto atual do
-  arquivo.
-- **Achado de ordenação em `registrarGuia` não corrigido, documentado no código-fonte** (comentário
-  em `scripts/seed.ts`, classe `VersoesMemoria`, linhas 316–334): `register-guide.ts` chama
-  `protocolos.criarComVersaoInicial` (grava o protocolo) antes de `versoes.
-  listarCandidatosDuplicidade`. O seed contorna isso comparando identidade de objeto em memória
-  (`guiaExistente === guia`), mas essa exclusão não existe em `RepositorioVersoesD1` sobre D1 real
-  — lá a query não filtra o próprio protocolo (`p.id != ?` ausente). **Consequência para a Fase
-  2/3**: ao ligar `registrarGuia` a `RepositorioVersoesD1` de verdade (import/cadastro pela UI),
-  toda guia nova vai bater a própria chave composta contra si mesma e sempre sair com
-  `POSSIVEL_DUPLICIDADE`. Dois consertos possíveis, nenhum aplicado aqui (fora de escopo): (a)
-  reordenar `register-guide.ts` para consultar duplicidade antes de criar o protocolo, ou (b)
-  acrescentar exclusão por `protocoloId` ao contrato de `Versoes.listarCandidatosDuplicidade` e à
-  query SQL. Não afeta os 80 protocolos já semeados (o seed usa o adapter em memória, imune a
-  isso) — só afeta cadastro/importação futuros contra D1 de verdade.
+- **Baseline e ordenação reconciliadas nesta execução.** `docs/BASELINE.md` agora registra o
+  resultado vigente de 2 pares. O pré-filtro D1 e o adapter do seed usam `paciente`, enquanto
+  `src/rules/duplicates.ts` descarta carteirinhas conhecidas e divergentes para evitar falso
+  positivo. `registrarGuia` também passou a consultar candidatos antes de criar o protocolo;
+  cadastro e importação D1 não marcam mais a própria guia como duplicada.
 - **`DATA_FORA_DO_PADRAO` é código morto.** Está no union `CodigoProblema`
   (`src/domain/validation.ts`) mas nenhum arquivo de `src/rules` o produz — datas fora do padrão
   reconhecível viram só `AvisoNormalizacao` (não bloqueante, RN-08), nunca um `Problema` de tela.
@@ -459,7 +443,7 @@ mudar o relógio fixo (padrão `2026-09-01T00:00:00.000Z`).
   ainda válida): `tests/repositories.test.ts` cobre os repositórios D1 contra `node:sqlite`
   carregando a migração real, o que dá cobertura de comportamento SQL sem depender do pool —
   suficiente para esta fase, mas não é o mesmo runtime do Worker.
-- **Prazo de envio não é avaliado** (por decisão do contrato desta fase, RN-04): nenhuma guia
-  gera problema por prazo estourado; `prazo_envio_dias` está disponível em
-  `RegraConvenio`/`regraAplicavel` para a Fase 2 exibir como informação, mas nenhum código deste
-  motor o transforma em `Problema`.
+- **Prazo de envio é avaliado no relógio da prova**: `data_lancamento` é a data de conferência,
+  o prazo conta desde `data_atendimento`, o próprio dia limite é válido e um lançamento posterior
+  gera `PRAZO_ENVIO_EXCEDIDO` para o Financeiro, com tarefa bloqueante. Nesta amostra, a contagem
+  medida é zero porque nenhuma das 80 guias ultrapassa o prazo na própria data de lançamento.

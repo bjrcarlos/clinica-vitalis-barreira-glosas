@@ -1,0 +1,7 @@
+# Projeto de pacote unico: a lista vazia existe porque o pnpm 9 exige o campo
+# quando o arquivo de workspace esta presente. Ele so carrega allowBuilds.
+packages: []
+
+allowBuilds:
+  esbuild: true
+  workerd: true

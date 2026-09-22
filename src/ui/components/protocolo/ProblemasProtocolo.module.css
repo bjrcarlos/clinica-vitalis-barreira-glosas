@@ -114,3 +114,41 @@
   color: var(--cor-texto-4);
   font-size: 12px;
 }
+
+.acoesRevisao {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--cor-divisoria-forte);
+}
+
+.rotuloAcao {
+  color: var(--cor-texto-3);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.botaoAcao {
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-pill);
+  background: var(--cor-superficie);
+  color: var(--cor-texto-2);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 9px;
+}
+
+.botaoAcao:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.erroAcao {
+  flex-basis: 100%;
+  color: var(--cor-erro-txt, #991b1b);
+  font-size: 12px;
+}

@@ -7,6 +7,7 @@ import { TravaLiberacao } from "../components/protocolo/TravaLiberacao";
 import { ProblemasProtocolo } from "../components/protocolo/ProblemasProtocolo";
 import { VersaoAtualProtocolo } from "../components/protocolo/VersaoAtualProtocolo";
 import { EvidenciasProtocolo } from "../components/protocolo/EvidenciasProtocolo";
+import { lerPapelAtual } from "../components/protocolo/identidadeAtual";
 import { HistoricoProtocolo } from "../components/protocolo/HistoricoProtocolo";
 import { AcoesProtocolo } from "../components/protocolo/AcoesProtocolo";
 import styles from "./Protocolo.module.css";
@@ -106,9 +107,19 @@ export function Protocolo() {
             trava={trava_liberacao}
           />
           {!trava_liberacao.pode_liberar && <TravaLiberacao trava={trava_liberacao} />}
-          <ProblemasProtocolo problemas={problemas} />
+          <ProblemasProtocolo
+            problemas={problemas}
+            numeroProtocolo={protocolo.numero_protocolo}
+            papelAtual={lerPapelAtual()}
+            aoAtualizarProtocolo={() => void carregar()}
+          />
           {versaoAtual && <VersaoAtualProtocolo versao={versaoAtual} />}
-          <EvidenciasProtocolo />
+          <EvidenciasProtocolo
+            numeroProtocolo={protocolo.numero_protocolo}
+            evidencias={detalhe.evidencias}
+            papelAtual={lerPapelAtual()}
+            aoAtualizarProtocolo={() => void carregar()}
+          />
           <HistoricoProtocolo eventos={eventos} versoes={versoes} />
         </div>
 

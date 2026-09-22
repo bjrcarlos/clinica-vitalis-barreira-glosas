@@ -2,10 +2,9 @@ const FUSO_BRASILIA = "America/Sao_Paulo";
 
 /**
  * Saudação por horário do dia, calculada no fuso de Brasília a partir do relógio real do
- * navegador. A sessão de demonstração (PRD §8) carrega só um papel funcional (Secretaria,
- * Financeiro, Direção) — nenhum nome de pessoa é persistido em lugar nenhum do sistema —,
- * então esta função nunca fabrica um nome próprio; quem chama decide o que vem depois da
- * vírgula (ex.: "Vitalis").
+ * navegador. Esta função só decide "Bom dia"/"Boa tarde"/"Boa noite" — nunca fabrica um nome
+ * próprio; quem chama decide o que vem depois da vírgula (ver `TrocaDePapel.nomeDaIdentidadeAtual`,
+ * que mapeia o papel funcional da demonstração — PRD §8 — para o nome fictício da pessoa).
  */
 export function saudacaoPorHorario(agora: Date = new Date()): string {
   const hora = Number(

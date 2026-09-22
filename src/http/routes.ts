@@ -184,3 +184,65 @@ export class Roteador {
     return respostaJsonErro(404, "ROTA_NAO_ENCONTRADA", "Rota não encontrada.");
   }
 }
+
+/**
+ * As 8 rotas novas da Fase 3 (evidência, revisão, envio, encerramento, merge — PRD-SDD §24,
+ * contrato fixado pelo orquestrador) e os handlers que cada uma espera. Os 5 arquivos de handler
+ * (`src/http/handlers/{evidence,review-decision,send,close,merges}.ts`) são escritos por outros
+ * agentes desta mesma fase, em paralelo a este arquivo — por isso `registrarRotasFase3` recebe os
+ * handlers já resolvidos (injeção), em vez deste módulo importar aqueles arquivos diretamente:
+ * um `import` estático de um arquivo que ainda não existe quebraria a carga de QUALQUER módulo
+ * que importe `src/http/routes.ts` (inclusive `tests/http-contracts.test.ts`, hoje 100% verde),
+ * não só o build final. Quando os 5 handlers existirem, `src/worker/index.ts` os importa e chama:
+ *
+ * ```ts
+ * import { manipularAnexarEvidencia, manipularBaixarEvidencia, manipularInvalidarEvidencia } from "../http/handlers/evidence";
+ * import { manipularDecidirRevisao } from "../http/handlers/review-decision";
+ * import { manipularRegistrarEnvio } from "../http/handlers/send";
+ * import { manipularEncerrarParticular, manipularEncerrarCancelado } from "../http/handlers/close";
+ * import { manipularCompararMerge, manipularExecutarMerge } from "../http/handlers/merges";
+ * import { registrarRotasFase3 } from "../http/routes";
+ *
+ * registrarRotasFase3(roteador, {
+ *   anexarEvidencia: manipularAnexarEvidencia,
+ *   baixarEvidencia: manipularBaixarEvidencia,
+ *   invalidarEvidencia: manipularInvalidarEvidencia,
+ *   decidirRevisao: manipularDecidirRevisao,
+ *   registrarEnvio: manipularRegistrarEnvio,
+ *   encerrarParticular: manipularEncerrarParticular,
+ *   encerrarCancelado: manipularEncerrarCancelado,
+ *   compararMerge: manipularCompararMerge,
+ *   executarMerge: manipularExecutarMerge,
+ * });
+ * ```
+ *
+ * `invalidarEvidencia` (`POST /api/evidence/:id/invalidate`) não estava nos 8 caminhos fixados
+ * pelo orquestrador (só anexar e baixar) — acrescentado porque RF-12 exige invalidação de
+ * evidência com motivo obrigatório e `src/http/contracts.ts` já define o esquema; suposição
+ * declarada, mesmo arquivo de handler de `GET /api/evidence/:id`.
+ */
+export interface ManipuladoresFase3 {
+  readonly anexarEvidencia: ManipuladorRota;
+  readonly baixarEvidencia: ManipuladorRota;
+  readonly invalidarEvidencia: ManipuladorRota;
+  readonly decidirRevisao: ManipuladorRota;
+  readonly registrarEnvio: ManipuladorRota;
+  readonly encerrarParticular: ManipuladorRota;
+  readonly encerrarCancelado: ManipuladorRota;
+  readonly compararMerge: ManipuladorRota;
+  readonly executarMerge: ManipuladorRota;
+}
+
+/** Registra as 8 rotas novas da Fase 3 num `Roteador` já existente (ex.: o mesmo que já tem as 9 rotas da Fase 2), devolvendo-o para encadeamento. */
+export function registrarRotasFase3(roteador: Roteador, handlers: ManipuladoresFase3): Roteador {
+  return roteador
+    .post("/api/protocols/:numero/evidence", handlers.anexarEvidencia)
+    .get("/api/evidence/:id", handlers.baixarEvidencia)
+    .post("/api/evidence/:id/invalidate", handlers.invalidarEvidencia)
+    .post("/api/protocols/:numero/review-decisions", handlers.decidirRevisao)
+    .post("/api/protocols/:numero/send", handlers.registrarEnvio)
+    .post("/api/protocols/:numero/close-private", handlers.encerrarParticular)
+    .post("/api/protocols/:numero/close-cancelled", handlers.encerrarCancelado)
+    .post("/api/merges/compare", handlers.compararMerge)
+    .post("/api/merges/commit", handlers.executarMerge);
+}

@@ -57,7 +57,7 @@ export class RepositorioValidacoesD1 implements Validacoes {
            started_at_utc, finished_at_utc
          ) VALUES (
            ?, ?, ?, (SELECT id FROM rule_sets WHERE version = ?), ?, ?,
-           'NAO_EXECUTADA', NULL, NULL, NULL, NULL, ?, ?
+           ?, ?, ?, ?, ?, ?, ?
          )`,
       )
       .bind(
@@ -67,6 +67,11 @@ export class RepositorioValidacoesD1 implements Validacoes {
         resultado.regras_aplicadas.versao,
         resultado.status,
         resultado.resumo,
+        execucao.aiStatus ?? "NAO_EXECUTADA",
+        execucao.aiModel ?? null,
+        execucao.aiPromptVersion ?? null,
+        execucao.aiInputJson ?? null,
+        execucao.aiOutputJson ?? null,
         execucao.iniciadoEmUtc,
         execucao.concluidoEmUtc,
       );

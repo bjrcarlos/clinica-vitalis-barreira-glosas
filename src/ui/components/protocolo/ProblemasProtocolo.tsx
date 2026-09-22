@@ -1,10 +1,16 @@
+import { useState } from "react";
 import { Card } from "../Card";
 import { apresentarArea } from "../../../domain/statuses";
 import type { ProblemaHistoricoWire } from "../../../http/contracts";
+import { formatarValorSePossuirDataDeCalendario } from "../../lib/format";
+import { ApiError, decidirRevisao, type PapelSessao } from "../../lib/api";
 import styles from "./ProblemasProtocolo.module.css";
 
 interface ProblemasProtocoloProps {
   readonly problemas: readonly ProblemaHistoricoWire[];
+  readonly numeroProtocolo: string;
+  readonly papelAtual: PapelSessao;
+  readonly aoAtualizarProtocolo: () => void;
 }
 
 /**
@@ -12,7 +18,7 @@ interface ProblemasProtocoloProps {
  * pelo estado principal: abertos e resolvidos aparecem juntos, resolvidos só ficam visualmente
  * discretos. Cada `<details>` é um elemento real de disclosure — nunca `onClick` em `div`.
  */
-export function ProblemasProtocolo({ problemas }: ProblemasProtocoloProps) {
+export function ProblemasProtocolo({ problemas, numeroProtocolo, papelAtual, aoAtualizarProtocolo }: ProblemasProtocoloProps) {
   const abertos = problemas.filter((problema) => problema.status === "ABERTO");
   const resolvidos = problemas.filter((problema) => problema.status === "RESOLVIDO");
   const ordenados = [...abertos, ...resolvidos];
@@ -45,15 +51,72 @@ export function ProblemasProtocolo({ problemas }: ProblemasProtocoloProps) {
               <ul className={styles.subproblemas}>
                 {problema.subproblemas.map((sub, indice) => (
                   <li key={indice}>
-                    {sub.rotulo}: <b>{sub.valor}</b>
+                    {sub.rotulo}: <b>{formatarValorSePossuirDataDeCalendario(sub.valor)}</b>
                   </li>
                 ))}
                 <li className={styles.referencia}>regra aplicada: {problema.referencia_regra}</li>
               </ul>
+              <AcoesRevisao
+                problema={problema}
+                numeroProtocolo={numeroProtocolo}
+                papelAtual={papelAtual}
+                aoAtualizarProtocolo={aoAtualizarProtocolo}
+              />
             </details>
           ))}
         </div>
       )}
     </Card>
+  );
+}
+
+function AcoesRevisao({
+  problema,
+  numeroProtocolo,
+  papelAtual,
+  aoAtualizarProtocolo,
+}: {
+  readonly problema: ProblemaHistoricoWire;
+  readonly numeroProtocolo: string;
+  readonly papelAtual: PapelSessao;
+  readonly aoAtualizarProtocolo: () => void;
+}) {
+  const [executando, setExecutando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  if (problema.status !== "ABERTO" || problema.acao_recomendada !== "REVISAR" || papelAtual !== "FINANCEIRO") {
+    return null;
+  }
+
+  async function decidir(decisao: "CONFIRMAR_PROBLEMA" | "INVALIDAR_PROBLEMA") {
+    const motivo = window.prompt(
+      decisao === "INVALIDAR_PROBLEMA"
+        ? "Motivo da invalidação (a evidência já deve estar anexada):"
+        : "Motivo da decisão Financeiro:",
+    );
+    if (!motivo?.trim()) return;
+    setExecutando(true);
+    setErro(null);
+    try {
+      await decidirRevisao(numeroProtocolo, { problema_id: problema.id, decisao, motivo: motivo.trim() });
+      aoAtualizarProtocolo();
+    } catch (falha) {
+      setErro(falha instanceof ApiError ? falha.message : "Não foi possível registrar a decisão agora.");
+    } finally {
+      setExecutando(false);
+    }
+  }
+
+  return (
+    <div className={styles.acoesRevisao}>
+      <span className={styles.rotuloAcao}>Decisão Financeiro</span>
+      <button type="button" className={styles.botaoAcao} disabled={executando} onClick={() => void decidir("CONFIRMAR_PROBLEMA")}>
+        Confirmar pendência
+      </button>
+      <button type="button" className={styles.botaoAcao} disabled={executando} onClick={() => void decidir("INVALIDAR_PROBLEMA")}>
+        Invalidar com evidência
+      </button>
+      {erro ? <span role="alert" className={styles.erroAcao}>{erro}</span> : null}
+    </div>
   );
 }

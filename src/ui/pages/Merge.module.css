@@ -1,0 +1,58 @@
+.pagina {
+  display: grid;
+  gap: 16px;
+  max-width: 1040px;
+}
+
+.cabecalho {
+  display: flex;
+  justify-content: space-between;
+}
+
+.voltar {
+  color: var(--cor-texto-3);
+  font-size: 13px;
+}
+
+.titulo {
+  margin: 8px 0 0;
+  font-size: 24px;
+}
+
+.subtitulo,
+.aviso,
+.erro {
+  margin: 4px 0 0;
+  color: var(--cor-texto-3);
+  font-size: 13px;
+}
+
+.erro {
+  color: var(--cor-erro-txt, #991b1b);
+}
+
+.botaoPrincipal {
+  justify-self: start;
+  border: 0;
+  border-radius: var(--raio-pill);
+  background: var(--cor-primaria, #1d4ed8);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 10px 16px;
+}
+
+.botaoPrincipal:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.sucesso {
+  display: grid;
+  gap: 5px;
+  border: 1px solid var(--cor-ok-txt, #15803d);
+  border-radius: var(--raio-bloco);
+  padding: 14px 16px;
+  color: var(--cor-ok-txt, #166534);
+}

@@ -342,16 +342,9 @@ chama `POST .../release` e recarrega do mesmo jeito.
 
 ## 5. Decisões tomadas
 
-- **`semAutoDuplicidade`** (`create-protocol.ts`): a Fase 1 deixou documentado (phase-1-handoff
-  §8) que `registrarGuia` cria o protocolo antes de checar duplicidade, fazendo um cadastro novo
-  bater a própria chave composta contra si mesmo em D1 real (o seed não pegava isso por comparar
-  identidade de objeto em memória). Consertar `register-guide.ts`/`ports.ts` estava fora do
-  escopo desta fase (arquivo de outro agente/fase). Em vez disso, `POST /api/protocols` e
-  `POST /api/imports` envolvem `repos.versoes` num wrapper que filtra o próprio registro por
-  igualdade estrutural do payload antes de repassar candidatos ao motor.
-  `POST /api/protocols/:numero/versions` (que já conhece o `protocoloId`) filtra por identidade
-  direta, sem precisar do wrapper. **A causa raiz em `register-guide.ts` continua sem conserto**
-  — ver §7.
+- **Auto-duplicidade — decisão histórica atualizada:** `registrarGuia` agora consulta candidatos
+  antes de criar a versão inicial. Cadastro e importação usam o repositório real; o wrapper
+  `semAutoDuplicidade` permanece somente como legado sem uso.
 - **Correção liberada volta a `EM_TRATAMENTO`** (`create-version.ts`): uma correção sobre um
   protocolo `LIBERADA_PARA_ENVIO` reabre o fluxo para `EM_TRATAMENTO` — decisão desta fase (nenhum
   código anterior definia isso), porque a leitura de "pronta para envio" anterior à correção não

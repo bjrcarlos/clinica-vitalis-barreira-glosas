@@ -4,12 +4,16 @@ import styles from "./Tabela.module.css";
 interface TabelaProps {
   readonly children: ReactNode;
   readonly caption?: string;
+  /** `true` quando o texto de `caption` já aparece visualmente em algum lugar ao lado da tabela
+   * (ex.: título/subtítulo do card) — a legenda continua no DOM para leitor de tela, só não se
+   * repete na tela para quem enxerga. */
+  readonly captionOculto?: boolean;
 }
 
-function TabelaRaiz({ children, caption }: TabelaProps) {
+function TabelaRaiz({ children, caption, captionOculto }: TabelaProps) {
   return (
     <table className={styles.tabela}>
-      {caption ? <caption className={styles.legenda}>{caption}</caption> : null}
+      {caption ? <caption className={captionOculto ? styles.legendaOculta : styles.legenda}>{caption}</caption> : null}
       {children}
     </table>
   );

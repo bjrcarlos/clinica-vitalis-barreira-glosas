@@ -22,7 +22,7 @@ export function PendenciasAntigas({ pendencias, limite }: PendenciasAntigasProps
   const visiveis = typeof limite === "number" ? ordenadas.slice(0, limite) : ordenadas;
 
   return (
-    <Tabela caption="Pendências mais antigas, aguardando ação há mais tempo">
+    <Tabela caption="Pendências mais antigas, aguardando ação há mais tempo" captionOculto>
       <Tabela.Cabecalho>
         <tr>
           <Tabela.CelulaCabecalho>Protocolo</Tabela.CelulaCabecalho>

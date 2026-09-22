@@ -195,3 +195,23 @@ export function importarArquivo<TResposta = unknown, TDados = unknown>(dados: TD
 export function obterRegraAtiva<T = unknown>(signal?: AbortSignal): Promise<T> {
   return api.get<T>("/rules", signal);
 }
+
+/** Decide um problema de revisão humana pelo Financeiro. */
+export function decidirRevisao<TResposta = unknown, TDados = unknown>(numeroProtocolo: string, dados: TDados): Promise<TResposta> {
+  return api.post<TResposta>("/protocols/" + encodeURIComponent(numeroProtocolo) + "/review-decisions", dados);
+}
+
+/** Invalida uma evidência de forma append-only, sempre com motivo. */
+export function invalidarEvidencia<TResposta = unknown>(evidenciaId: string, dados: unknown): Promise<TResposta> {
+  return api.post<TResposta>("/evidence/" + encodeURIComponent(evidenciaId) + "/invalidate", dados);
+}
+
+/** Compara dois protocolos marcados como possível duplicidade. */
+export function compararMerge<TResposta = unknown>(dados: unknown): Promise<TResposta> {
+  return api.post<TResposta>("/merges/compare", dados);
+}
+
+/** Executa o merge depois das escolhas explícitas da interface Financeiro. */
+export function executarMerge<TResposta = unknown>(dados: unknown): Promise<TResposta> {
+  return api.post<TResposta>("/merges/commit", dados);
+}

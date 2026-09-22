@@ -53,6 +53,21 @@ export function formatarDataCurta(isoUtc: string): string {
   return `${p.day}/${p.month}/${p.year}`;
 }
 
+const REGEX_DATA_DE_CALENDARIO = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Formata `valor` como `dd/MM/aaaa` quando ele é uma data de calendário ISO (`AAAA-MM-DD`, ex.
+ * `data_atendimento`/`autorizacao_validade`) — texto puro, sem `Date`/fuso, porque é uma data de
+ * calendário, não um instante (converter por fuso deslocaria o dia). Qualquer outro valor volta
+ * inalterado. Usado por pares rótulo/valor genéricos (`Subproblema`) que às vezes carregam uma
+ * data e às vezes não; o dado gravado nunca é tocado, só a exibição.
+ */
+export function formatarValorSePossuirDataDeCalendario(valor: string): string {
+  if (!REGEX_DATA_DE_CALENDARIO.test(valor)) return valor;
+  const [ano, mes, dia] = valor.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
+
 /** Centavos inteiros (invariante de domínio) → `R$ 1.234,56`. Nunca receber float monetário. */
 export function formatarCentavos(centavos: number): string {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(centavos / 100);

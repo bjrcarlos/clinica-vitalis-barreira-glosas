@@ -217,6 +217,7 @@ O sistema deve verificar:
 
 - campos obrigatórios;
 - validade da autorização na data do atendimento, inclusive no último dia;
+- prazo de envio contado da data do atendimento, conferido na data de lançamento da guia;
 - limite de sessões;
 - cobertura do procedimento;
 - código, descrição e valor de referência;
@@ -435,11 +436,27 @@ Uma nova regra não recalcula ou altera silenciosamente uma decisão antiga. A r
 
 ### RN-03 — Validade inclusiva
 
-A autorização é válida no próprio dia de vencimento.
+A autorização é válida no próprio dia de vencimento. Como o recorte da prova não contém a
+data de concessão, a validação usa somente a data final declarada contra a data do atendimento;
+nenhuma janela máxima é inferida a partir dessas duas datas.
 
 ### RN-04 — Informação não verificável
 
 O sistema não afirma que uma ação externa aconteceu sem data e evidência. Dados retroativos incompletos geram tarefa para a área responsável.
+
+### RN-09 — Relógio da prova e prazo de envio
+
+As 80 guias da prova representam um recorte de agosto, não o histórico completo de autorizações.
+Para evitar que a data corrente do computador altere a prova, a conferência simula o instante em
+que cada guia foi lançada: `data_lancamento`. O prazo final é calculado a partir de
+`data_atendimento + prazo_envio_dias`, com o próprio dia limite ainda válido.
+
+Quando `data_lancamento` ultrapassa o prazo final, o sistema cria `PRAZO_ENVIO_EXCEDIDO` como
+revisão humana para o Financeiro. A tarefa é bloqueante e a guia não pode ser liberada até uma
+decisão auditável de exceção, faturamento particular ou cancelamento.
+
+O limite de sessões também usa o número declarado na própria guia. A prova não permite inferir
+um histórico completo de autorizações somando outras linhas do CSV.
 
 ### RN-05 — Dinheiro em risco
 
@@ -540,6 +557,10 @@ A análise inicial das 80 guias encontrou ocorrências brutas:
 - 5 observações com impacto operacional.
 
 Essas contagens não são o resultado final do produto. Há sobreposição, subproblemas e casos que dependem de revisão.
+
+O CSV não possui data de concessão da autorização. Portanto, a categoria de “validade máxima”
+do conjunto oficial de regras é apenas metadado até que esse campo exista; ela não é uma decisão
+do motor nesta prova. A única verificação de validade é a data final contra a data do atendimento.
 
 ## 15. Critérios de aceite do produto
 
@@ -904,7 +925,7 @@ Não enviar campos que não contribuam para a interpretação.
 }
 ```
 
-O schema será validado. Saída inválida ou erro de inferência vira revisão humana com `ai_status = FAILED`.
+O schema será validado. Saída inválida ou erro de inferência vira revisão humana com `ai_status = FALHOU`.
 
 ### 22.3 Uso futuro do feedback
 
@@ -1160,6 +1181,7 @@ Erros de domínio retornam código estável e mensagem simples:
 - procedimento não coberto;
 - código, descrição e valor;
 - datas e valores normalizáveis;
+- prazo de envio no próprio dia limite e após o limite, usando `data_lancamento`;
 - composição do estado principal;
 - cálculo de risco sem duplicação.
 

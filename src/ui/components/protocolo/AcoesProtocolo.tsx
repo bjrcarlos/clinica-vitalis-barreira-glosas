@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card } from "../Card";
 import { FormularioCorrecao } from "./FormularioCorrecao";
 import type { CriarVersaoResposta, GuiaBrutaWire, TravaLiberacaoWire } from "../../../http/contracts";
+import { formatarCentavos } from "../../lib/format";
 import styles from "./AcoesProtocolo.module.css";
 
 interface AcoesProtocoloProps {
@@ -91,7 +92,8 @@ export function AcoesProtocolo({
           regras {regrasAplicadas.versao} · hash {regrasAplicadas.sha256.slice(0, 8)}…
         </span>
         <span>
-          risco inicial {riscoInicialCents} ¢ · risco atual {riscoAtualCents} ¢
+          risco inicial {formatarCentavos(riscoInicialCents)} ({riscoInicialCents} centavos) · risco atual{" "}
+          {formatarCentavos(riscoAtualCents)} ({riscoAtualCents} centavos)
         </span>
       </Card>
     </div>

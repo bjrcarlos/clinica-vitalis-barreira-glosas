@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { ErroDominio, Roteador, respostaDeErro, respostaJsonErro } from "../src/http/routes";
+import { ErroDominio, Roteador, registrarRotasFase3, respostaDeErro, respostaJsonErro } from "../src/http/routes";
+import type { ContextoRota, ManipuladoresFase3 } from "../src/http/routes";
 import type { Env } from "../src/worker/index";
 import {
   assinarSessao,
@@ -11,6 +12,16 @@ import {
   PAPEL_PADRAO_SEM_SESSAO,
   verificarSessao,
 } from "../src/infrastructure/auth/session";
+import {
+  esquemaCompararMergeEntrada,
+  esquemaDecidirRevisaoEntrada,
+  esquemaEncerrarProtocoloEntrada,
+  esquemaExecutarMergeEntrada,
+  esquemaInvalidarEvidenciaEntrada,
+  esquemaMetadadosArquivoEvidencia,
+  esquemaProblemaHistorico,
+  esquemaRegistrarEnvioEntrada,
+} from "../src/http/contracts";
 
 // Testes do roteador HTTP (PRD-SDD §24) e da sessão assinada por HMAC (identidade da demo,
 // PRD-SDD §8). Nenhum handler de negócio real existe ainda nesta fase — os testes abaixo
@@ -281,5 +292,172 @@ describe("sessão assinada por HMAC — assinar, verificar e ler o papel da requ
     expect(isPapelSessao("DIRECAO")).toBe(true);
     expect(isPapelSessao("SISTEMA")).toBe(false);
     expect(isPapelSessao("gerente")).toBe(false);
+  });
+});
+
+// Testes de roteamento da Fase 3 (evidência, revisão, envio, encerramento, merge — PRD-SDD §24).
+// `registrarRotasFase3` recebe handlers de teste injetados (os handlers reais ainda não existem
+// nesta fase, ver comentário em `src/http/routes.ts`) — exatamente como os testes acima já
+// registram handlers ad-hoc num `Roteador` para testar só o casamento de caminho/método/params.
+
+describe("registrarRotasFase3 — roteamento das 9 rotas novas da Fase 3", () => {
+  function handlerQueEcoa(nome: string): (ctx: ContextoRota) => Promise<Response> {
+    return async (ctx) => Response.json({ nome, params: ctx.params, papel: ctx.papel });
+  }
+
+  function montarHandlersDeTeste(): ManipuladoresFase3 {
+    return {
+      anexarEvidencia: handlerQueEcoa("anexarEvidencia"),
+      baixarEvidencia: handlerQueEcoa("baixarEvidencia"),
+      invalidarEvidencia: handlerQueEcoa("invalidarEvidencia"),
+      decidirRevisao: handlerQueEcoa("decidirRevisao"),
+      registrarEnvio: handlerQueEcoa("registrarEnvio"),
+      encerrarParticular: handlerQueEcoa("encerrarParticular"),
+      encerrarCancelado: handlerQueEcoa("encerrarCancelado"),
+      compararMerge: handlerQueEcoa("compararMerge"),
+      executarMerge: handlerQueEcoa("executarMerge"),
+    };
+  }
+
+  it.each([
+    ["POST", "https://vitalis.test/api/protocols/VT-26-0011/evidence", "anexarEvidencia", { numero: "VT-26-0011" }],
+    ["GET", "https://vitalis.test/api/evidence/abc123", "baixarEvidencia", { id: "abc123" }],
+    ["POST", "https://vitalis.test/api/evidence/abc123/invalidate", "invalidarEvidencia", { id: "abc123" }],
+    ["POST", "https://vitalis.test/api/protocols/VT-26-0011/review-decisions", "decidirRevisao", { numero: "VT-26-0011" }],
+    ["POST", "https://vitalis.test/api/protocols/VT-26-0011/send", "registrarEnvio", { numero: "VT-26-0011" }],
+    ["POST", "https://vitalis.test/api/protocols/VT-26-0011/close-private", "encerrarParticular", { numero: "VT-26-0011" }],
+    ["POST", "https://vitalis.test/api/protocols/VT-26-0011/close-cancelled", "encerrarCancelado", { numero: "VT-26-0011" }],
+    ["POST", "https://vitalis.test/api/merges/compare", "compararMerge", {}],
+    ["POST", "https://vitalis.test/api/merges/commit", "executarMerge", {}],
+  ] as const)("%s %s despacha para %s com os parâmetros certos", async (metodo, url, nomeEsperado, paramsEsperados) => {
+    const roteador = registrarRotasFase3(new Roteador(), montarHandlersDeTeste());
+    const resposta = await roteador.despachar(new Request(url, { method: metodo }), envFalso());
+
+    expect(resposta.status).toBe(200);
+    const corpo = (await resposta.json()) as { nome: string; params: Record<string, string> };
+    expect(corpo.nome).toBe(nomeEsperado);
+    expect(corpo.params).toEqual(paramsEsperados);
+  });
+
+  it("convive com as rotas da Fase 2 já registradas no mesmo Roteador, sem colisão", async () => {
+    const roteador = registrarRotasFase3(
+      new Roteador().get("/api/protocols/:numero", async (ctx) => Response.json({ rota: "detalhe-fase2", numero: ctx.params.numero })),
+      montarHandlersDeTeste(),
+    );
+
+    const detalheFase2 = await roteador.despachar(new Request("https://vitalis.test/api/protocols/VT-26-0011"), envFalso());
+    expect(await detalheFase2.json()).toEqual({ rota: "detalhe-fase2", numero: "VT-26-0011" });
+
+    const envioFase3 = await roteador.despachar(
+      new Request("https://vitalis.test/api/protocols/VT-26-0011/send", { method: "POST" }),
+      envFalso(),
+    );
+    expect((await envioFase3.json()) as { nome: string }).toMatchObject({ nome: "registrarEnvio" });
+  });
+
+  it("405 quando o método não bate numa rota nova (ex.: GET em /send)", async () => {
+    const roteador = registrarRotasFase3(new Roteador(), montarHandlersDeTeste());
+    const resposta = await roteador.despachar(new Request("https://vitalis.test/api/protocols/VT-26-0011/send"), envFalso());
+    expect(resposta.status).toBe(405);
+  });
+
+  it("resolve o papel real (cookie assinado) também nas rotas novas", async () => {
+    const roteador = registrarRotasFase3(new Roteador(), montarHandlersDeTeste());
+    const cemAnosEmMs = 100 * 365 * 24 * 60 * 60 * 1000;
+    const { valorCookie } = await assinarSessao("FINANCEIRO", CHAVE_SECRETA, AGORA_UTC, cemAnosEmMs);
+
+    const resposta = await roteador.despachar(
+      requisicaoComCookie("https://vitalis.test/api/merges/commit", valorCookie, { method: "POST" }),
+      envFalso(),
+    );
+
+    expect((await resposta.json()) as { papel: string }).toMatchObject({ papel: "FINANCEIRO" });
+  });
+});
+
+describe("Esquemas novos da Fase 3 — validações centrais (RF-09/RF-12/RF-13)", () => {
+  it("esquemaMetadadosArquivoEvidencia aceita os três MIME de RF-12 e rejeita os demais", () => {
+    for (const tipo_mime of ["application/pdf", "image/jpeg", "image/png"] as const) {
+      expect(esquemaMetadadosArquivoEvidencia.safeParse({ nome_original: "x.pdf", tipo_mime, tamanho_bytes: 1024 }).success).toBe(true);
+    }
+    expect(
+      esquemaMetadadosArquivoEvidencia.safeParse({ nome_original: "x.docx", tipo_mime: "application/msword", tamanho_bytes: 1024 }).success,
+    ).toBe(false);
+  });
+
+  it("esquemaMetadadosArquivoEvidencia recusa arquivo acima de 10 MB", () => {
+    const dezMB = 10 * 1024 * 1024;
+    expect(
+      esquemaMetadadosArquivoEvidencia.safeParse({ nome_original: "x.pdf", tipo_mime: "application/pdf", tamanho_bytes: dezMB }).success,
+    ).toBe(true);
+    expect(
+      esquemaMetadadosArquivoEvidencia.safeParse({ nome_original: "x.pdf", tipo_mime: "application/pdf", tamanho_bytes: dezMB + 1 }).success,
+    ).toBe(false);
+  });
+
+  it("esquemaInvalidarEvidenciaEntrada exige motivo não vazio", () => {
+    expect(esquemaInvalidarEvidenciaEntrada.safeParse({ motivo: "Documento ilegível, reenviado." }).success).toBe(true);
+    expect(esquemaInvalidarEvidenciaEntrada.safeParse({ motivo: "" }).success).toBe(false);
+    expect(esquemaInvalidarEvidenciaEntrada.safeParse({}).success).toBe(false);
+  });
+
+  it("esquemaDecidirRevisaoEntrada exige problema_id, decisão conhecida e motivo", () => {
+    const valido = { problema_id: "iss-1", decisao: "INVALIDAR_PROBLEMA", motivo: "Observação não tinha impacto operacional." };
+    expect(esquemaDecidirRevisaoEntrada.safeParse(valido).success).toBe(true);
+    expect(esquemaDecidirRevisaoEntrada.safeParse({ ...valido, decisao: "APROVAR" }).success).toBe(false);
+    expect(esquemaDecidirRevisaoEntrada.safeParse({ ...valido, motivo: "" }).success).toBe(false);
+  });
+
+  it("esquemaProblemaHistorico aceita o status INVALIDADO acrescentado nesta fase, além dos dois já existentes", () => {
+    const base = {
+      codigo: "OBSERVACAO_NAO_INTERPRETADA",
+      titulo: "x",
+      acao_recomendada: "REVISAR",
+      area_responsavel: "FINANCEIRO",
+      subproblemas: [],
+      referencia_regra: "x",
+      id: "iss-1",
+      numero_versao_origem: 1,
+      resolvido_em_utc: null,
+    } as const;
+    expect(esquemaProblemaHistorico.safeParse({ ...base, status: "ABERTO" }).success).toBe(true);
+    expect(esquemaProblemaHistorico.safeParse({ ...base, status: "RESOLVIDO" }).success).toBe(true);
+    expect(esquemaProblemaHistorico.safeParse({ ...base, status: "INVALIDADO" }).success).toBe(true);
+    expect(esquemaProblemaHistorico.safeParse({ ...base, status: "IGNORADO" }).success).toBe(false);
+  });
+
+  it("esquemaRegistrarEnvioEntrada exige ocorrido_em_utc em ISO UTC e evidence_id não vazio", () => {
+    expect(esquemaRegistrarEnvioEntrada.safeParse({ ocorrido_em_utc: "2026-09-18T14:00:00.000Z", evidence_id: "ev-1" }).success).toBe(true);
+    // aceita retroativo (RN-04: "ocorrido_em, que pode ser retroativa") sem checagem de janela aqui — isso é regra de handler, não de esquema.
+    expect(esquemaRegistrarEnvioEntrada.safeParse({ ocorrido_em_utc: "2020-01-01T00:00:00.000Z", evidence_id: "ev-1" }).success).toBe(true);
+    expect(esquemaRegistrarEnvioEntrada.safeParse({ ocorrido_em_utc: "18/09/2026", evidence_id: "ev-1" }).success).toBe(false);
+    expect(esquemaRegistrarEnvioEntrada.safeParse({ ocorrido_em_utc: "2026-09-18T14:00:00.000Z", evidence_id: "" }).success).toBe(false);
+    expect(esquemaRegistrarEnvioEntrada.safeParse({ ocorrido_em_utc: "2026-09-18T14:00:00.000Z" }).success).toBe(false);
+  });
+
+  it("esquemaEncerrarProtocoloEntrada (particular e cancelado) exige motivo por extenso", () => {
+    expect(esquemaEncerrarProtocoloEntrada.safeParse({ motivo: "Paciente optou por pagar particular." }).success).toBe(true);
+    expect(esquemaEncerrarProtocoloEntrada.safeParse({ motivo: "" }).success).toBe(false);
+    expect(esquemaEncerrarProtocoloEntrada.safeParse({}).success).toBe(false);
+  });
+
+  it("esquemaCompararMergeEntrada exige dois números de protocolo no formato VT-AA-NNNN", () => {
+    expect(esquemaCompararMergeEntrada.safeParse({ numero_protocolo_a: "VT-26-0059", numero_protocolo_b: "VT-26-0076" }).success).toBe(true);
+    expect(esquemaCompararMergeEntrada.safeParse({ numero_protocolo_a: "G-2608-0059", numero_protocolo_b: "VT-26-0076" }).success).toBe(false);
+  });
+
+  it("esquemaExecutarMergeEntrada exige justificativa e aceita resolução de campos vazia (nenhum campo divergente)", () => {
+    const base = { numero_protocolo_principal: "VT-26-0059", numero_protocolo_origem: "VT-26-0076" };
+    expect(esquemaExecutarMergeEntrada.safeParse({ ...base, resolucao_campos: [], motivo: "Mesma consulta lançada duas vezes." }).success).toBe(
+      true,
+    );
+    expect(
+      esquemaExecutarMergeEntrada.safeParse({
+        ...base,
+        resolucao_campos: [{ campo: "numero_autorizacao", valor_escolhido: "AUT553120" }],
+        motivo: "Mesma consulta lançada duas vezes.",
+      }).success,
+    ).toBe(true);
+    expect(esquemaExecutarMergeEntrada.safeParse({ ...base, resolucao_campos: [], motivo: "" }).success).toBe(false);
   });
 });

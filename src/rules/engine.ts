@@ -5,6 +5,7 @@ import type { CandidatoDuplicidade, Problema, ResultadoValidacao, Tarefa } from 
 import { localizarConvenioEProcedimento, verificarCobertura } from "./coverage";
 import { verificarCamposObrigatorios } from "./required-fields";
 import { verificarAutorizacao } from "./authorization";
+import { verificarPrazoEnvio } from "./dispatch-deadline";
 import { verificarLimiteSessoes } from "./sessions";
 import { verificarProcedimento } from "./procedure";
 import { verificarDuplicidade } from "./duplicates";
@@ -95,9 +96,10 @@ export function validarGuia(
     problemas.push(...verificarCobertura(localizacao.convenio, localizacao.procedimento));
   }
 
-  // 5. autorização — só quando o convênio é conhecido (precisa da validade máxima dele).
+  // 5. autorização e prazo — só o vencimento final e o prazo de envio são verificáveis no recorte.
   if (localizacao.convenio) {
-    problemas.push(...verificarAutorizacao(guia, localizacao.convenio));
+    problemas.push(...verificarAutorizacao(guia));
+    problemas.push(...verificarPrazoEnvio(guia, localizacao.convenio));
   }
 
   // 6. sessões — só quando o convênio é conhecido (precisa do limite oficial dele).
