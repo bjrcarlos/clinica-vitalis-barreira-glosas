@@ -2,7 +2,7 @@ import { Card } from "../Card";
 import { formatarDataHoraBrasilia } from "../../lib/format";
 import { apresentarArea, apresentarOrigem } from "../../../domain/statuses";
 import type { EventoWire, VersaoProtocoloWire } from "../../../http/contracts";
-import { ROTULO_CAMPO_GUIA, ROTULO_TIPO_EVENTO, normalizarNomeCampoDiff } from "./campos";
+import { ROTULO_CAMPO_GUIA, apresentarTipoEvento, normalizarNomeCampoDiff } from "./campos";
 import styles from "./HistoricoProtocolo.module.css";
 
 interface HistoricoProtocoloProps {
@@ -38,7 +38,7 @@ export function HistoricoProtocolo({ eventos, versoes }: HistoricoProtocoloProps
                 </span>
                 <div className={styles.corpo}>
                   <div className={styles.tituloEvento}>
-                    <b>{ROTULO_TIPO_EVENTO[evento.tipo] ?? evento.tipo}</b>
+                    <b>{apresentarTipoEvento(evento.tipo)}</b>
                     <span className={styles.papel}>{apresentarArea(evento.papel)}</span>
                   </div>
                   <p className={styles.metaLinha}>

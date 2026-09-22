@@ -169,6 +169,27 @@ tabela de quem pode o quê.
 | `registrar_guia` | sim | não | não |
 | `consultar_relatorio` | não | não | sim |
 
+### Formato das respostas
+
+Toda tool devolve o mesmo fato duas vezes, e as duas nascem da mesma variável:
+
+- **`content[0].text`** — Markdown pronto para a pessoa ler: valores em reais, datas em horário de
+  Brasília, rótulos em português, tabela onde há lista, aviso de "lista cortada" quando o limite
+  cortou, e a frase "nada foi gravado" nas tools de leitura. O assistente do outro lado deve
+  reproduzir esse texto, não reinterpretar o JSON.
+- **`structuredContent`** — o mesmo dado como objeto, validado pelo servidor contra o
+  `outputSchema` que `tools/list` anuncia. Centavos continuam inteiros (`*_cents`) ao lado do
+  valor já formatado.
+
+Cada tool também anuncia `annotations` (`readOnlyHint`, `destructiveHint`, `idempotentHint`):
+só `registrar_guia` escreve, e é idempotente por `id_guia_origem`. Erro de tool vem com código
+estável na frente da mensagem (`[ROLE_NOT_ALLOWED]`, `[CONVENIO_DESCONHECIDO]`,
+`[PROCEDIMENTO_DESCONHECIDO]`, `[GUIA_NAO_ENCONTRADA]`), e o erro de convênio lista os nomes
+válidos para o assistente não escolher um por semelhança.
+
+Os prompts embutidos (`prompts/list`) carregam a regra 11: reproduzir o texto que a tool devolveu,
+sem reconstruir tabela, reconverter valor ou somar linha.
+
 A Skill operacional está em
 [`skills/conferir-guia-vitalis/SKILL.md`](skills/conferir-guia-vitalis/SKILL.md) e exige
 confirmação explícita antes de registrar uma guia.

@@ -43,7 +43,11 @@ COMO APRESENTAR
    pessoa pedir "mais detalhes".
 9. Uma guia pode ter mais de um motivo, então a soma dos motivos pode passar do total do estado.
    Diga isso quando acontecer, em vez de deixar o leitor achar que a conta está errada.
-10. Números de protocolo em tabela, nunca em parágrafo corrido.`;
+10. Números de protocolo em tabela, nunca em parágrafo corrido.
+11. Toda tool devolve o resultado já escrito em Markdown (valores em reais, datas em horário de
+    Brasília, tabelas prontas). Reproduza esse texto como veio — pode cortar o que a pessoa não
+    perguntou, mas não reconstrua tabela, não reconverta valor e não some linha. O mesmo dado vem
+    como objeto em structuredContent, para quando precisar cruzar campos.`;
 
 interface PromptEmbutido {
   readonly nome: string;
@@ -77,9 +81,8 @@ COMO PROCEDER
 3. Chame consultar_regra com o convênio e, se houver, o código do procedimento.
 4. Chame verificar_guia passando o objeto guia (nunca id_guia, que é para guia já existente).
    Essa chamada não cria nem altera nada.
-5. Responda nesta ordem: estado (OK, CORRIGIR, REVISÃO HUMANA ou NÃO FATURAR AO CONVÊNIO), resumo
-   em uma frase, problemas com seus subproblemas, regra e versão aplicadas, campos que faltaram, e
-   qual é o próximo passo humano.
+5. A resposta de verificar_guia já vem nesta ordem: estado, resumo, tabela de problemas com
+   evidência e quem resolve, campos que faltam, regra aplicada e próximo passo. Reproduza como veio.
 6. Termine dizendo, com estas palavras, que nada foi gravado.
 
 ${REGRAS_DE_LEITURA}`,
@@ -94,12 +97,12 @@ ${REGRAS_DE_LEITURA}`,
 
 1. Chame minhas_pendencias sem nenhum argumento de área — ela já deriva da minha credencial
    (você está falando com o perfil ${contexto.papel}).
-2. Agrupe os protocolos por motivo, usando os títulos das tarefas.
-3. Ordene do mais caro para o mais barato e, em empate, do mais antigo para o mais recente.
-4. Para cada grupo, diga em uma frase o que a pessoa precisa fazer, e mostre o link de revisão
-   quando existir.
-5. Fecha com: quantos protocolos, quantas tarefas abertas e quanto risco existe na fila — usando os
-   campos total_protocolos, total_tarefas_abertas e risco_cents, sem recalcular.
+2. A resposta já vem agrupada por motivo (tabela "Por motivo", do maior risco para o menor) e com a
+   lista de protocolos do mais antigo para o mais recente. Reproduza as duas tabelas como vieram.
+3. Depois da tabela por motivo, diga em uma frase, para cada motivo, o que a pessoa precisa fazer.
+4. Mostre o link de revisão de cada protocolo quando existir.
+5. Fecha com o cabeçalho que a tool devolveu: quantos protocolos, quantas pendências abertas e
+   quanto risco existe na fila — sem recalcular.
 
 Se truncado vier true, diga quantos protocolos existem ao todo e ofereça filtrar por estado ou por
 período em vez de listar o resto.
@@ -118,7 +121,9 @@ ${REGRAS_DE_LEITURA}`,
     montar: (argumentos) => `Escreva o relatório da semana para a reunião da Direção.
 
 1. Chame consultar_relatorio. Todos os números do texto saem daí — ele é a mesma fonte da tela de
-   relatório, então o que você escrever vai bater com o que a clínica vê.
+   relatório, então o que você escrever vai bater com o que a clínica vê. A resposta já vem com as
+   tabelas de guias por estado, motivos por estado, risco por área e pendências mais antigas; copie
+   os números delas, não os recalcule.
 2. Chame consultar_historico${argumentos.desde ? ` com data_de = ${argumentos.desde}` : " com um recorte de data"} só para
    contar o que ACONTECEU no período (correções feitas, guias liberadas, envios registrados) — e
    nunca para contar guias por estado.
@@ -151,9 +156,10 @@ COMO PROCEDER
 1. Separe as guias e trate cada uma isoladamente. Se alguma linha não tiver campos suficientes,
    liste-a como "não deu para conferir" com o que falta — não descarte em silêncio.
 2. Chame verificar_guia uma vez por guia, sempre com o objeto guia. Nada é gravado.
-3. Devolva uma tabela com: identificação da guia, estado, o problema principal e quem resolve.
+3. Devolva uma tabela com: identificação da guia, estado, o problema principal e quem resolve —
+   usando o estado e o primeiro problema que cada resposta trouxe.
 4. Depois da tabela, some quantas ficaram OK e quantas travam o envio, e diga o risco total em
-   reais somando o risco de cada guia que travou.
+   reais somando o campo risco de cada guia que travou (uma vez por guia).
 5. Destaque separadamente as que estouraram o prazo de envio do convênio: elas não são erro de
    preenchimento, e a decisão é do Financeiro.
 

@@ -37,8 +37,9 @@ describe("formatarDataHoraBrasilia", () => {
 
 describe("formatarCentavos", () => {
   // Intl.NumberFormat("pt-BR", { style: "currency" }) separa "R$" do valor com um espaço
-  // inquebrável (U+00A0), não um espaço comum — confirmado nesta sessão via Node.
-  const RCS = "R$ ";
+  // inquebrável (U+00A0); o formatador do domínio troca por espaço comum, que lê e copia igual
+  // em tela, em Markdown e no MCP.
+  const RCS = "R$ ";
 
   it("formata centavos inteiros com separador de milhar e vírgula decimal", () => {
     // Mesmo valor do risco inicial semeado (docs/BASELINE.md): 372.600 centavos.

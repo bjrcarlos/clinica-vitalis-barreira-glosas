@@ -126,6 +126,14 @@ async function textoDaTool(resposta: Response): Promise<string> {
   return corpo.result?.content?.map((c) => c.text).join("") ?? bruto;
 }
 
+/** O objeto de `structuredContent` da resposta da tool. */
+async function dadoDaTool(resposta: Response): Promise<Record<string, unknown>> {
+  const bruto = await resposta.text();
+  const linha = bruto.split("\n").find((l) => l.startsWith("data: "));
+  const corpo = JSON.parse(linha!.slice(6)) as { result?: { structuredContent?: Record<string, unknown> } };
+  return corpo.result?.structuredContent ?? {};
+}
+
 beforeEach(async () => {
   banco = new DatabaseSync(":memory:");
   aplicarMigracoes(banco);
@@ -208,8 +216,8 @@ describe("fluxo de autorização", () => {
     expect(tokens.access_token).toBeTruthy();
     expect(tokens.token_type).toBe("Bearer");
 
-    const texto = await textoDaTool(await chamarMcp(tokens.access_token, "minhas_pendencias"));
-    expect(JSON.parse(texto).area).toBe("SECRETARIA");
+    const dado = await dadoDaTool(await chamarMcp(tokens.access_token, "minhas_pendencias"));
+    expect(dado.area).toBe("SECRETARIA");
   });
 
   it("código de autorização não vale duas vezes", async () => {
@@ -338,8 +346,8 @@ describe("papel do token manda no MCP", () => {
     const daSecretaria = await textoDaTool(await chamarMcp(await tokenDe("secretaria@vitalis.example", "senha-secretaria"), "consultar_relatorio"));
     expect(daSecretaria).toContain("Somente a Direção");
 
-    const daDirecao = await textoDaTool(await chamarMcp(await tokenDe("direcao@vitalis.example", "senha-direcao"), "consultar_relatorio"));
-    expect(JSON.parse(daDirecao).regras_aplicadas).toBeDefined();
+    const daDirecao = await dadoDaTool(await chamarMcp(await tokenDe("direcao@vitalis.example", "senha-direcao"), "consultar_relatorio"));
+    expect(daDirecao.regras_aplicadas).toBeDefined();
   });
 
   it("registrar_guia continua exclusivo da Secretaria, agora por conta", async () => {

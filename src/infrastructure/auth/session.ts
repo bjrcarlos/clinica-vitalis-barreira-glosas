@@ -11,7 +11,7 @@
  * nunca comparação manual de string/hex. O valor do cookie nunca é logado por este módulo.
  */
 
-const PAPEL_SESSAO_VALORES = ["SECRETARIA", "FINANCEIRO", "DIRECAO"] as const;
+export const PAPEL_SESSAO_VALORES = ["SECRETARIA", "FINANCEIRO", "DIRECAO"] as const;
 
 /** Papel funcional da sessão de demonstração. Distinto de `Area` (domínio): não existe `SISTEMA` aqui, e `DIRECAO` é exclusivo desta camada de identidade (somente leitura). */
 export type PapelSessao = (typeof PAPEL_SESSAO_VALORES)[number];

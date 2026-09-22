@@ -4,7 +4,7 @@
  * deste arquivo, nunca nos identificadores em si.
  */
 
-const VALIDACAO_STATUS_VALORES = [
+export const VALIDACAO_STATUS_VALORES = [
   "OK",
   "CORRIGIR",
   "REVISAO_HUMANA",
@@ -19,7 +19,7 @@ export function isValidacaoStatus(valor: string): valor is ValidacaoStatus {
   return (VALIDACAO_STATUS_VALORES as readonly string[]).includes(valor);
 }
 
-const FLUXO_STATUS_VALORES = [
+export const FLUXO_STATUS_VALORES = [
   "EM_TRATAMENTO",
   "LIBERADA_PARA_ENVIO",
   "ENVIADA",
@@ -36,7 +36,7 @@ export function isFluxoStatus(valor: string): valor is FluxoStatus {
   return (FLUXO_STATUS_VALORES as readonly string[]).includes(valor);
 }
 
-const AREA_VALORES = ["SECRETARIA", "FINANCEIRO", "SISTEMA"] as const;
+export const AREA_VALORES = ["SECRETARIA", "FINANCEIRO", "SISTEMA"] as const;
 
 /** Área funcional responsável por um ator, evento, problema ou tarefa. */
 export type Area = (typeof AREA_VALORES)[number];
@@ -46,7 +46,7 @@ export function isArea(valor: string): valor is Area {
   return (AREA_VALORES as readonly string[]).includes(valor);
 }
 
-const ORIGEM_VALORES = ["UI", "MCP", "IMPORTACAO", "SISTEMA"] as const;
+export const ORIGEM_VALORES = ["UI", "MCP", "IMPORTACAO", "SISTEMA"] as const;
 
 /** Canal pelo qual uma ação chegou ao sistema. */
 export type Origem = (typeof ORIGEM_VALORES)[number];

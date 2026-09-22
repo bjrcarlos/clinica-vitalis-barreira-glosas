@@ -1032,6 +1032,19 @@ Regras que valem inclusive para a Direção:
 
 Tudo isso vira evento em `user_events`, append-only: quem fez, em quem, quando.
 
+**Formato comum de resposta.** Toda tool devolve `content[0].text` (Markdown pronto: reais,
+horário de Brasília, rótulos em português, tabelas, aviso de lista cortada, "nada foi gravado")
+e `structuredContent` (o mesmo dado como objeto, validado contra o `outputSchema` anunciado em
+`tools/list`). Os dois saem da mesma variável na tool. Cada tool anuncia `title` e
+`annotations` (`readOnlyHint`/`destructiveHint`/`idempotentHint`); só `registrar_guia` escreve.
+Erros de tool trazem código estável na frente da mensagem (`[ROLE_NOT_ALLOWED]`,
+`[CONVENIO_DESCONHECIDO]`, `[PROCEDIMENTO_DESCONHECIDO]`, `[GUIA_NAO_ENCONTRADA]`).
+
+`minhas_pendencias` também devolve `por_motivo` (agrupado no banco, contando protocolos
+distintos) — agrupar à mão era onde a soma saía errada. `verificar_guia` e `registrar_guia`
+apresentam o resultado do motor pelo mesmo módulo (`apresentar-validacao.ts`): estado, resumo,
+problemas com evidência e responsável, campos ausentes, regra e `proximo_passo`.
+
 ### 23.4 Links de revisão
 
 `minhas_pendencias` pode retornar URL contendo token assinado com:

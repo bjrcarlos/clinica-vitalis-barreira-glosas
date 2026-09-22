@@ -114,7 +114,7 @@ function guiaBrutaFixture(overrides: Partial<GuiaBruta> = {}): GuiaBruta {
 }
 
 /** Extrai o corpo JSON-RPC de uma resposta HTTP, aceitando tanto JSON puro quanto o envelope SSE (`event: message\ndata: {...}`) que o transporte streamable-HTTP pode escolher conforme o `Accept`. */
-async function corpoJsonRpc(resposta: Response): Promise<{ result?: { content?: Array<{ type: string; text: string }>; isError?: boolean; tools?: unknown[] }; error?: { code: number; message: string } }> {
+async function corpoJsonRpc(resposta: Response): Promise<{ result?: { content?: Array<{ type: string; text: string }>; structuredContent?: Record<string, never>; isError?: boolean; tools?: unknown[] }; error?: { code: number; message: string } }> {
   const texto = await resposta.text();
   const linhaDados = texto.split(/\r?\n/).find((linha) => linha.startsWith("data: "));
   return JSON.parse(linhaDados ? linhaDados.slice("data: ".length) : texto);
@@ -124,6 +124,13 @@ function conteudoTexto(corpo: Awaited<ReturnType<typeof corpoJsonRpc>>): string 
   const texto = corpo.result?.content?.[0]?.text;
   if (typeof texto !== "string") throw new Error("Resposta MCP sem content[0].text.");
   return texto;
+}
+
+/** O dado estruturado da resposta (`structuredContent`), validado pelo servidor contra o `outputSchema` da tool. */
+function estruturado(corpo: Awaited<ReturnType<typeof corpoJsonRpc>>): Record<string, never> {
+  const dado = corpo.result?.structuredContent;
+  if (!dado) throw new Error("Resposta MCP sem structuredContent.");
+  return dado;
 }
 
 describe("manipularMcp — transporte createMcpHandler (PRD-SDD §17/§23)", () => {
@@ -183,17 +190,19 @@ describe("manipularMcp — transporte createMcpHandler (PRD-SDD §17/§23)", () 
   it("consultar_regra devolve a regra ativa para convênio e procedimento conhecidos", async () => {
     const resposta = await chamarTool(SECRETARIA_TOKEN, "consultar_regra", { convenio: "Vitalcard", procedimento_codigo: "50000470" });
     const corpo = await corpoJsonRpc(resposta);
-    const saida = JSON.parse(conteudoTexto(corpo));
+    const saida = estruturado(corpo) as { convenio: { nome: string }; procedimento_consultado: { codigo: string; coberto_por_este_convenio: boolean } };
     expect(saida.convenio.nome).toBe("Vitalcard");
-    expect(saida.procedimento.codigo).toBe("50000470");
+    expect(saida.procedimento_consultado.codigo).toBe("50000470");
+    expect(saida.procedimento_consultado.coberto_por_este_convenio).toBe(true);
   });
 
   it("verificar_guia não persiste nada, mesmo com guia estruturada válida", async () => {
     const antes = contar(db, "protocols");
     const resposta = await chamarTool(SECRETARIA_TOKEN, "verificar_guia", { guia: guiaBrutaFixture() });
     const corpo = await corpoJsonRpc(resposta);
-    const saida = JSON.parse(conteudoTexto(corpo));
+    const saida = estruturado(corpo) as { persistiu: boolean };
     expect(saida.persistiu).toBe(false);
+    expect(conteudoTexto(corpo)).toContain("Nada foi gravado");
     expect(contar(db, "protocols")).toBe(antes);
   });
 
@@ -208,12 +217,12 @@ describe("manipularMcp — transporte createMcpHandler (PRD-SDD §17/§23)", () 
 
   it("registrar_guia cria pela Secretaria e é idempotente pela mesma origem", async () => {
     const primeira = await chamarTool(SECRETARIA_TOKEN, "registrar_guia", { id_guia_origem: "MCP-TESTE-0001", guia: guiaBrutaFixture() });
-    const saidaPrimeira = JSON.parse(conteudoTexto(await corpoJsonRpc(primeira)));
+    const saidaPrimeira = estruturado(await corpoJsonRpc(primeira)) as { ja_existia: boolean; protocolo: { numero_protocolo: string } };
     expect(saidaPrimeira.ja_existia).toBe(false);
     expect(contar(db, "protocols")).toBe(1);
 
     const segunda = await chamarTool(SECRETARIA_TOKEN, "registrar_guia", { id_guia_origem: "MCP-TESTE-0001", guia: guiaBrutaFixture() });
-    const saidaSegunda = JSON.parse(conteudoTexto(await corpoJsonRpc(segunda)));
+    const saidaSegunda = estruturado(await corpoJsonRpc(segunda)) as { ja_existia: boolean; protocolo: { numero_protocolo: string } };
     expect(saidaSegunda.ja_existia).toBe(true);
     expect(saidaSegunda.protocolo.numero_protocolo).toBe(saidaPrimeira.protocolo.numero_protocolo);
     expect(contar(db, "protocols")).toBe(1);
@@ -222,8 +231,8 @@ describe("manipularMcp — transporte createMcpHandler (PRD-SDD §17/§23)", () 
   it("minhas_pendencias deriva a área da credencial (não aceita área como argumento) e difere entre papéis", async () => {
     await chamarTool(SECRETARIA_TOKEN, "registrar_guia", { id_guia_origem: "MCP-TESTE-0001", guia: guiaBrutaFixture() });
 
-    const comoSecretaria = JSON.parse(conteudoTexto(await corpoJsonRpc(await chamarTool(SECRETARIA_TOKEN, "minhas_pendencias", { area: "FINANCEIRO" }))));
-    const comoFinanceiro = JSON.parse(conteudoTexto(await corpoJsonRpc(await chamarTool(FINANCEIRO_TOKEN, "minhas_pendencias", { area: "FINANCEIRO" }))));
+    const comoSecretaria = estruturado(await corpoJsonRpc(await chamarTool(SECRETARIA_TOKEN, "minhas_pendencias", { area: "FINANCEIRO" }))) as { area: string };
+    const comoFinanceiro = estruturado(await corpoJsonRpc(await chamarTool(FINANCEIRO_TOKEN, "minhas_pendencias", { area: "FINANCEIRO" }))) as { area: string };
 
     // Mesmo passando `area: "FINANCEIRO"` em ambas as chamadas, a área respondida segue o Bearer.
     expect(comoSecretaria.area).toBe("SECRETARIA");

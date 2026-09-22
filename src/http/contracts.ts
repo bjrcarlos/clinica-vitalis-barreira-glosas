@@ -1,9 +1,9 @@
 import { z, ZodError } from "zod";
-import { isArea, isFluxoStatus, isOrigem, isValidacaoStatus, type Area, type FluxoStatus, type Origem, type ValidacaoStatus } from "../domain/statuses";
+import { AREA_VALORES, FLUXO_STATUS_VALORES, ORIGEM_VALORES, VALIDACAO_STATUS_VALORES } from "../domain/statuses";
 import type { TipoEvento } from "../domain/events";
 import type { CodigoProblema } from "../domain/validation";
 import { CABECALHO_GUIA_CSV } from "../domain/parse-csv";
-import { isPapelSessao, type PapelSessao } from "../infrastructure/auth/session";
+import { PAPEL_SESSAO_VALORES } from "../infrastructure/auth/session";
 
 /**
  * Fonte da verdade das entradas e saídas de `/api/*` (PRD-SDD §24, contrato fixado pelo
@@ -23,15 +23,13 @@ import { isPapelSessao, type PapelSessao } from "../infrastructure/auth/session"
 
 // --- Reaproveitamento de enums e guards já existentes no domínio (nunca duplicar a lista). ---
 
-function esquemaDeGuard<T extends string>(guarda: (valor: string) => valor is T, mensagem: string) {
-  return z.custom<T>((valor) => typeof valor === "string" && guarda(valor), { message: mensagem });
-}
-
-export const esquemaValidacaoStatus = esquemaDeGuard<ValidacaoStatus>(isValidacaoStatus, "Status de validação inválido.");
-export const esquemaFluxoStatus = esquemaDeGuard<FluxoStatus>(isFluxoStatus, "Status de fluxo inválido.");
-export const esquemaArea = esquemaDeGuard<Area>(isArea, "Área inválida.");
-export const esquemaOrigem = esquemaDeGuard<Origem>(isOrigem, "Origem inválida.");
-export const esquemaPapelSessao = esquemaDeGuard<PapelSessao>(isPapelSessao, "Papel de sessão inválido.");
+// `z.enum` sobre as listas do domínio, e não `z.custom` sobre os guards: os dois validam igual,
+// mas só o enum vira JSON Schema — e o MCP anuncia estes esquemas em `tools/list` (outputSchema).
+export const esquemaValidacaoStatus = z.enum(VALIDACAO_STATUS_VALORES, { message: "Status de validação inválido." });
+export const esquemaFluxoStatus = z.enum(FLUXO_STATUS_VALORES, { message: "Status de fluxo inválido." });
+export const esquemaArea = z.enum(AREA_VALORES, { message: "Área inválida." });
+export const esquemaOrigem = z.enum(ORIGEM_VALORES, { message: "Origem inválida." });
+export const esquemaPapelSessao = z.enum(PAPEL_SESSAO_VALORES, { message: "Papel de sessão inválido." });
 
 /** Área que pode efetivamente resolver um problema — nunca o sistema sozinho (espelha `AreaResponsavelProblema`). */
 export const esquemaAreaResponsavel = z.enum(["SECRETARIA", "FINANCEIRO"]);

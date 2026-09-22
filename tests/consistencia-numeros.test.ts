@@ -100,8 +100,10 @@ async function chamarTool(token: string, nome: string, argumentos: Record<string
   );
   const bruto = await resposta.text();
   const linha = bruto.split(/\r?\n/).find((l) => l.startsWith("data: "));
-  const corpo = JSON.parse(linha ? linha.slice(6) : bruto) as { result?: { content?: Array<{ text: string }> } };
-  return JSON.parse(corpo.result?.content?.map((c) => c.text).join("") ?? "{}");
+  // As tools devolvem texto pronto em `content` e o mesmo dado como objeto em `structuredContent`;
+  // os números conferidos aqui vêm do objeto.
+  const corpo = JSON.parse(linha ? linha.slice(6) : bruto) as { result?: { structuredContent?: Record<string, never> } };
+  return corpo.result?.structuredContent ?? ({} as Record<string, never>);
 }
 
 function contarPorStatus(): Record<string, number> {
