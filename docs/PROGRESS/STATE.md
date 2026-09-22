@@ -120,3 +120,13 @@ Execução faseada conforme `docs/PRD-SDD.md` §33–35. Cada fase roda com cont
 80 protocolos: 29 `OK`, 12 `CORRIGIR`, 34 `REVISAO_HUMANA`, 5 `NAO_FATURAR_CONVENIO`. Risco inicial e atual: 372.600 centavos (R$ 3.726,00). 186 testes verdes em 14 arquivos. Bundle do cliente: 144 KiB gzip. Worker: 249 KiB gzip.
 
 `PRAZO_ENVIO_EXCEDIDO` (RN-09) não ocorre em nenhuma das 80 guias: a maior distância entre lançamento e atendimento na amostra é de 3 dias, contra prazos de 30 e 45 dias. A regra é exercitada por teste de borda e demonstrável por `verificar_guia` com guia colada.
+
+## Publicação (22/09/2026)
+
+- Worker: <https://vitalis-barreira-glosas.bjrcarlos04.workers.dev> — 249 KiB gzip, bindings DB, EVIDENCE, AI e ASSETS resolvidos.
+- D1 remoto `vitalis-glosas` (região WEUR), migração `0001_init.sql` aplicada (21 comandos).
+- R2 remoto `vitalis-evidencias`, privado.
+- Três secrets configurados por `wrangler secret put`; os valores ficaram apenas em `.secrets.local.md`, fora do Git.
+- Carga: regra ativa por SQL e as 80 guias pela rota `POST /api/imports` (80 aceitas, 0 rejeitadas). O `seed.sql` inteiro **não** serve para o D1 remoto — ver `docs/CONFIG.md` §6.
+- Conferido em produção: relatório com 80 verificadas, 51 exigem atenção e R$ 3.726,00 em risco, iguais ao ambiente local; listagem sem filtro com 80; MCP recusando chamada sem Bearer e devolvendo pendências diferentes por token (Secretaria 27 / Financeiro 43) mesmo quando o argumento `area` é forçado.
+- Repositório: <https://github.com/bjrcarlos/vitalis-barreira-glosas>, **privado** até a reescrita do histórico ser executada.

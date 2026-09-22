@@ -1,5 +1,10 @@
 # Barreira de Glosas — Clínica Vitalis
 
+**Aplicação no ar:** <https://vitalis-barreira-glosas.bjrcarlos04.workers.dev>
+**Endpoint MCP:** `POST https://vitalis-barreira-glosas.bjrcarlos04.workers.dev/mcp` (Bearer por área)
+
+Publicada em 22/09/2026 em Cloudflare Workers, com D1 (`vitalis-glosas`), R2 (`vitalis-evidencias`) e Workers AI. As 80 guias da prova foram carregadas pela própria rota de importação, com 80 linhas aceitas e nenhuma rejeitada.
+
 Aplicação local Cloudflare Workers + React para conferir guias, bloquear liberações inseguras,
 preservar versões/evidências e expor consulta controlada por MCP.
 
