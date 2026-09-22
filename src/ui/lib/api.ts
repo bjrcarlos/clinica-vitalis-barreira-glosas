@@ -56,7 +56,7 @@ function isErroEnvelope(valor: unknown): valor is { erro: ErroApi } {
 }
 
 interface OpcoesRequisicao {
-  readonly method: "GET" | "POST";
+  readonly method: "GET" | "POST" | "PATCH";
   readonly corpo?: unknown;
   readonly signal?: AbortSignal;
 }
@@ -105,6 +105,8 @@ export const api = {
     requisitar<T>(caminho, { method: "GET", signal }),
   post: <T = unknown>(caminho: string, corpo?: unknown, signal?: AbortSignal): Promise<T> =>
     requisitar<T>(caminho, { method: "POST", corpo, signal }),
+  patch: <T = unknown>(caminho: string, corpo?: unknown, signal?: AbortSignal): Promise<T> =>
+    requisitar<T>(caminho, { method: "PATCH", corpo, signal }),
 };
 
 /** Papel funcional da identidade da demonstração (PRD §8: OAuth fora de escopo). DIRECAO é só leitura. */
@@ -228,4 +230,114 @@ export function compararMerge<TResposta = unknown>(dados: unknown): Promise<TRes
 /** Executa o merge depois das escolhas explícitas da interface Financeiro. */
 export function executarMerge<TResposta = unknown>(dados: unknown): Promise<TResposta> {
   return api.post<TResposta>("/merges/commit", dados);
+}
+
+/**
+ * Administração de contas (`/api/users`, telas "Pessoas com acesso" e "Minha conta"). Exige
+ * sessão de login real (cookie `vitalis_login`) — nunca a identidade funcional da demonstração.
+ * Os nomes de campo espelham exatamente `UsuarioParaListagem`/`EventoUsuario`
+ * (`src/infrastructure/d1/identity.ts`), já verificados nesta sessão.
+ */
+export interface Usuario {
+  readonly id: string;
+  readonly email: string;
+  readonly nome: string;
+  readonly papel: PapelSessao;
+  readonly ativo: boolean;
+  readonly senhaProvisoria: boolean;
+  readonly bloqueado: boolean;
+  readonly ultimoAcessoUtc: string | null;
+  readonly criadoEmUtc: string;
+}
+
+export interface ListaUsuariosResposta {
+  readonly usuarios: readonly Usuario[];
+  readonly eu: { readonly id: string; readonly email: string };
+}
+
+export interface CriarUsuarioEntrada {
+  readonly nome: string;
+  readonly email: string;
+  readonly papel: PapelSessao;
+}
+
+export interface CriarUsuarioResposta {
+  readonly usuario: Usuario;
+  readonly senha_provisoria: string;
+}
+
+export interface AlterarUsuarioEntrada {
+  readonly papel?: PapelSessao;
+  readonly ativo?: boolean;
+}
+
+export interface AlterarUsuarioResposta {
+  readonly usuario: Usuario;
+}
+
+export interface RedefinirSenhaResposta {
+  readonly usuario: Usuario;
+  readonly senha_provisoria: string;
+}
+
+/** Os oito tipos estáveis de evento de identidade (`GET /api/users/eventos`). */
+export type TipoEventoUsuario =
+  | "CONTA_CRIADA"
+  | "PAPEL_ALTERADO"
+  | "CONTA_DESATIVADA"
+  | "CONTA_REATIVADA"
+  | "SENHA_REDEFINIDA"
+  | "SENHA_TROCADA"
+  | "CONTA_BLOQUEADA"
+  | "ACESSO_REALIZADO";
+
+export interface EventoUsuario {
+  readonly id: string;
+  readonly userId: string;
+  readonly nomeUsuario: string;
+  readonly tipo: TipoEventoUsuario;
+  readonly atorEmail: string | null;
+  readonly metadata: Readonly<Record<string, unknown>>;
+  readonly ocorridoEmUtc: string;
+}
+
+export interface ListaEventosResposta {
+  readonly eventos: readonly EventoUsuario[];
+}
+
+/** `GET /api/users` — lista de contas para a tela "Pessoas com acesso" (papel DIRECAO). */
+export function listarUsuarios(signal?: AbortSignal): Promise<ListaUsuariosResposta> {
+  return api.get<ListaUsuariosResposta>("/users", signal);
+}
+
+/** `GET /api/users/eventos` — histórico de identidade (criação, papel, bloqueio, senha). */
+export function listarEventosDeUsuarios(signal?: AbortSignal): Promise<ListaEventosResposta> {
+  return api.get<ListaEventosResposta>("/users/eventos", signal);
+}
+
+/** `POST /api/users` — cria conta e devolve a senha provisória uma única vez. */
+export function criarUsuario(dados: CriarUsuarioEntrada, signal?: AbortSignal): Promise<CriarUsuarioResposta> {
+  return api.post<CriarUsuarioResposta>("/users", dados, signal);
+}
+
+/** `PATCH /api/users/:id` — troca papel e/ou ativa/desativa uma conta. */
+export function alterarUsuario(
+  id: string,
+  dados: AlterarUsuarioEntrada,
+  signal?: AbortSignal,
+): Promise<AlterarUsuarioResposta> {
+  return api.patch<AlterarUsuarioResposta>(`/users/${encodeURIComponent(id)}`, dados, signal);
+}
+
+/** `POST /api/users/:id/senha` — Direção redefine a senha de alguém e recebe a provisória uma vez. */
+export function redefinirSenhaUsuario(id: string, signal?: AbortSignal): Promise<RedefinirSenhaResposta> {
+  return api.post<RedefinirSenhaResposta>(`/users/${encodeURIComponent(id)}/senha`, undefined, signal);
+}
+
+/** `POST /api/me/senha` — a própria pessoa troca a senha, conferindo a atual. */
+export function trocarPropriaSenha(
+  dados: { readonly senha_atual: string; readonly senha_nova: string },
+  signal?: AbortSignal,
+): Promise<{ readonly trocada: true }> {
+  return api.post<{ readonly trocada: true }>("/me/senha", dados, signal);
 }

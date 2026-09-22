@@ -7,6 +7,8 @@ import { Pendencias } from "./pages/Pendencias";
 import { Regras } from "./pages/Regras";
 import { Merge } from "./pages/Merge";
 import { Conectar } from "./pages/Conectar";
+import { Pessoas } from "./pages/Pessoas";
+import { MinhaConta } from "./pages/MinhaConta";
 
 /**
  * Rotas da Fase 2 (docs/PRD-SDD.md §24, escopo fixado pelo orquestrador). Cada página é hoje
@@ -22,6 +24,8 @@ import { Conectar } from "./pages/Conectar";
  *   /nova-guia           -> redireciona para /guias?modal=nova-guia (modal sobre a lista, ver Guias.tsx)
  *   /regras              -> src/ui/pages/Regras.tsx     (design-reference/Regras.dc.html)
  *   /conectar            -> src/ui/pages/Conectar.tsx   (sem tela em design-reference; tutorial de instalação do MCP)
+ *   /pessoas             -> src/ui/pages/Pessoas.tsx    (sem tela em design-reference; administração de contas, só Direção)
+ *   /minha-conta         -> src/ui/pages/MinhaConta.tsx (sem tela em design-reference; dados da conta e troca de senha)
  *
  * "Importar" e "Nova guia" deixaram de ser páginas/itens de sidebar: viraram modais abertos
  * pelos botões de "Todas as guias" (src/ui/components/entrada/FormularioImportacao.tsx e
@@ -42,6 +46,8 @@ export function AppRoutes() {
       <Route path="/regras" element={<Regras />} />
       <Route path="/merge" element={<Merge />} />
       <Route path="/conectar" element={<Conectar />} />
+      <Route path="/pessoas" element={<Pessoas />} />
+      <Route path="/minha-conta" element={<MinhaConta />} />
     </Routes>
   );
 }

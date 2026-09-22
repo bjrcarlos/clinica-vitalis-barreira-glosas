@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
+import type { UsuarioAtual } from "../lib/api";
 import styles from "./Sidebar.module.css";
 
 interface SidebarProps {
@@ -7,6 +8,13 @@ interface SidebarProps {
   readonly contadorPendencias?: number;
   /** Rodapé da sidebar — a identidade da demonstração (ex.: <TrocaDePapel />). */
   readonly rodape?: ReactNode;
+  /**
+   * Conta logada (`GET /api/me`). Controla dois itens extras: "Pessoas" só aparece com
+   * `papel === "DIRECAO"` e `autenticado === true`; "Minha conta" aparece para qualquer conta
+   * autenticada. Nenhum dos dois aparece para quem está só na identidade funcional da
+   * demonstração (`usuario` ausente ou `autenticado: false`).
+   */
+  readonly usuario?: UsuarioAtual | null;
 }
 
 interface ItemNav {
@@ -54,6 +62,20 @@ const ICONE_CONECTAR = (
     <path d="M7 15v-3a2 2 0 0 1 2-2h3m0 0V7m0 3 3-3" />
   </svg>
 );
+const ICONE_PESSOAS = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="9" cy="8" r="3" />
+    <path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5" />
+    <circle cx="17" cy="8.5" r="2.3" />
+    <path d="M15.5 13.3c2.2.6 3.7 2.3 4 4.7" />
+  </svg>
+);
+const ICONE_MINHA_CONTA = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="8" r="3.5" />
+    <path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" />
+  </svg>
+);
 
 /**
  * Navegação principal fixada em docs/PRD-SDD.md §12.1 — não é dado, não vem de props.
@@ -76,7 +98,16 @@ const ITENS: readonly ItemNav[] = [
 ];
 
 /** Coluna de navegação de 236px — item ativo em mint, contador de pendências em pílula âmbar. */
-export function Sidebar({ contadorPendencias, rodape }: SidebarProps) {
+export function Sidebar({ contadorPendencias, rodape, usuario }: SidebarProps) {
+  const autenticado = usuario?.autenticado === true;
+  const itens: readonly ItemNav[] = autenticado
+    ? [
+        ...ITENS,
+        ...(usuario?.papel === "DIRECAO" ? [{ rota: "/pessoas", rotulo: "Pessoas", icone: ICONE_PESSOAS }] : []),
+        { rota: "/minha-conta", rotulo: "Minha conta", icone: ICONE_MINHA_CONTA },
+      ]
+    : ITENS;
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.marca}>
@@ -88,7 +119,7 @@ export function Sidebar({ contadorPendencias, rodape }: SidebarProps) {
         Vitalis
       </div>
       <nav className={styles.nav} aria-label="Navegação principal">
-        {ITENS.map((item) => (
+        {itens.map((item) => (
           <NavLink
             key={item.rota}
             to={item.rota}

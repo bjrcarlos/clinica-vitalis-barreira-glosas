@@ -49,6 +49,7 @@ export default function App() {
     <BrowserRouter>
       <div className={styles.layout}>
         <Sidebar
+          usuario={usuario}
           rodape={
             logado && usuario ? <IdentidadeAtual usuario={usuario} /> : <TrocaDePapel papelInicial={papel} aoTrocar={setPapel} />
           }
