@@ -81,7 +81,7 @@ curl http://127.0.0.1:8787/api/health
   `protocol_merges`) mais `d1_migrations`/`sqlite_sequence`/`_cf_METADATA` internos. O
   mesmo para `type='index'`: os 10 índices de `docs/PRD-SDD.md` §20 estão todos presentes.
 - `wrangler whoami`: token OAuth válido, 5 contas Cloudflare autenticadas na máquina; usei
-  `<account_id da conta Cloudflare, obtido com wrangler whoami>` (conta do dono, `a conta autenticada`) para o teste.
+  `<account_id da conta Cloudflare, obtido com `wrangler whoami`>` (conta Cloudflare autenticada no wrangler) para o teste.
 - `pnpm run dev` com `CLOUDFLARE_ACCOUNT_ID` exportado: sobe em ~8s, log mostra
   `env.DB`/`env.EVIDENCE`/`env.ASSETS` em modo `local` e `env.AI` em modo `remote`
   (proxy, aviso de possível cobrança de uso — esperado, nenhum recurso é criado), termina
@@ -144,7 +144,7 @@ prefixo `rtk` antes de assumir regressão real** — ver §5.
   `CLOUDFLARE_ACCOUNT_ID` como variável de ambiente do shell (nunca em `.dev.vars`, que só
   popula bindings do Worker, não o processo do Wrangler CLI). Documentado em
   `docs/CONFIG.md` e no comentário de `wrangler.jsonc`. Confirmado nesta sessão: usar a
-  conta `a conta autenticada` (`<account_id da conta Cloudflare, obtido com wrangler whoami>`) resolve o `pnpm dev`
+  a conta Cloudflare autenticada (`<account_id da conta Cloudflare, obtido com `wrangler whoami`>`) resolve o `pnpm dev`
   local sem criar ou tocar recurso remoto nenhum — D1/R2/Assets continuam `local`; só o
   proxy do binding `AI` é aberto (com aviso de possível cobrança de uso, não de criação
   de recurso).

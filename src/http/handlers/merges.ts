@@ -13,8 +13,11 @@ import {
 import { normalizarGuia } from "../../domain/normalize";
 import type { GuiaNormalizada } from "../../domain/guide";
 import { validarGuia as motorValidacao } from "../../rules/engine";
-import { validarGuia as executarValidacao } from "../../application/validate-guide";
-import { criarRepositoriosD1 } from "../../infrastructure/d1/repositories";
+import type { ExecucaoValidacao, NovaTarefa } from "../../application/ports";
+import { RepositorioVersoesD1 } from "../../infrastructure/d1/versions";
+import { montarInsercaoEvento } from "../../infrastructure/d1/events";
+import { montarInsercoesTarefas } from "../../infrastructure/d1/tasks";
+import { montarInsercoesExecucaoValidacao } from "../../infrastructure/d1/validations";
 import { GeradorIdCrypto } from "../../infrastructure/id";
 import { RelogioReal } from "../../infrastructure/clock";
 import { carregarRegrasAtivas, buscarResumoWire } from "./create-protocol";
@@ -125,6 +128,10 @@ export async function executarMerge(db: D1Database, papel: PapelSessao, corpoBru
     throw new ErroDominio("DUPLICATE_MERGE_CONFLICT", "Não há suspeita de duplicidade aberta para estes protocolos.", 409);
   }
 
+  // --- Daqui em diante, só CÁLCULO — nenhuma escrita no banco (PRD §26.2: passos 2 a 8 têm
+  // que caber numa única transação relacional). O motor de validação é puro (não toca em D1);
+  // rodar aqui, antes do batch, é o que permite transformar o resultado dele em statements a
+  // mais para a mesma lista, em vez de precisar de uma segunda viagem ao banco.
   const rawPrincipal = JSON.parse(principal.raw_payload_json) as Record<string, string>;
   const guiaBruta = { ...rawPrincipal } as Record<string, string>;
   for (const campo of camposDivergentes) {
@@ -134,48 +141,130 @@ export async function executarMerge(db: D1Database, papel: PapelSessao, corpoBru
   const { guia: guiaMesclada, avisos: avisosNormalizacao } = normalizarGuia(guiaBruta as GuiaBrutaWire);
   const ids = new GeradorIdCrypto();
   const relogio = new RelogioReal();
+  // Um único instante para toda a operação: não há "durante" observável de fora — ou o merge
+  // inteiro aconteceu, ou nada aconteceu — então não há razão para timestamps diferentes entre
+  // as partes de uma mesma transação atômica.
   const agora = relogio.agoraUtc();
-  const repos = criarRepositoriosD1(db, ids, relogio);
   const regras = await carregarRegrasAtivas(db);
-  const candidatos = (await repos.versoes.listarCandidatosDuplicidade(guiaMesclada)).filter((candidato) => candidato.protocoloId !== principal.id && candidato.protocoloId !== origem.id);
+  const versoes = new RepositorioVersoesD1(db);
+  const candidatos = (await versoes.listarCandidatosDuplicidade(guiaMesclada)).filter(
+    (candidato) => candidato.protocoloId !== principal.id && candidato.protocoloId !== origem.id,
+  );
   const novaVersaoId = ids.novo();
   const mergeId = ids.novo();
   const novoNumeroVersao = principal.version_number + 1;
   const diff = calcularDiff(guiaPrincipal, guiaMesclada);
 
-  await db.batch([
-    db.prepare(`INSERT INTO guide_versions (
-      id, protocol_id, version_number, raw_payload_json, normalized_payload_json, diff_json,
-      change_reason, created_by_role, created_by_principal, occurred_at_utc, recorded_at_utc
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, 'FINANCEIRO', ?, ?, ?)`)
-      .bind(novaVersaoId, principal.id, novoNumeroVersao, JSON.stringify(guiaBruta), JSON.stringify(guiaMesclada), JSON.stringify(diff), `Merge com ${origem.protocol_number}: ${entrada.motivo}`, "financeiro@vitalis", agora, agora),
-    db.prepare(`UPDATE validation_issues SET status = 'RESOLVIDO', resolved_at_utc = ? WHERE status = 'ABERTO' AND validation_run_id IN (SELECT id FROM validation_runs WHERE protocol_id IN (?, ?))`).bind(agora, principal.id, origem.id),
-    db.prepare(`UPDATE tasks SET status = 'RESOLVIDA', resolved_at_utc = ? WHERE status = 'ABERTA' AND protocol_id IN (?, ?)`).bind(agora, principal.id, origem.id),
-    db.prepare(`UPDATE protocols SET current_version_id = ?, workflow_status = 'EM_TRATAMENTO', updated_at_utc = ? WHERE id = ?`).bind(novaVersaoId, agora, principal.id),
-  ]);
+  // Motor puro (RN-02: validação da versão resultante é execução NOVA, nunca reaproveita a
+  // anterior). Só decide o resultado — quem grava é a lista de statements montada abaixo.
+  const resultadoValidacao = motorValidacao(guiaMesclada, regras, candidatos);
 
-  const validacao = await executarValidacao({ protocoloId: principal.id, guiaVersaoId: novaVersaoId, guia: guiaMesclada, regras, candidatosDuplicidade: candidatos, origem: "UI" }, {
-    motor: motorValidacao, validacoes: repos.validacoes, tarefas: repos.tarefas, eventos: repos.eventos, relogio,
+  const execucaoValidacao: ExecucaoValidacao = {
+    protocoloId: principal.id,
+    guiaVersaoId: novaVersaoId,
+    resultado: resultadoValidacao,
+    iniciadoEmUtc: agora,
+    concluidoEmUtc: agora,
+  };
+  const { statements: statementsValidacao, validationRunId, issueIds } = montarInsercoesExecucaoValidacao(db, ids, execucaoValidacao);
+
+  const novasTarefas: NovaTarefa[] = resultadoValidacao.tarefas.map((tarefa) => ({
+    protocoloId: principal.id,
+    issueId: null,
+    tarefa,
+  }));
+  const { statements: statementsTarefas } = montarInsercoesTarefas(db, ids, relogio, novasTarefas);
+
+  const { statement: statementEventoValidacao } = montarInsercaoEvento(db, ids, {
+    protocoloId: principal.id,
+    guiaVersaoId: novaVersaoId,
+    evento: {
+      tipo: "VALIDACAO", ator: "motor-validacao", papel: "SISTEMA", origem: "UI",
+      ocorrido_em_utc: agora, registrado_em_utc: agora, motivo: null,
+      metadata: { validation_run_id: validationRunId, status: resultadoValidacao.status, risco_cents: resultadoValidacao.risco_cents },
+    },
   });
-  const eventoPrincipal = await repos.eventos.registrar({ protocoloId: principal.id, guiaVersaoId: novaVersaoId, evento: {
-    tipo: "MERGE", ator: "financeiro@vitalis", papel: "FINANCEIRO", origem: "UI", ocorrido_em_utc: agora, registrado_em_utc: agora,
-    motivo: entrada.motivo, metadata: { merge_id: mergeId, protocolo_origem: origem.protocol_number, protocolo_principal: principal.protocol_number, avisos_normalizacao: avisosNormalizacao.length },
-  } });
-  await repos.eventos.registrar({ protocoloId: origem.id, guiaVersaoId: origem.current_version_id, evento: {
-    tipo: "MERGE", ator: "financeiro@vitalis", papel: "FINANCEIRO", origem: "UI", ocorrido_em_utc: agora, registrado_em_utc: agora,
-    motivo: entrada.motivo, metadata: { merge_id: mergeId, mesclado_em: principal.protocol_number },
-  } });
+  const { statement: statementEventoMergePrincipal, eventoId: eventoPrincipalId } = montarInsercaoEvento(db, ids, {
+    protocoloId: principal.id,
+    guiaVersaoId: novaVersaoId,
+    evento: {
+      tipo: "MERGE", ator: "financeiro@vitalis", papel: "FINANCEIRO", origem: "UI",
+      ocorrido_em_utc: agora, registrado_em_utc: agora, motivo: entrada.motivo,
+      metadata: { merge_id: mergeId, protocolo_origem: origem.protocol_number, protocolo_principal: principal.protocol_number, avisos_normalizacao: avisosNormalizacao.length },
+    },
+  });
+  const { statement: statementEventoMergeOrigem } = montarInsercaoEvento(db, ids, {
+    protocoloId: origem.id,
+    guiaVersaoId: origem.current_version_id,
+    evento: {
+      tipo: "MERGE", ator: "financeiro@vitalis", papel: "FINANCEIRO", origem: "UI",
+      ocorrido_em_utc: agora, registrado_em_utc: agora, motivo: entrada.motivo,
+      metadata: { merge_id: mergeId, mesclado_em: principal.protocol_number },
+    },
+  });
 
-  await db.batch([
-    db.prepare(`INSERT INTO protocol_merges (
-      id, source_protocol_id, target_protocol_id, target_version_id, field_resolution_json,
-      reason, performed_by_principal, performed_at_utc
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+  // --- Única escrita no banco: TODOS os passos 2–8 do PRD §26.2 num só `db.batch()`. Se
+  // qualquer statement falhar, o D1 reverte a transação inteira — nenhuma versão nova, nenhum
+  // evento, nenhum registro de merge e nenhuma marca de "mesclada" ficam gravados sozinhos.
+  //
+  // Ordem obrigatória pelas FOREIGN KEY não deferíveis de migrations/0001_init.sql:
+  //  1) resolver o que já estava aberto ANTES de inserir o que a revalidação cria agora (senão
+  //     esta mesma limpeza fecharia as issues/tarefas recém-nascidas);
+  //  2) inserir `guide_versions` antes de qualquer linha que referencie `novaVersaoId`
+  //     (validation_runs, workflow_events, protocol_merges — nenhuma dessas FKs é DEFERRABLE);
+  //  3) inserir o evento MERGE do principal antes do vínculo de evidências, que referencia o
+  //     id desse evento.
+  // `protocols.current_version_id` é a única FK DEFERRABLE INITIALLY DEFERRED do schema — por
+  // isso o UPDATE que aponta o principal para a versão nova pode vir em qualquer posição.
+  const statements: D1PreparedStatement[] = [
+    db
+      .prepare(
+        `UPDATE validation_issues SET status = 'RESOLVIDO', resolved_at_utc = ? WHERE status = 'ABERTO' AND validation_run_id IN (SELECT id FROM validation_runs WHERE protocol_id IN (?, ?))`,
+      )
+      .bind(agora, principal.id, origem.id),
+    db
+      .prepare(`UPDATE tasks SET status = 'RESOLVIDA', resolved_at_utc = ? WHERE status = 'ABERTA' AND protocol_id IN (?, ?)`)
+      .bind(agora, principal.id, origem.id),
+
+    db
+      .prepare(`INSERT INTO guide_versions (
+        id, protocol_id, version_number, raw_payload_json, normalized_payload_json, diff_json,
+        change_reason, created_by_role, created_by_principal, occurred_at_utc, recorded_at_utc
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'FINANCEIRO', ?, ?, ?)`)
+      .bind(
+        novaVersaoId, principal.id, novoNumeroVersao, JSON.stringify(guiaBruta), JSON.stringify(guiaMesclada),
+        JSON.stringify(diff), `Merge com ${origem.protocol_number}: ${entrada.motivo}`, "financeiro@vitalis", agora, agora,
+      ),
+
+    ...statementsValidacao,
+    ...statementsTarefas,
+
+    db
+      .prepare(`UPDATE protocols SET current_version_id = ?, workflow_status = 'EM_TRATAMENTO', updated_at_utc = ? WHERE id = ?`)
+      .bind(novaVersaoId, agora, principal.id),
+
+    statementEventoValidacao,
+    statementEventoMergePrincipal,
+    statementEventoMergeOrigem,
+
+    db
+      .prepare(`INSERT INTO protocol_merges (
+        id, source_protocol_id, target_protocol_id, target_version_id, field_resolution_json,
+        reason, performed_by_principal, performed_at_utc
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
       .bind(mergeId, origem.id, principal.id, novaVersaoId, JSON.stringify(entrada.resolucao_campos), entrada.motivo, "financeiro@vitalis", agora),
-    db.prepare(`UPDATE protocols SET workflow_status = 'MESCLADA', merged_into_protocol_id = ?, assigned_area = NULL, current_risk_cents = 0, updated_at_utc = ? WHERE id = ?`).bind(principal.id, agora, origem.id),
-    db.prepare(`INSERT OR IGNORE INTO evidence_links (evidence_id, protocol_id, event_id, guide_version_id, relation_type, origin_protocol_id)
-      SELECT evidence_id, ?, ?, guide_version_id, 'merge', origin_protocol_id FROM evidence_links WHERE protocol_id = ?`).bind(principal.id, eventoPrincipal, origem.id),
-  ]);
+
+    db
+      .prepare(`UPDATE protocols SET workflow_status = 'MESCLADA', merged_into_protocol_id = ?, assigned_area = NULL, current_risk_cents = 0, updated_at_utc = ? WHERE id = ?`)
+      .bind(principal.id, agora, origem.id),
+
+    db
+      .prepare(`INSERT OR IGNORE INTO evidence_links (evidence_id, protocol_id, event_id, guide_version_id, relation_type, origin_protocol_id)
+        SELECT evidence_id, ?, ?, guide_version_id, 'merge', origin_protocol_id FROM evidence_links WHERE protocol_id = ?`)
+      .bind(principal.id, eventoPrincipalId, origem.id),
+  ];
+
+  await db.batch(statements);
 
   const resumo = await buscarResumoWire(db, principal.protocol_number);
   return esquemaExecutarMergeResposta.parse({
@@ -186,7 +275,7 @@ export async function executarMerge(db: D1Database, papel: PapelSessao, corpoBru
       numero_versao_resultante: novoNumeroVersao, resolucao_campos: entrada.resolucao_campos,
       motivo: entrada.motivo, executado_por_principal: "financeiro@vitalis", executado_em_utc: agora,
     },
-    validacao: validacao.resultado.status,
+    validacao: resultadoValidacao.status,
   });
 }
 

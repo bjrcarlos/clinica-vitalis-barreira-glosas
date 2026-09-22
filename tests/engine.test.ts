@@ -179,6 +179,23 @@ describe("validarGuia — prazo de envio (RN-09)", () => {
       bloqueante: true,
     });
   });
+
+  it("dado incoerente (lançamento anterior ao atendimento) não gera PRAZO_ENVIO_EXCEDIDO — comportamento caracterizado, não normativo", () => {
+    // `guias.csv` não tem nenhum caso assim (auditoria de 22/09/2026, ver docs/BASELINE.md).
+    // A regra só compara `lancamento <= atendimento + prazo`; lançamento antes do atendimento
+    // sempre satisfaz essa desigualdade e passa em silêncio, sem aviso nem tarefa. O PRD não
+    // pede um código para essa inconsistência de dados — este teste apenas fixa o
+    // comportamento atual para que uma mudança futura não o altere sem querer.
+    const regras = carregarRegras();
+    const guia = guiaVitalcard({
+      data_atendimento: "2026-08-10",
+      data_lancamento: "2026-08-05",
+    });
+
+    const resultado = validarGuia(guia, regras, []);
+
+    expect(resultado.problemas.some((p) => p.codigo === "PRAZO_ENVIO_EXCEDIDO")).toBe(false);
+  });
 });
 
 describe("validarGuia — campos obrigatórios variam por convênio (RN-01, RF-05)", () => {

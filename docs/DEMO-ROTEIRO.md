@@ -22,6 +22,9 @@
    volta a `OK` e que o risco atual é zerado quando não restam pendências.
 4. Comparar os dois protocolos marcados como duplicidade, escolher o principal e resolver cada campo
    divergente; executar o merge e abrir o histórico de ambas as origens.
+5. Abrir uma guia com procedimento fora do convênio (`NÃO FATURAR AO CONVÊNIO`) e mostrar que ela
+   não segue para liberação normal; pela identidade Financeiro, encerrar como particular ou como
+   cobrança cancelada informando o motivo, e conferir que o protocolo sai da lista de pendências.
 
 ## MCP
 
@@ -31,6 +34,32 @@
 3. Tentar `registrar_guia` com o Bearer Financeiro e mostrar a negativa.
 4. Com a Secretaria, registrar uma guia nova somente após confirmar os dados; repetir a mesma origem
    para demonstrar idempotência.
+5. Prazo de envio excedido (RN-09): nenhuma das 80 guias da amostra de agosto dispara essa regra —
+   a maior distância entre `data_lancamento` e `data_atendimento` na base é de 3 dias, e os prazos
+   dos convênios são de 30 e 45 dias. A regra existe, é determinística e tem teste de borda, mas é
+   estruturalmente inerte com esses dados; por isso ela é demonstrada com uma guia colada, nunca
+   pela lista das 80. Chamar `verificar_guia` com um objeto `guia` (não `id_guia`) do convênio
+   Vitalcard, com `data_atendimento` no início de agosto (ex.: `2026-08-05`) e `data_lancamento`
+   bem depois do prazo de 30 dias do convênio (ex.: `2026-09-20`), mantendo os demais campos
+   completos e coerentes (autorização válida, procedimento coberto). O retorno é `REVISÃO HUMANA`
+   com o problema `PRAZO_ENVIO_EXCEDIDO` e seus quatro subproblemas — atendimento, lançamento, data
+   limite e prazo do convênio — e `persistiu: false`: a conferência não cria protocolo nem toca na
+   base das 80 guias.
+
+## Skill operacional
+
+1. Num agente com a Skill `conferir-guia-vitalis` carregada, colar uma guia como a recepção
+   escreveria (texto livre, não JSON) — ex.: "id G-TEST-01, unidade Centro, atendimento
+   2026-08-10, paciente P-1, convênio Vitalcard, procedimento 50000470, autorização AUT-1 válida
+   até 2026-09-10, valor 120,00, lançamento 2026-08-10." Mostrar que a Skill lista os campos
+   ausentes sem inventá-los, chama `consultar_regra`/`verificar_guia` e devolve a resposta no
+   formato fixo (estado, resumo, problemas, regra e versão aplicadas, próximo passo e o aviso de
+   que nada foi gravado).
+2. Colar uma guia claramente incompleta (ex.: "Paciente Maria, Vitalcard, fez fisioterapia
+   ontem.") e mostrar que a Skill pede os campos obrigatórios em vez de adivinhar, sem chamar
+   `registrar_guia`.
+3. Pedir explicitamente "registre esta guia" sobre a guia completa do passo 1 e mostrar que a
+   Skill só chama `registrar_guia` depois de confirmar o `id_guia_origem` idempotente.
 
 ## Fechamento
 

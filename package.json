@@ -12,6 +12,8 @@
     "seed:local": "node --experimental-transform-types scripts/seed.ts && wrangler d1 execute DB --local --file=.wrangler/seed/seed.sql"
   },
   "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
+    "agents": "0.24.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-router-dom": "7.18.4",

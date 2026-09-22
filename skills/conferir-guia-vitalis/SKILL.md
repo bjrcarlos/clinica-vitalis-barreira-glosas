@@ -72,6 +72,13 @@ Resposta: apontar a inconsistência e pedir confirmação; não escolher a data 
 
 - Se o MCP retornar erro de autenticação, não repetir tokens nem expor credenciais; pedir que a
   sessão seja corrigida.
+- Se o MCP recusar a entrada (schema inválido, convênio ou procedimento não encontrado, tool
+  desconhecida), mostrar a mensagem de erro tal como veio, sem tentar adivinhar o valor correto
+  nem repetir a chamada com um dado inventado; pedir ao operador que confirme ou corrija o campo
+  apontado antes de tentar de novo.
+- Se `verificar_guia`/`consultar_regra` ficarem indisponíveis (erro de rede, timeout, servidor
+  fora do ar), informar que a conferência não pôde ser concluída e não apresentar estado, resumo
+  nem problemas como se a verificação tivesse ocorrido.
 - Se a IA falhar, aceitar o fallback de revisão humana do motor; não concluir que a observação
   é irrelevante.
 - Se for necessária correção, decisão de revisão, particular/cancelamento, envio ou merge,
