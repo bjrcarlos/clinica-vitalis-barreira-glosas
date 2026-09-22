@@ -9,6 +9,7 @@ import { PendenciasAntigas } from "../components/relatorio/PendenciasAntigas";
 import { RiscoResumoGrafico } from "../components/relatorio/RiscoResumoGrafico";
 import { RoscaEstado } from "../components/relatorio/RoscaEstado";
 import { saudacaoPorHorario } from "../components/relatorio/saudacao";
+import { nomeDaIdentidadeAtual } from "../components/TrocaDePapel";
 import { useRelatorio } from "../components/relatorio/useRelatorio";
 import { formatarCentavos } from "../lib/format";
 import styles from "./Dashboard.module.css";
@@ -39,10 +40,9 @@ const ICONE_PENDENTE = (
 
 /**
  * Dashboard operacional (design-reference/Dashboard.dc.html). Mesma fonte de dados do
- * Relatório (`GET /api/report`) — nenhum número fixo no código. Duas suposições declaradas:
- * a rosca de estado usa 2 fatias reais (OK × exige atenção), não 4 (ver `RoscaEstado.tsx`);
- * e o painel de risco compara detectado/tratado/pendente em vez da série semanal da referência
- * visual, que não tem dado real por trás no contrato fixado (ver `RiscoResumoGrafico.tsx`).
+ * Relatório (`GET /api/report`) — nenhum número fixo no código. Suposição declarada: o painel
+ * de risco compara detectado/tratado/pendente em vez da série semanal da referência visual, que
+ * não tem dado real por trás no contrato fixado (ver `RiscoResumoGrafico.tsx`).
  */
 export function Dashboard() {
   const { relatorio, carregando, erro, recarregar } = useRelatorio();
@@ -70,14 +70,13 @@ export function Dashboard() {
   if (!relatorio) return null;
 
   const semGuias = relatorio.guias_verificadas.valor === 0;
-  const ok = relatorio.guias_verificadas.valor - relatorio.exigem_atencao.valor;
 
   return (
     <div className={styles.pagina}>
       <div className={styles.cabecalho}>
         <div>
           <h1 className={styles.titulo}>
-            {saudacaoPorHorario()}, <em className={styles.destaque}>Vitalis</em>
+            {saudacaoPorHorario()}, <em className={styles.destaque}>{nomeDaIdentidadeAtual()}</em>
           </h1>
           <p className={styles.subtitulo}>O que a barreira segurou antes de chegar ao convênio.</p>
         </div>
@@ -143,7 +142,7 @@ export function Dashboard() {
             <Card className={styles.painel}>
               <h2 className={styles.tituloCard}>Estado das guias</h2>
               <p className={styles.subCard}>Distribuição das {relatorio.guias_verificadas.valor} guias verificadas</p>
-              <RoscaEstado ok={ok} exigemAtencao={relatorio.exigem_atencao.valor} />
+              <RoscaEstado distribuicao={relatorio.distribuicao_por_estado_validacao} />
             </Card>
           </div>
 

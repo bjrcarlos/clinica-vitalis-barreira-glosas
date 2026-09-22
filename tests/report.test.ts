@@ -532,6 +532,31 @@ describe("GET /api/report — reconciliação com as listas filtradas (PRD §27,
     expect(somaAreas).toBe(relatorio.risco_pendente_cents.valor);
   });
 
+  it("distribuição por estado de validação soma o total de guias verificadas e nunca inclui a mesclada", async () => {
+    const relatorio = await montarRelatorio(d1 as never);
+    const porStatus = new Map(relatorio.distribuicao_por_estado_validacao.map((d) => [d.status_validacao, d]));
+
+    // Universo idêntico a "guias verificadas" (5): P1 OK, P2 CORRIGIR, P3 REVISAO_HUMANA,
+    // P4 OK (corrigido e liberado), P6 CORRIGIR. P5 está MESCLADA e não pode entrar em nenhuma
+    // fatia, mesmo tendo status REVISAO_HUMANA e risco alto — é o mesmo caso de vazamento que os
+    // outros blocos do relatório já testam.
+    expect(porStatus.get("OK")?.quantidade).toBe(2);
+    expect(porStatus.get("CORRIGIR")?.quantidade).toBe(2);
+    expect(porStatus.get("REVISAO_HUMANA")?.quantidade).toBe(1);
+    expect(porStatus.get("NAO_FATURAR_CONVENIO")?.quantidade).toBe(0);
+
+    const somaDistribuicao = relatorio.distribuicao_por_estado_validacao.reduce((soma, d) => soma + d.quantidade, 0);
+    expect(somaDistribuicao).toBe(relatorio.guias_verificadas.valor);
+
+    // Risco em centavos por estado (SUM(current_risk_cents) do mesmo universo): P1 e P4 (OK)
+    // estão sem risco atual (0 e 0 — P4 foi corrigido e liberado, current_risk_cents zerado);
+    // P2 (5000) + P6 (6000) = 11000 em CORRIGIR; P3 (3000) em REVISAO_HUMANA.
+    expect(porStatus.get("OK")?.risco_cents).toBe(0);
+    expect(porStatus.get("CORRIGIR")?.risco_cents).toBe(11000);
+    expect(porStatus.get("REVISAO_HUMANA")?.risco_cents).toBe(3000);
+    expect(porStatus.get("NAO_FATURAR_CONVENIO")?.risco_cents).toBe(0);
+  });
+
   it("pendências mais antigas ordena por tempo de espera e nunca inclui a mesclada", async () => {
     const relatorio = await montarRelatorio(d1 as never);
     expect(relatorio.pendencias_mais_antigas.map((p) => p.numero_protocolo)).toEqual([

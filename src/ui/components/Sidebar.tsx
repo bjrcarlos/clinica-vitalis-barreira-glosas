@@ -21,6 +21,14 @@ const ICONE_RELATORIO = (
     <path d="M4 19V5M4 15l5-5 4 4 7-7" />
   </svg>
 );
+const ICONE_DASHBOARD = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="4" y="4" width="7" height="9" rx="2" />
+    <rect x="13" y="4" width="7" height="5" rx="2" />
+    <rect x="4" y="15" width="7" height="5" rx="2" />
+    <rect x="13" y="11" width="7" height="9" rx="2" />
+  </svg>
+);
 const ICONE_GUIAS = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <rect x="4" y="4" width="16" height="16" rx="3" />
@@ -50,8 +58,13 @@ const ICONE_REGRAS = (
   </svg>
 );
 
-/** Navegação principal fixada em docs/PRD-SDD.md §12.1 — não é dado, não vem de props. */
+/**
+ * Navegação principal fixada em docs/PRD-SDD.md §12.1 — não é dado, não vem de props.
+ * O Dashboard é a tela operacional do canvas de design (design-reference/Dashboard.dc.html) e
+ * fica no topo; o Relatório narrativo do Dr. Renato continua sendo a tela inicial (`/`).
+ */
 const ITENS: readonly ItemNav[] = [
+  { rota: "/dashboard", rotulo: "Dashboard", icone: ICONE_DASHBOARD },
   { rota: "/", rotulo: "Relatório", fimExato: true, icone: ICONE_RELATORIO },
   { rota: "/guias", rotulo: "Todas as guias", icone: ICONE_GUIAS },
   { rota: "/pendencias", rotulo: "Minhas pendências", icone: ICONE_PENDENCIAS },

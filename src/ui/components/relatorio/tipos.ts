@@ -40,6 +40,12 @@ interface DistribuicaoArea {
   readonly protocol_numbers: readonly string[];
 }
 
+interface DistribuicaoEstadoValidacao {
+  readonly status_validacao: ValidacaoStatus;
+  readonly quantidade: number;
+  readonly risco_cents: number;
+}
+
 interface PendenciaAntiga {
   readonly numero_protocolo: string;
   readonly id_guia_origem: string | null;
@@ -61,5 +67,6 @@ export interface RelatorioResposta {
   readonly risco_pendente_cents: MetricaComProtocolos;
   readonly principais_motivos: readonly MotivoPrincipal[];
   readonly distribuicao_por_area: readonly DistribuicaoArea[];
+  readonly distribuicao_por_estado_validacao: readonly DistribuicaoEstadoValidacao[];
   readonly pendencias_mais_antigas: readonly PendenciaAntiga[];
 }

@@ -325,6 +325,17 @@ export const esquemaDistribuicaoArea = z.object({
   protocol_numbers: z.array(esquemaNumeroProtocolo),
 });
 
+/**
+ * Uma fatia da distribuição por estado de validação (rosca "Estado das guias" do Dashboard) —
+ * mesmo universo de `guias_verificadas` (protocolo não mesclado com validação concluída), uma
+ * linha por `ValidacaoStatus`, sempre as quatro presentes mesmo quando a contagem é zero.
+ */
+export const esquemaDistribuicaoEstadoValidacao = z.object({
+  status_validacao: esquemaValidacaoStatus,
+  quantidade: z.number().int().nonnegative(),
+  risco_cents: z.number().int().nonnegative(),
+});
+
 export const esquemaPendenciaAntiga = z.object({
   numero_protocolo: esquemaNumeroProtocolo,
   id_guia_origem: z.string().nullable(),
@@ -346,6 +357,7 @@ export const esquemaRelatorioResposta = z.object({
   risco_pendente_cents: esquemaMetricaComProtocolos(z.number().int().nonnegative()),
   principais_motivos: z.array(esquemaMotivoPrincipal),
   distribuicao_por_area: z.array(esquemaDistribuicaoArea),
+  distribuicao_por_estado_validacao: z.array(esquemaDistribuicaoEstadoValidacao),
   pendencias_mais_antigas: z.array(esquemaPendenciaAntiga),
 });
 export type RelatorioResposta = z.infer<typeof esquemaRelatorioResposta>;

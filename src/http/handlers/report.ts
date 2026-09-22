@@ -1,6 +1,6 @@
 import type { ManipuladorRota } from "../routes";
 import { esquemaRelatorioResposta, type RelatorioResposta } from "../contracts";
-import type { Area } from "../../domain/statuses";
+import type { Area, ValidacaoStatus } from "../../domain/statuses";
 import { apresentarCodigoProblema, type CodigoProblema } from "../../domain/validation";
 
 /**
@@ -25,6 +25,12 @@ interface LinhaMotivo {
   readonly codigo: string;
   readonly ocorrencias: number;
   readonly numeros: string | null;
+}
+
+interface LinhaDistribuicaoValidacao {
+  readonly status_validacao: string;
+  readonly quantidade: number;
+  readonly risco_cents: number;
 }
 
 interface LinhaAreaRisco {
@@ -72,10 +78,14 @@ function somar(linhas: readonly LinhaRisco[]): number {
   return linhas.reduce((total, linha) => total + linha.valor, 0);
 }
 
+/** Ordem fixa de exibição da distribuição por estado de validação (rosca + legenda do Dashboard). */
+const ORDEM_ESTADOS_VALIDACAO: readonly ValidacaoStatus[] = ["OK", "CORRIGIR", "REVISAO_HUMANA", "NAO_FATURAR_CONVENIO"];
+
 export async function montarRelatorio(db: D1Database): Promise<RelatorioResposta> {
   const [
     regraAtivaResultado,
     verificadasResultado,
+    distribuicaoValidacaoResultado,
     exigemAtencaoResultado,
     riscoInicialResultado,
     riscoTratadoResultado,
@@ -96,6 +106,21 @@ export async function montarRelatorio(db: D1Database): Promise<RelatorioResposta
          ORDER BY p.protocol_number`,
       )
       .all<LinhaProtocoloNumero>(),
+
+    // Distribuição por estado de validação (rosca "Estado das guias" do Dashboard): MESMO
+    // universo de "guias verificadas" acima (não mesclado + validação concluída) — nunca um
+    // critério novo. `risco_cents` sai de graça na mesma agregação (SUM sobre a mesma linha do
+    // GROUP BY, sem JOIN extra), por isso vai junto.
+    db
+      .prepare(
+        `SELECT p.validation_status AS status_validacao, COUNT(*) AS quantidade,
+                SUM(p.current_risk_cents) AS risco_cents
+         FROM protocols p
+         WHERE p.workflow_status != 'MESCLADA'
+           AND EXISTS (SELECT 1 FROM validation_runs vr WHERE vr.protocol_id = p.id)
+         GROUP BY p.validation_status`,
+      )
+      .all<LinhaDistribuicaoValidacao>(),
 
     db
       .prepare(
@@ -215,6 +240,17 @@ export async function montarRelatorio(db: D1Database): Promise<RelatorioResposta
 
   const regraAtiva = regraAtivaResultado ?? { version: "", source_sha256: "" };
 
+  const distribuicaoValidacaoPorStatus = new Map<string, LinhaDistribuicaoValidacao>();
+  for (const linha of distribuicaoValidacaoResultado.results) distribuicaoValidacaoPorStatus.set(linha.status_validacao, linha);
+  const distribuicaoPorEstadoValidacao = ORDEM_ESTADOS_VALIDACAO.map((status) => {
+    const linha = distribuicaoValidacaoPorStatus.get(status) ?? null;
+    return {
+      status_validacao: status,
+      quantidade: linha?.quantidade ?? 0,
+      risco_cents: linha?.risco_cents ?? 0,
+    };
+  });
+
   const areaRiscoPorNome = new Map<string, LinhaAreaRisco>();
   for (const linha of areaRiscoResultado.results) areaRiscoPorNome.set(linha.area, linha);
   const areaTarefasPorNome = new Map<string, LinhaAreaTarefas>();
@@ -253,6 +289,7 @@ export async function montarRelatorio(db: D1Database): Promise<RelatorioResposta
       protocol_numbers: separarNumeros(linha.numeros).sort(),
     })),
     distribuicao_por_area: distribuicaoPorArea,
+    distribuicao_por_estado_validacao: distribuicaoPorEstadoValidacao,
     pendencias_mais_antigas: pendenciasAntigasResultado.results.map((linha) => ({
       numero_protocolo: linha.numero_protocolo,
       id_guia_origem: linha.id_guia_origem,
