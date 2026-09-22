@@ -22,8 +22,8 @@
     {
       "binding": "DB",
       "database_name": "vitalis-glosas",
-      // Placeholder: o database_id real é gerado e preenchido na Fase 5 (deploy).
-      "database_id": "local-dev-placeholder"
+      // database_id do D1 remoto criado na Fase 5. Não é segredo: sem credencial da conta ele não dá acesso.
+      "database_id": "52e0cd0a-1784-4f06-ac38-6b74b8f26176"
     }
   ],
   // Bucket R2 privado para evidências (prints, PDFs) anexadas às ações.

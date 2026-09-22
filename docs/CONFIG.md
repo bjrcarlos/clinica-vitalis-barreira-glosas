@@ -237,17 +237,31 @@ corepack pnpm exec wrangler d1 migrations apply vitalis-glosas --remote
 
 ### 6. Carregar as regras e as 80 guias no banco remoto
 
-O seed é gerado pelo mesmo caminho de código que a aplicação usa, e o SQL fica em disco para ser
-conferido **antes** de tocar no banco remoto:
+São dois passos, e a ordem importa.
+
+**6.1 — regra ativa, por SQL.** O conjunto de regras é uma linha isolada, sem dependência entre tabelas:
 
 ```bash
-pnpm seed:sql                       # gera .wrangler/seed/seed.sql, sem aplicar nada
-less .wrangler/seed/seed.sql        # confira o alvo e o conteúdo antes de continuar
-pnpm exec wrangler d1 execute vitalis-glosas --remote --file=.wrangler/seed/seed.sql
+pnpm seed:sql                        # gera .wrangler/seed/seed.sql, sem aplicar nada
+# extraia o bloco "INSERT INTO rule_sets ...;" para um arquivo e aplique:
+pnpm exec wrangler d1 execute vitalis-glosas --remote --file=.wrangler/seed/rule-sets.sql
 ```
 
-O comando local equivalente (`pnpm seed:local`) aplica direto no D1 local e nunca toca no remoto.
-O seed é idempotente: aplicá-lo duas vezes não duplica protocolo.
+**6.2 — as 80 guias, pela rota de importação.** Não use o `seed.sql` inteiro no banco remoto: `protocols` e `guide_versions` se referenciam mutuamente (o protocolo aponta a versão corrente, a versão aponta o protocolo), e essa checagem só é adiável dentro de uma transação — que o D1 remoto recusa quando vem de arquivo. O caminho que funciona é o mesmo que a secretaria usa no dia a dia:
+
+```bash
+node --input-type=module -e "
+const BASE = 'https://<seu-worker>.workers.dev';
+const fs = await import('node:fs/promises');
+const s = await fetch(BASE + '/api/session', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({papel:'SECRETARIA'}) });
+const cookie = (s.headers.get('set-cookie')||'').split(';')[0];
+const csv = await fs.readFile('guias.csv','utf8');
+const r = await fetch(BASE + '/api/imports', { method:'POST', headers:{'content-type':'application/json', cookie}, body: JSON.stringify({formato:'csv', nome_arquivo:'guias.csv', conteudo_csv: csv}) });
+console.log(r.status, (await r.text()).slice(0,200));
+"
+```
+
+A importação é idempotente por `id_guia`: rodar de novo devolve os protocolos existentes em `protocolos_ja_existentes` e não cria duplicata. De quebra, carregar os dados por aqui exercita a própria RF-01 em produção.
 
 ### 7. Deploy
 

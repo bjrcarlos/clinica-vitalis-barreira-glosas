@@ -648,7 +648,13 @@ function montarSql(estado: EstadoSeed): string {
     "-- Reexecução segura: limpa as tabelas desta carga e as tabelas de governança dependentes",
     "-- antes de reinserir tudo (ver comentário de topo de scripts/seed.ts para o porquê).",
     "-- Evidências e merges também são limpos para restaurar a demonstração de forma idempotente.",
-    "BEGIN TRANSACTION;",
+    "-- Sem BEGIN/COMMIT explícitos: o D1 remoto recusa controle de transação vindo do arquivo",
+    "-- (`wrangler d1 execute --remote` já envia o conteúdo como um lote). A carga é idempotente,",
+    "-- então reaplicar depois de uma falha parcial recompõe o estado correto.",
+    "-- `defer_foreign_keys` adia a checagem de chave estrangeira até o fim do lote: protocols e",
+    "-- guide_versions se referenciam mutuamente (protocolo aponta a versão corrente, versão aponta",
+    "-- o protocolo), então nenhuma ordem de INSERT satisfaz as duas ao mesmo tempo.",
+    "PRAGMA defer_foreign_keys = on;",
     "",
     "DELETE FROM evidence_links;",
     "DELETE FROM evidence_objects;",
@@ -749,7 +755,7 @@ function montarSql(estado: EstadoSeed): string {
     gerarInsert("workflow_events", colunasWorkflowEvents, estado.workflowEvents.map((e) => ({ ...e, reason: null }))),
   );
 
-  partes.push("COMMIT;", "");
+  partes.push("");
   return partes.join("\n");
 }
 
