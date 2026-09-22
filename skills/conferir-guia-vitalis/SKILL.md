@@ -1,5 +1,11 @@
 # Skill `conferir-guia-vitalis`
 
+> **Esta Skill também vive dentro do servidor MCP.** Ao conectar, o cliente recebe os mesmos
+> passos como prompts (`prompts/list`): `conferir-guia`, `conferir-lote`, `minha-fila` (Secretaria
+> e Financeiro) e `relatorio-da-terca` (Direção). Um arquivo de Skill só chega ao modelo se
+> alguém instalar; o prompt viaja com a credencial. Este arquivo continua servindo para quem
+> quer ler o procedimento fora do cliente.
+
 ## Quando usar
 
 Use esta Skill quando a operadora colar os dados de uma guia como a recepção escreveu e pedir
@@ -83,3 +89,12 @@ Resposta: apontar a inconsistência e pedir confirmação; não escolher a data 
   é irrelevante.
 - Se for necessária correção, decisão de revisão, particular/cancelamento, envio ou merge,
   encaminhar para a tela do protocolo. As tools MCP não executam essas ações.
+
+## Regras de leitura dos números (valem para qualquer uso do MCP)
+
+1. Contagem de guias sai de `consultar_relatorio`. **Nunca** some `status_validacao_atual_do_protocolo`
+   vindo de `consultar_historico`: é o estado de hoje do protocolo, repetido em cada evento dele.
+2. Respeite `truncado` e `limite_aplicado`. Lista cortada não sustenta conclusão quantitativa.
+3. Em `minhas_pendencias`, `total_protocolos` e `total_tarefas_abertas` são coisas diferentes, e o
+   risco já vem somado uma vez por protocolo.
+4. Valores em centavos; datas em ISO UTC, apresentadas em horário de Brasília.

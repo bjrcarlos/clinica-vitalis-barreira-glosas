@@ -1044,7 +1044,26 @@ Tudo isso vira evento em `user_events`, append-only: quem fez, em quem, quando.
 
 O Worker verifica assinatura, finalidade e expiração. O link abre a tela correta; nenhuma decisão ocorre automaticamente.
 
-### 23.5 Skill `conferir-guia-vitalis`
+### 23.5 Skills servidas pelo MCP
+
+As skills operacionais são servidas pelo próprio servidor, como prompts MCP (`prompts/list`,
+`prompts/get`), filtrados pelo papel da credencial:
+
+| Prompt | Para quem | O que faz |
+|---|---|---|
+| `conferir-guia` | todos | confere uma guia colada, sem inventar campo e sem gravar |
+| `conferir-lote` | todos | confere várias guias coladas e devolve só o que impede o envio |
+| `minha-fila` | Secretaria, Financeiro | fila da área agrupada por motivo e priorizada por risco e idade |
+| `relatorio-da-terca` | Direção | texto da reunião semanal, com os números do relatório consolidado |
+
+Todos carregam o mesmo bloco de regras de leitura — contagem vem de `consultar_relatorio`, nunca
+de somar estado por evento; `truncado` precisa ser respeitado; o MCP não decide nada.
+
+Isso existe porque a instrução precisa chegar a quem lê as tools, que é o modelo do outro lado.
+Um arquivo de Skill na máquina de alguém não chega — e foi assim que um assistente conectado
+produziu contagens que não existiam no banco.
+
+### 23.6 Skill `conferir-guia-vitalis`
 
 A Skill é a camada de operação em linguagem natural. Ela não replica as regras e não substitui o MCP.
 

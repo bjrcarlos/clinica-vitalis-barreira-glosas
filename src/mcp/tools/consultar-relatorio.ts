@@ -27,7 +27,12 @@ export function registrarConsultarRelatorio(server: McpServer, env: Env, context
         throw new Error("Somente a Direção pode consultar o relatório consolidado. Use minhas_pendencias para a sua fila.");
       }
       const relatorio = await montarRelatorio(env.DB);
-      return { content: [{ type: "text", text: JSON.stringify(relatorio) }] };
+      const saida = {
+        ...relatorio,
+        orientacao:
+          "Estes são os números oficiais da clínica, os mesmos da tela de relatório. Use-os para qualquer contagem; não derive contagem de consultar_historico, que devolve eventos.",
+      };
+      return { content: [{ type: "text", text: JSON.stringify(saida) }] };
     },
   );
 }

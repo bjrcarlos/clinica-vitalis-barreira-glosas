@@ -9,6 +9,7 @@ import { registrarRegistrarGuia } from "./tools/registrar-guia";
 import { registrarMinhasPendencias } from "./tools/minhas-pendencias";
 import { registrarConsultarHistorico } from "./tools/consultar-historico";
 import { registrarConsultarRelatorio } from "./tools/consultar-relatorio";
+import { registrarPrompts } from "./prompts/index";
 
 /**
  * As tools do PRD-SDD §23.3 (mais `consultar_relatorio`, da Fase 6), registradas numa `McpServer` nova a cada requisição — nunca
@@ -24,6 +25,8 @@ function construirServidor(env: Env, contexto: ContextoMcp): McpServer {
   registrarMinhasPendencias(server, env, contexto);
   registrarConsultarHistorico(server, env, contexto);
   registrarConsultarRelatorio(server, env, contexto);
+  // As skills operacionais viajam junto com as tools, filtradas pelo mesmo papel da credencial.
+  registrarPrompts(server, contexto);
   return server;
 }
 

@@ -76,6 +76,10 @@ export function registrarVerificarGuia(server: McpServer, env: Env): void {
         ai: { status: interpretacao.status, modelo: interpretacao.modelo, prompt_version: interpretacao.promptVersion },
         persistiu: false,
         id_guia: guiaBruta.id_guia,
+        // A orientação viaja na resposta, e não só na description: é o que o modelo relê ao
+        // formular a frase final para a pessoa.
+        orientacao:
+          "Conferência apenas: nenhum protocolo foi criado ou alterado. Corrigir, liberar, enviar, encerrar e mesclar são ações da tela, não do MCP.",
       };
       return { content: [{ type: "text", text: JSON.stringify(saida) }] };
     },
