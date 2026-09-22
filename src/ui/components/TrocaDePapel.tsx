@@ -31,6 +31,11 @@ export const NOME_POR_PAPEL: Readonly<Record<PapelSessao, string>> = {
  * lembrar a última troca entre reloads (`lerPapelSalvo`/`localStorage`, conveniência só deste
  * navegador) — sem cookie salvo ainda, a identidade padrão é Direção.
  */
+/** Identidade lembrada neste navegador, ou Direção (leitura) na primeira visita. */
+export function papelSalvoOuPadrao(): PapelSessao {
+  return lerPapelSalvo() ?? "DIRECAO";
+}
+
 export function nomeDaIdentidadeAtual(): string {
   return NOME_POR_PAPEL[lerPapelSalvo() ?? "DIRECAO"];
 }
@@ -71,6 +76,10 @@ function salvarPapel(papel: PapelSessao): void {
  */
 export function TrocaDePapel({ papelInicial, aoTrocar }: TrocaDePapelProps) {
   const [papel, setPapel] = useState<PapelSessao>(() => papelInicial ?? lerPapelSalvo() ?? "DIRECAO");
+  // Quando o pai controla a identidade (App), o seletor acompanha o valor dele.
+  useEffect(() => {
+    if (papelInicial !== undefined) setPapel(papelInicial);
+  }, [papelInicial]);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -89,10 +98,10 @@ export function TrocaDePapel({ papelInicial, aoTrocar }: TrocaDePapelProps) {
     }
   }
 
-  // Reabre a sessão do papel lembrado ao montar (reload de página ou link em nova aba) — nunca
-  // na primeira visita (nada salvo ainda) nem quando o pai já controla `papelInicial` de fora.
+  // Reabre a sessão do papel lembrado ao montar (reload de página ou link em nova aba). Roda
+  // mesmo quando o pai controla `papelInicial`: o cookie é HttpOnly e pode ter expirado, então
+  // restaurar a sessão no servidor é o que mantém o seletor honesto depois de um F5.
   useEffect(() => {
-    if (papelInicial !== undefined) return;
     const salvo = lerPapelSalvo();
     if (salvo && salvo !== "DIRECAO") void trocar(salvo);
     // Intencional: roda só na montagem, não a cada troca de `papel`/`trocar`.

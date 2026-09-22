@@ -41,16 +41,6 @@ const ICONE_PENDENCIAS = (
     <path d="M12 8v4l3 2" />
   </svg>
 );
-const ICONE_IMPORTAR = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M12 4v12M7 11l5 5 5-5M5 20h14" />
-  </svg>
-);
-const ICONE_NOVA_GUIA = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M12 5v14M5 12h14" />
-  </svg>
-);
 const ICONE_REGRAS = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M6 4h9l4 4v12H6z" />
@@ -62,14 +52,17 @@ const ICONE_REGRAS = (
  * Navegação principal fixada em docs/PRD-SDD.md §12.1 — não é dado, não vem de props.
  * O Dashboard é a tela operacional do canvas de design (design-reference/Dashboard.dc.html) e
  * fica no topo; o Relatório narrativo do Dr. Renato continua sendo a tela inicial (`/`).
+ *
+ * "Importar" e "Nova guia" não têm mais item próprio aqui: viraram modais abertos pelos botões
+ * de "Todas as guias" (src/ui/pages/Guias.tsx) — pedido do dono do produto para não trocar de
+ * página só para importar ou cadastrar uma guia. `/importar` e `/nova-guia` continuam existindo
+ * como rotas (src/ui/routes.tsx), só que redirecionando para a lista com o modal já aberto.
  */
 const ITENS: readonly ItemNav[] = [
   { rota: "/dashboard", rotulo: "Dashboard", icone: ICONE_DASHBOARD },
   { rota: "/", rotulo: "Relatório", fimExato: true, icone: ICONE_RELATORIO },
   { rota: "/guias", rotulo: "Todas as guias", icone: ICONE_GUIAS },
   { rota: "/pendencias", rotulo: "Minhas pendências", icone: ICONE_PENDENCIAS },
-  { rota: "/importar", rotulo: "Importar", icone: ICONE_IMPORTAR },
-  { rota: "/nova-guia", rotulo: "Nova guia", icone: ICONE_NOVA_GUIA },
   { rota: "/regras", rotulo: "Regras", icone: ICONE_REGRAS },
   { rota: "/merge", rotulo: "Merge", icone: ICONE_GUIAS },
 ];

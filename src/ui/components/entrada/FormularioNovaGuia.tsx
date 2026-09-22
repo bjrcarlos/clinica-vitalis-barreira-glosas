@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { Card } from "../components/Card";
-import { CampoFormulario } from "../components/entrada/CampoFormulario";
-import { ResultadoCadastro } from "../components/entrada/ResultadoCadastro";
-import { obterRegrasParaExibicao, type RegrasParaExibicao } from "../components/entrada/regrasAtivas";
-import { ApiError, cadastrarProtocolo } from "../lib/api";
-import { CABECALHO_GUIA_CSV } from "../../domain/parse-csv";
-import type { CadastrarProtocoloEntrada, CadastrarProtocoloResposta } from "../../http/contracts";
-import styles from "./NovaGuia.module.css";
+import { Card } from "../Card";
+import { CampoFormulario } from "./CampoFormulario";
+import { ResultadoCadastro } from "./ResultadoCadastro";
+import { obterRegrasParaExibicao, type RegrasParaExibicao } from "./regrasAtivas";
+import { ApiError, cadastrarProtocolo } from "../../lib/api";
+import { CABECALHO_GUIA_CSV } from "../../../domain/parse-csv";
+import type { CadastrarProtocoloEntrada, CadastrarProtocoloResposta } from "../../../http/contracts";
+import styles from "./FormularioNovaGuia.module.css";
 
 type CamposGuia = Record<(typeof CABECALHO_GUIA_CSV)[number], string>;
 
@@ -17,6 +17,11 @@ const SUGESTOES_UNIDADE = ["Centro", "Norte", "Sul"] as const;
 const PADRAO_DATA_BR = "\\d{2}/\\d{2}/\\d{4}";
 const PADRAO_VALOR = "(R\\$\\s*)?\\d+([.,]\\d{2})?";
 const PADRAO_INTEIRO = "\\d+";
+
+interface FormularioNovaGuiaProps {
+  /** Chamado depois que o cadastro é salvo com sucesso no servidor — o pai reage (fecha o modal, atualiza a lista). */
+  readonly aoConcluir: (resposta: CadastrarProtocoloResposta) => void;
+}
 
 function hojeDDMMAAAA(): string {
   return new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo" }).format(new Date());
@@ -56,8 +61,11 @@ function estadoInicial(convenioPadrao: string, procedimentoCodigoPadrao: string,
  * motor de regras, no servidor, depois de salvar. `convenio`/`procedimento` vêm da regra ativa
  * real via `GET /api/rules` (ver `entrada/regrasAtivas.ts`) para não deixar digitar um convênio
  * ou código que a regra não reconhece.
+ *
+ * Extraído de `src/ui/pages/NovaGuia.tsx` para ser aberto num `Modal` a partir de "Todas as
+ * guias" — o título da tela agora vive no cabeçalho do modal, por isso não repete `<h1>` aqui.
  */
-export function NovaGuia() {
+export function FormularioNovaGuia({ aoConcluir }: FormularioNovaGuiaProps) {
   const [regras, setRegras] = useState<RegrasParaExibicao | null>(null);
   const [campos, setCampos] = useState<CamposGuia>(() => estadoInicial("", "", "", ""));
   const [enviando, setEnviando] = useState(false);
@@ -134,6 +142,7 @@ export function NovaGuia() {
       const guia: CadastrarProtocoloEntrada["guia"] = { ...campos };
       const resultado = await cadastrarProtocolo<CadastrarProtocoloResposta, CadastrarProtocoloEntrada>({ guia });
       setResposta(resultado);
+      aoConcluir(resultado);
     } catch (falha) {
       setErro(falha instanceof ApiError ? falha.message : "Não foi possível salvar a guia agora.");
     } finally {
@@ -144,7 +153,6 @@ export function NovaGuia() {
   if (resposta) {
     return (
       <div className={styles.pagina}>
-        <h1 className={styles.titulo}>Nova guia</h1>
         {resposta.resultado_validacao ? (
           <ResultadoCadastro
             numeroProtocolo={resposta.protocolo.numero_protocolo}
@@ -175,13 +183,10 @@ export function NovaGuia() {
     <div className={styles.pagina}>
       <div className={styles.grade}>
         <form className={styles.formulario} onSubmit={(evento) => void aoSubmeter(evento)}>
-          <div>
-            <h1 className={styles.titulo}>Nova guia</h1>
-            <p className={styles.subtitulo}>
-              Os campos obrigatórios mudam conforme o convênio — o resultado real da verificação
-              aparece assim que você salvar.
-            </p>
-          </div>
+          <p className={styles.subtitulo}>
+            Os campos obrigatórios mudam conforme o convênio — o resultado real da verificação
+            aparece assim que você salvar.
+          </p>
 
           {erro ? (
             <p role="alert" className={styles.erro}>

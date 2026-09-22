@@ -30,6 +30,54 @@
   gap: 8px;
 }
 
+.avisoNovaGuia {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 20px;
+  border-radius: var(--raio-card);
+  background: var(--cor-mint);
+  border: 1px solid var(--cor-mint);
+}
+
+.avisoLinha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avisoTexto {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cor-verde-texto);
+}
+
+.avisoLink {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-primaria);
+  white-space: nowrap;
+}
+
+.avisoFechar {
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--cor-verde-texto);
+  padding: 2px 4px;
+  flex-shrink: 0;
+}
+
+.avisoResumo {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--cor-verde-texto);
+}
+
 .barraFiltros {
   display: flex;
 }

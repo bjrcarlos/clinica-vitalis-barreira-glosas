@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
-import type { ListaProtocolosResposta, ProtocoloListagemItemWire } from "../../http/contracts";
+import type {
+  CadastrarProtocoloResposta,
+  ImportarGuiasResposta,
+  ListaProtocolosResposta,
+  ProtocoloListagemItemWire,
+} from "../../http/contracts";
 import type { ValidacaoStatus } from "../../domain/statuses";
 import { Card } from "../components/Card";
 import { Chip } from "../components/Chip";
@@ -10,6 +15,9 @@ import { BadgeValidacao } from "../components/BadgeValidacao";
 import { EstadoFluxo } from "../components/EstadoFluxo";
 import { EstadoVazio } from "../components/EstadoVazio";
 import { Paginacao } from "../components/Paginacao";
+import { Modal } from "../components/Modal";
+import { FormularioImportacao } from "../components/entrada/FormularioImportacao";
+import { FormularioNovaGuia } from "../components/entrada/FormularioNovaGuia";
 import { formatarCentavos, formatarRotuloArea } from "../lib/format";
 import { formatarDataCalendario } from "../components/protocolo/campos";
 import chipStyles from "../components/Chip.module.css";
@@ -74,6 +82,17 @@ export function Guias() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const primeiraRenderizacao = useRef(true);
+  // Incrementado depois de importar ou cadastrar com sucesso, para as duas buscas abaixo
+  // refazerem a chamada sem precisar recarregar a página inteira.
+  const [recarregarToken, setRecarregarToken] = useState(0);
+  // Resultado da última guia cadastrada pelo modal "+ Nova guia" — o modal fecha ao salvar
+  // (ver `aoConcluirNovaGuia`), e este aviso é onde "o resultado da validação após salvar" e o
+  // link direto para o protocolo criado continuam aparecendo.
+  const [avisoNovaGuia, setAvisoNovaGuia] = useState<CadastrarProtocoloResposta | null>(null);
+
+  const modalParam = searchParams.get("modal");
+  const modalAberto: "importar" | "nova-guia" | null =
+    modalParam === "importar" || modalParam === "nova-guia" ? modalParam : null;
 
   const statusValidacaoParam = searchParams.get("status_validacao");
   const areaParam = searchParams.get("area") ?? "";
@@ -108,7 +127,7 @@ export function Guias() {
         // Sem contagem não impede o uso da lista filtrada — os chips só ficam sem número.
       });
     return () => controlador.abort();
-  }, []);
+  }, [recarregarToken]);
 
   // Lista filtrada/paginada — refeita a cada mudança de filtro na URL.
   useEffect(() => {
@@ -124,7 +143,7 @@ export function Guias() {
       })
       .finally(() => setCarregando(false));
     return () => controlador.abort();
-  }, [queryFiltrada]);
+  }, [queryFiltrada, recarregarToken]);
 
   // Busca com debounce: só grava na URL (e dispara a busca acima) 350ms depois de parar de digitar.
   useEffect(() => {
@@ -147,6 +166,31 @@ export function Guias() {
       }
       return proximo;
     });
+  }
+
+  function abrirModalImportar() {
+    atualizarFiltros({ modal: "importar" });
+  }
+
+  function abrirModalNovaGuia() {
+    atualizarFiltros({ modal: "nova-guia" });
+  }
+
+  function fecharModal() {
+    atualizarFiltros({ modal: null });
+  }
+
+  /** Importação confirmada: fecha o modal e refaz a busca — sem recarregar a página. */
+  function aoConcluirImportacao(_resultado: ImportarGuiasResposta) {
+    fecharModal();
+    setRecarregarToken((token) => token + 1);
+  }
+
+  /** Guia cadastrada: fecha o modal, refaz a busca e guarda o resultado para o aviso com link direto ao protocolo. */
+  function aoConcluirNovaGuia(resposta: CadastrarProtocoloResposta) {
+    fecharModal();
+    setRecarregarToken((token) => token + 1);
+    setAvisoNovaGuia(resposta);
   }
 
   function selecionarStatus(opcao: (typeof OPCOES_STATUS)[number]) {
@@ -174,14 +218,43 @@ export function Guias() {
           </p>
         </div>
         <div className={styles.acoesTopo}>
-          <Link to="/importar" className={chipStyles.chip}>
+          <button type="button" className={chipStyles.chip} onClick={abrirModalImportar}>
             Importar CSV/XLSX
-          </Link>
-          <Link to="/nova-guia" className={`${chipStyles.chip} ${chipStyles.ativo}`}>
+          </button>
+          <button type="button" className={`${chipStyles.chip} ${chipStyles.ativo}`} onClick={abrirModalNovaGuia}>
             + Nova guia
-          </Link>
+          </button>
         </div>
       </div>
+
+      {avisoNovaGuia ? (
+        <div className={styles.avisoNovaGuia} role="status">
+          <div className={styles.avisoLinha}>
+            {avisoNovaGuia.resultado_validacao ? <BadgeValidacao status={avisoNovaGuia.resultado_validacao.status} /> : null}
+            <p className={styles.avisoTexto}>
+              Guia <span className="num">{avisoNovaGuia.protocolo.numero_protocolo}</span>{" "}
+              {avisoNovaGuia.resultado_validacao
+                ? "cadastrada e verificada — já está na lista abaixo."
+                : "já tinha protocolo — cadastro é idempotente por id_guia, nenhuma nova validação foi executada."}
+            </p>
+            <Link
+              to={`/protocolos/${encodeURIComponent(avisoNovaGuia.protocolo.numero_protocolo)}`}
+              className={styles.avisoLink}
+            >
+              Ver protocolo →
+            </Link>
+            <button
+              type="button"
+              className={styles.avisoFechar}
+              onClick={() => setAvisoNovaGuia(null)}
+              aria-label="Dispensar aviso"
+            >
+              ×
+            </button>
+          </div>
+          {avisoNovaGuia.resultado_validacao ? <p className={styles.avisoResumo}>{avisoNovaGuia.resultado_validacao.resumo}</p> : null}
+        </div>
+      ) : null}
 
       <div className={styles.barraFiltros}>
         <label className={styles.buscaCampo}>
@@ -353,6 +426,13 @@ export function Guias() {
           </>
         )}
       </Card>
+
+      <Modal aberto={modalAberto === "importar"} titulo="Importar guias" aoFechar={fecharModal} tamanho="largo">
+        <FormularioImportacao aoConcluir={aoConcluirImportacao} />
+      </Modal>
+      <Modal aberto={modalAberto === "nova-guia"} titulo="Nova guia" aoFechar={fecharModal} tamanho="largo">
+        <FormularioNovaGuia aoConcluir={aoConcluirNovaGuia} />
+      </Modal>
     </div>
   );
 }

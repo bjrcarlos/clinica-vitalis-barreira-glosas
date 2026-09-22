@@ -7,43 +7,22 @@ import { Card } from "../components/Card";
 import { Chip } from "../components/Chip";
 import { BadgeValidacao } from "../components/BadgeValidacao";
 import { EstadoVazio } from "../components/EstadoVazio";
-import { TrocaDePapel } from "../components/TrocaDePapel";
+import { TrocaDePapel, papelSalvoOuPadrao } from "../components/TrocaDePapel";
 import { formatarCentavos, formatarDataCurta, formatarHaDias } from "../lib/format";
 import styles from "./Pendencias.module.css";
 
 type Ordenacao = "antiguidade" | "valor";
 
-const CHAVE_PAPEL_LOCAL = "vitalis:papel-para-pendencias";
-
 /**
- * Não existe `GET /api/session` nesta fase para ler a identidade do cookie assinado (HttpOnly
- * por desenho — nunca legível por JS), e esta tarefa não pode tocar `App.tsx`/`routes.tsx` para
- * propagar o papel escolhido na sidebar até aqui. Por isso esta página guarda sua própria
- * lembrança de "qual identidade estou usando", em `localStorage`, só para decidir QUAL fila
- * mostrar — nunca para autorizar nada: toda mutação continua sendo conferida pelo servidor a
- * partir do cookie de verdade. Trocar de papel aqui chama a mesma `POST /api/session` da sidebar.
+ * A identidade é a mesma da barra lateral: `App` é dono do papel e `TrocaDePapel` guarda a
+ * escolha em uma única chave de `localStorage`. Esta página apenas lê essa identidade para
+ * decidir QUAL fila mostrar — nunca para autorizar: toda mutação continua sendo conferida no
+ * servidor a partir do cookie assinado, que é HttpOnly e o JavaScript nunca lê.
  */
-function lerPapelGuardado(): PapelSessao {
-  try {
-    const valor = localStorage.getItem(CHAVE_PAPEL_LOCAL);
-    if (valor === "SECRETARIA" || valor === "FINANCEIRO" || valor === "DIRECAO") return valor;
-  } catch {
-    // localStorage indisponível (aba privada, storage bloqueado) — segue com o padrão.
-  }
-  return "SECRETARIA";
-}
-
-function gravarPapelGuardado(papel: PapelSessao) {
-  try {
-    localStorage.setItem(CHAVE_PAPEL_LOCAL, papel);
-  } catch {
-    // Convite apenas — perder a lembrança só volta ao padrão na próxima visita.
-  }
-}
 
 /** Minhas pendências (RF-15 na versão de interface, design-reference/Pendencias.dc.html). */
 export function Pendencias() {
-  const [papel, setPapel] = useState<PapelSessao>(() => lerPapelGuardado());
+  const [papel, setPapel] = useState<PapelSessao>(() => papelSalvoOuPadrao());
   const [itens, setItens] = useState<readonly ProtocoloListagemItemWire[] | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -70,16 +49,21 @@ export function Pendencias() {
       .get<ListaProtocolosResposta>(`/protocols?${query.toString()}`, controlador.signal)
       .then((resposta) => setItens(resposta.protocolos))
       .catch((falha) => {
+        // Trocar de tela (ou de identidade, que remonta as rotas) cancela esta busca. O fetch
+        // pode rejeitar como AbortError ou como erro de rede genérico; nos dois casos não houve
+        // falha nenhuma para relatar a quem já saiu da página.
+        if (controlador.signal.aborted) return;
         if (falha instanceof ApiError) setErro(falha.message);
         else if (!(falha instanceof DOMException && falha.name === "AbortError")) setErro("Não foi possível carregar as pendências agora.");
       })
-      .finally(() => setCarregando(false));
+      .finally(() => {
+        if (!controlador.signal.aborted) setCarregando(false);
+      });
     return () => controlador.abort();
   }, [area]);
 
   function aoTrocarPapel(novoPapel: PapelSessao) {
     setPapel(novoPapel);
-    gravarPapelGuardado(novoPapel);
   }
 
   const ordenados = [...(itens ?? [])].sort((a, b) =>

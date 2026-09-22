@@ -1,21 +1,26 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Card } from "../components/Card";
-import { Tabela } from "../components/Tabela";
-import { PainelEtapas } from "../components/entrada/PainelEtapas";
-import { CartaoEstatistica } from "../components/entrada/CartaoEstatistica";
-import { calcularSha256Hex, truncarHash } from "../components/entrada/hashArquivo";
-import { lerXlsxComoTextoCsv } from "../components/entrada/xlsxCliente";
-import { prepararPreviaImportacao, type PreviaImportacao } from "../components/entrada/previaImportacao";
-import { buscarIdsGuiaExistentes } from "../components/entrada/buscarIdsGuiaExistentes";
-import { ApiError, importarArquivo } from "../lib/api";
-import { CABECALHO_GUIA_CSV } from "../../domain/parse-csv";
-import type { GuiaBrutaWire, ImportarGuiasEntrada, ImportarGuiasResposta } from "../../http/contracts";
-import styles from "./Importar.module.css";
+import { Card } from "../Card";
+import { Tabela } from "../Tabela";
+import { PainelEtapas } from "./PainelEtapas";
+import { CartaoEstatistica } from "./CartaoEstatistica";
+import { calcularSha256Hex, truncarHash } from "./hashArquivo";
+import { lerXlsxComoTextoCsv } from "./xlsxCliente";
+import { prepararPreviaImportacao, type PreviaImportacao } from "./previaImportacao";
+import { buscarIdsGuiaExistentes } from "./buscarIdsGuiaExistentes";
+import { ApiError, importarArquivo } from "../../lib/api";
+import { CABECALHO_GUIA_CSV } from "../../../domain/parse-csv";
+import type { GuiaBrutaWire, ImportarGuiasEntrada, ImportarGuiasResposta } from "../../../http/contracts";
+import styles from "./FormularioImportacao.module.css";
 
 type Etapa = "escolher" | "conferir" | "concluido";
 
 const ROTULOS_ETAPA = ["Enviar arquivo", "Conferir resumo", "Confirmar"] as const;
+
+interface FormularioImportacaoProps {
+  /** Chamado depois que a importação é confirmada com sucesso no servidor — o pai reage (fecha o modal, atualiza a lista). */
+  readonly aoConcluir: (resultado: ImportarGuiasResposta) => void;
+}
 
 function extensaoSuportada(nomeArquivo: string): "csv" | "xlsx" | null {
   const nome = nomeArquivo.toLowerCase();
@@ -34,8 +39,11 @@ function tamanhoLegivel(bytes: number): string {
  * motivo, duplicadas no arquivo, já existentes na base) e só então confirma via
  * `POST /api/imports`. Nenhuma regra de negócio aqui: `parseCsv`/`normalizarGuia` (Fase 1)
  * fazem a leitura e a normalização; o servidor roda a validação de verdade.
+ *
+ * Extraído de `src/ui/pages/Importar.tsx` para ser aberto num `Modal` a partir de "Todas as
+ * guias" — o título da tela agora vive no cabeçalho do modal, por isso não repete `<h1>` aqui.
  */
-export function Importar() {
+export function FormularioImportacao({ aoConcluir }: FormularioImportacaoProps) {
   const [etapa, setEtapa] = useState<Etapa>("escolher");
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [formato, setFormato] = useState<"csv" | "xlsx" | null>(null);
@@ -109,6 +117,7 @@ export function Importar() {
       const resposta = await importarArquivo<ImportarGuiasResposta, ImportarGuiasEntrada>(payload);
       setResultado(resposta);
       setEtapa("concluido");
+      aoConcluir(resposta);
     } catch (falha) {
       setErro(falha instanceof ApiError ? falha.message : "Não foi possível confirmar a importação agora.");
     } finally {
@@ -122,12 +131,9 @@ export function Importar() {
   return (
     <div className={styles.pagina}>
       <div className={styles.cabecalho}>
-        <div>
-          <h1 className={styles.titulo}>Importar guias</h1>
-          <p className={styles.subtitulo}>
-            Nada é criado até você confirmar. O arquivo original fica guardado como evidência da importação.
-          </p>
-        </div>
+        <p className={styles.subtitulo}>
+          Nada é criado até você confirmar. O arquivo original fica guardado como evidência da importação.
+        </p>
         <PainelEtapas etapas={ROTULOS_ETAPA} etapaAtual={etapaAtual} />
       </div>
 
