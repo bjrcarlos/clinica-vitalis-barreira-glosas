@@ -1,12 +1,12 @@
 # Barreira de Glosas — Clínica Vitalis
 
 **Aplicação no ar:** <https://vitalis-barreira-glosas.bjrcarlos04.workers.dev>
-**Endpoint MCP:** `POST https://vitalis-barreira-glosas.bjrcarlos04.workers.dev/mcp` (Bearer por área)
+**Endpoint MCP:** `POST https://vitalis-barreira-glosas.bjrcarlos04.workers.dev/mcp` (OAuth 2.1, ou Bearer por área)
 
-Publicada em 22/09/2026 em Cloudflare Workers, com D1 (`vitalis-glosas`), R2 (`vitalis-evidencias`) e Workers AI. As 80 guias da prova foram carregadas pela própria rota de importação, com 80 linhas aceitas e nenhuma rejeitada.
-
-Aplicação local Cloudflare Workers + React para conferir guias, bloquear liberações inseguras,
-preservar versões/evidências e expor consulta controlada por MCP.
+Cloudflare Workers + React para conferir guias antes do envio ao convênio, bloquear liberações
+inseguras, preservar versões e evidências, e expor consulta controlada por MCP a um assistente de
+IA. Publicada em 22/09/2026 com D1 (`vitalis-glosas`), R2 (`vitalis-evidencias`) e Workers AI. As
+80 guias da prova foram carregadas pela própria rota de importação: 80 aceitas, nenhuma rejeitada.
 
 ## Problema
 
@@ -19,6 +19,64 @@ encaminha ambiguidade para quem decide e bloqueia o avanço enquanto houver pend
 substituir o sistema atual da clínica. Detalhe completo do problema e da hipótese em
 [`docs/PRD-SDD.md`](docs/PRD-SDD.md) §1–4.
 
+## Decisões de produto
+
+Três escolhas que definem o que este produto é. Nenhuma é neutra, e cada uma custa alguma coisa.
+
+### 1. É uma barreira da recepção, não uma revisão do financeiro
+
+A conferência roda **no momento do lançamento**, guia a guia, e não numa revisão do lote antes do
+envio. O erro nasce ali: quem digita é quem tem o contexto do atendimento na cabeça, e é ali que
+corrigir custa um minuto em vez de uma investigação semanas depois.
+
+O Financeiro não some do produto — ele recebe uma **fila de exceções** (`minhas_pendencias`,
+tela "Minhas pendências") com o que a barreira não pode decidir sozinha: procedimento fora de
+cobertura, prazo de envio estourado, ambiguidade que exige julgamento humano. É por isso que o
+Financeiro aparece com mais pendências (43) do que a Secretaria (27) na amostra de agosto: o que
+sobra para ele é o que exige decisão, não digitação.
+
+Custo da escolha: a recepção sente o atrito primeiro, e todo dia. A alternativa — revisar em lote
+antes do envio — daria menos incômodo diário, mas empurraria a correção para quando ninguém mais
+lembra do caso.
+
+Onde isso está: `POST /api/protocols` e `POST /api/imports` validam na entrada
+(`src/application/register-guide.ts`, `src/rules/engine.ts`); a trava de liberação é do Financeiro
+(`src/http/handlers/release.ts`).
+
+### 2. Entre os dois erros, o sistema bloqueia
+
+Preferimos **segurar uma guia correta a deixar passar uma problemática**.
+
+Os dois erros não custam a mesma coisa. Bloquear uma guia boa custa minutos da recepção, com o
+motivo na tela e o caminho para resolver. Liberar uma guia ruim custa uma glosa que volta em 45 a
+90 dias, quando o atendimento já saiu da memória de todo mundo — e ainda consome o tempo de quem
+vai recorrer.
+
+Por isso: pendência bloqueante impede a liberação (`OPEN_BLOCKING_TASKS`), a IA **nunca** produz
+`OK` por conta própria, e qualquer falha ou saída fora do schema dela vira `REVISÃO HUMANA` em vez
+de passar batido.
+
+Para o bloqueio não virar parede burra, três contrapesos: o botão de liberar **continua visível**
+com o motivo do bloqueio ao lado (esconder ação ensina a pessoa a duvidar do sistema);
+`REVISÃO HUMANA` existe justamente para o que é ambíguo, em vez de reprovar por precaução; e toda
+decisão humana de invalidar um apontamento exige motivo e evidência, ficando registrada.
+
+Custo da escolha: falso positivo gera trabalho para a recepção. Aceitamos, porque o erro contrário
+é irreversível dentro do mês.
+
+### 3. A interface principal é desktop
+
+Recepção e financeiro trabalham sentados, em computador da clínica, com o sistema de gestão aberto
+ao lado. As telas que resolvem o problema são densas por natureza: lista com filtros e valores,
+comparação de versões lado a lado, merge de duplicidade campo a campo.
+
+O layout sobrevive a telas menores (as páginas viram coluna única a partir de 860px), mas mobile
+não é o alvo: tratar celular como principal exigiria redesenhar lista, diff e merge com menos
+informação por tela, e a decisão que essas telas sustentam precisa da informação junta.
+
+O MCP é a resposta para o caso em que a pessoa não está na tela — perguntar ao assistente, de onde
+estiver, sem precisar da interface.
+
 ## Decisão de arquitetura
 
 Cloudflare Workers foi escolhido para hospedar interface, API e servidor MCP num único runtime.
@@ -30,6 +88,35 @@ deliberadamente descartados: nenhum coordena concorrência, fila ou execução l
 o custo conceitual no volume desta prova (80 guias). Racional completo, com o que foi descartado e
 por quê, em [`docs/PRD-SDD.md`](docs/PRD-SDD.md) §16–18.
 
+## Como as regras leem os dados da prova
+
+Três pontos em que o CSV limita o que dá para verificar, e a escolha feita em cada um:
+
+- **Validade da autorização:** o CSV traz só a data final, não a de concessão. A verificação é a
+  data final contra a **data do atendimento**, inclusiva — vence no próprio dia, ainda vale
+  (`src/rules/authorization.ts`).
+- **Prazo de envio:** conta a partir da **data do atendimento**, e a conferência simula o momento
+  do lançamento (a guia acabou de ser lançada e ainda não foi enviada). Estourou o prazo do
+  convênio, vira `REVISÃO HUMANA` com tarefa bloqueante do Financeiro
+  (`src/rules/dispatch-deadline.ts`).
+- **Limite de sessões:** as 80 guias são o recorte de agosto, não o histórico das autorizações.
+  Por isso a regra confere **o que a guia declara** (`sessao_numero_na_autorizacao`) contra o
+  limite oficial do convênio, sem contar ocorrências na base (`src/rules/sessions.ts`).
+
+## Entrar no sistema
+
+Cada pessoa entra com a própria conta em `/entrar`; o perfil da conta (Secretaria, Financeiro ou
+Direção) define o que ela vê na tela **e** o que o assistente de IA dela consegue consultar.
+
+A Direção administra contas em `/pessoas`: criar (com senha provisória mostrada uma única vez),
+trocar perfil, desativar, reativar e redefinir senha. Cada pessoa troca a própria senha em
+`/minha-conta`. Não há autoatendimento por e-mail — não existe provedor de e-mail configurado,
+então quem esquece a senha pede à Direção. Detalhes e parâmetros em
+[`docs/CONFIG.md`](docs/CONFIG.md).
+
+Sem login, a aplicação continua navegável com a **identidade funcional de demonstração** (seletor
+no rodapé da barra lateral), que existe para a prova e não dá acesso a administrar contas.
+
 ## Executar localmente
 
 ```powershell
@@ -37,16 +124,17 @@ corepack pnpm install --frozen-lockfile
 copy .dev.vars.example .dev.vars   # gere valores próprios (openssl rand -hex 32); nunca commite .dev.vars
 corepack pnpm db:migrate:local
 corepack pnpm seed:local
+node scripts/criar-usuarios.mjs contas.sql --senha "uma-senha-de-teste"
+corepack pnpm exec wrangler d1 execute vitalis-glosas --local --file contas.sql
 corepack pnpm dev --local --port 8787
 ```
 
-`.dev.vars` é ignorado pelo Git — sem esse passo, `POST /api/session` (troca de identidade na SPA)
-e toda chamada MCP falham, porque `LINK_SIGNING_KEY` e os tokens ficam indefinidos. `.dev.vars.example`
-já documenta como gerar cada valor de teste.
+`.dev.vars` é ignorado pelo Git — sem esse passo, o login, a troca de identidade e toda chamada
+MCP falham, porque `LINK_SIGNING_KEY` e os tokens ficam indefinidos. `.dev.vars.example` já
+documenta como gerar cada valor.
 
-O Worker fica em `http://127.0.0.1:8787`. A sessão visual de demonstração é criada por
-`POST /api/session` com `{"papel":"SECRETARIA"}`, `{"papel":"FINANCEIRO"}` ou
-`{"papel":"DIRECAO"}`. O cookie é HttpOnly e assinado por `LINK_SIGNING_KEY`.
+`scripts/criar-usuarios.mjs` serve para semear o ambiente e para recuperar o acesso se não sobrar
+nenhuma conta de Direção; o dia a dia é pela tela `/pessoas`.
 
 ## Verificação
 
@@ -56,68 +144,77 @@ corepack pnpm test
 corepack pnpm build
 ```
 
-O seed oficial carrega 80 guias e pode ser repetido; ele também limpa evidências e merges locais
-antes de recarregar o domínio, permitindo restaurar o estado da demonstração.
+224 testes. O seed oficial carrega 80 guias e pode ser repetido; ele também limpa evidências e
+merges locais antes de recarregar o domínio, permitindo restaurar o estado da demonstração.
 
 ## MCP
 
-O endpoint stateless é `POST /mcp` usando `Authorization: Bearer ...`. Os tokens locais ficam em
-`.dev.vars` e nunca devem ser commitados ou exibidos. As cinco tools são:
+`POST /mcp`, stateless. Duas formas de credencial:
 
-- `consultar_regra`
-- `verificar_guia`
-- `registrar_guia` (somente Secretaria)
-- `minhas_pendencias`
-- `consultar_historico`
+1. **OAuth 2.1** — o cliente de IA se conecta sozinho: `401` devolve `WWW-Authenticate` com
+   `resource_metadata` (RFC 9728), o cliente lê os documentos de descoberta, registra-se em
+   `/oauth/register` (RFC 7591) e leva a pessoa ao login. PKCE S256 obrigatório, código de uso
+   único, refresh rotacionado. O papel do token é o papel da conta.
+2. **Bearer fixo por área** — um secret por área, mantido como atalho de demonstração.
 
-`verificar_guia` não persiste. A Skill operacional está em
-[`skills/conferir-guia-vitalis/SKILL.md`](skills/conferir-guia-vitalis/SKILL.md) e exige confirmação
-explícita antes de registrar uma guia.
+A tela `/conectar` traz o texto pronto para colar no assistente (Claude Code, Codex ou outro) e a
+tabela de quem pode o quê.
+
+| Tool | Secretaria | Financeiro | Direção |
+|---|---|---|---|
+| `consultar_regra` | sim | sim | sim |
+| `verificar_guia` (não persiste) | sim | sim | sim |
+| `consultar_historico` | sua área | sua área | tudo |
+| `minhas_pendencias` | sim | sim | não tem fila |
+| `registrar_guia` | sim | não | não |
+| `consultar_relatorio` | não | não | sim |
+
+A Skill operacional está em
+[`skills/conferir-guia-vitalis/SKILL.md`](skills/conferir-guia-vitalis/SKILL.md) e exige
+confirmação explícita antes de registrar uma guia.
 
 ## Limites importantes
 
 - IA só interpreta observação e retorna schema validado; falha vira revisão humana.
-- MCP não corrige, libera, envia, encerra ou mescla.
+- MCP não corrige, libera, envia, encerra ou mescla — decisão humana é só da interface.
 - Evidências ficam no R2 privado, com hash e links HMAC temporários.
-- Deploy remoto não foi executado automaticamente: exige conta, `database_id`, secrets e
-  autorização do proprietário. O comando preparado é `corepack pnpm exec wrangler deploy` depois da configuração de
-  produção descrita em [`docs/CONFIG.md`](docs/CONFIG.md).
-- O histórico Git inicial contém um screenshot privado no commit `14335e2`; o arquivo não está
-  no índice atual, mas a remoção histórica precisa ser decidida pelo dono antes de publicar o
-  repositório. Não reescreva o histórico sem autorização explícita.
+- O histórico Git inicial contém um screenshot privado no commit `14335e2`; o arquivo não está no
+  índice atual, mas a remoção histórica precisa ser decidida pelo dono antes de tornar o
+  repositório público. Não reescreva o histórico sem autorização explícita.
 
 ## Não implementado nesta prova
 
-Não objetivos declarados desde o PRD (`docs/PRD-SDD.md` §8) — nenhum destes foi construído:
-substituição do sistema de gestão/prontuário, envio automático de guia ao convênio, decisão
-financeira automatizada, ERP ou dashboard analítico amplo, gestão de usuários/OAuth de produção,
-treino de modelo com feedback coletado, OCR/assinatura certificada/antivírus próprio, envio
-automático do relatório semanal, e reversão de merge.
+Não objetivos declarados desde o PRD (`docs/PRD-SDD.md` §8): substituição do sistema de
+gestão/prontuário, envio automático de guia ao convênio, decisão financeira automatizada, ERP ou
+dashboard analítico amplo, treino de modelo com o feedback coletado, OCR/assinatura
+certificada/antivírus próprio, envio automático do relatório semanal, e reversão de merge.
+
+Fora de escopo por falta de provedor de e-mail: convite por e-mail, recuperação de senha
+automática e cadastro aberto ao público.
 
 Gaps conhecidos desta execução, para o próximo a mexer no código:
 
-- `POST /api/merges/commit` (`src/http/handlers/merges.ts`) não tem teste de integração
-  dedicado — só há teste de schema/roteamento (`tests/http-contracts.test.ts`). A sequência
-  grava a nova versão e revalida fora de uma única transação D1 atômica; falha no meio
-  (ex.: revalidação) deixaria o protocolo principal já com versão nova mas sem o registro de
-  merge nem o protocolo de origem marcado `MESCLADA`.
+- `POST /api/merges/commit` (`src/http/handlers/merges.ts`) não tem teste de integração dedicado —
+  só há teste de schema/roteamento. A sequência grava a nova versão e revalida fora de uma única
+  transação D1 atômica; falha no meio deixaria o protocolo principal com versão nova mas sem o
+  registro de merge.
 - A amostra de agosto não contém nenhuma guia com `data_lancamento` além do prazo do convênio
-  (RN-09); `PRAZO_ENVIO_EXCEDIDO` existe, é determinístico e testado, mas só é demonstrável com
-  uma guia colada via `verificar_guia` — ver [`docs/DEMO-ROTEIRO.md`](docs/DEMO-ROTEIRO.md).
+  (RN-09); a regra existe, é determinística e testada, mas só é demonstrável com uma guia colada
+  via `verificar_guia` — ver [`docs/DEMO-ROTEIRO.md`](docs/DEMO-ROTEIRO.md).
 
 ## Demonstração
 
 Roteiro completo (menos de cinco minutos, todos os casos do PRD §30.4) em
 [`docs/DEMO-ROTEIRO.md`](docs/DEMO-ROTEIRO.md): relatório, liberação normal, correção com diff,
-revisão humana, guia fora do convênio, duplicidade com merge, as duas tools MCP obrigatórias e a
-Skill.
+revisão humana, guia fora do convênio, duplicidade com merge, conexão de um assistente por OAuth,
+as tools do MCP e a Skill.
 
 ## Evidência da execução faseada
 
 - [Estado](docs/PROGRESS/STATE.md)
-- [Fase 0](docs/PROGRESS/phase-0-handoff.md)
-- [Fase 1](docs/PROGRESS/phase-1-handoff.md)
-- [Fase 2](docs/PROGRESS/phase-2-handoff.md)
-- [Fase 3](docs/PROGRESS/phase-3-handoff.md)
-- [Fase 4](docs/PROGRESS/phase-4-handoff.md)
-- [Fase 5](docs/PROGRESS/phase-5-handoff.md)
+- [Fase 0](docs/PROGRESS/phase-0-handoff.md) · [Fase 1](docs/PROGRESS/phase-1-handoff.md) ·
+  [Fase 2](docs/PROGRESS/phase-2-handoff.md) · [Fase 3](docs/PROGRESS/phase-3-handoff.md) ·
+  [Fase 4](docs/PROGRESS/phase-4-handoff.md) · [Fase 5](docs/PROGRESS/phase-5-handoff.md)
+
+Publicação, OAuth do MCP e administração de contas vieram depois da Fase 5 e estão registrados nos
+commits e em [`docs/CONFIG.md`](docs/CONFIG.md).
