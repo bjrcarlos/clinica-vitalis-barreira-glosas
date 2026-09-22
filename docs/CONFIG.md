@@ -378,3 +378,26 @@ Parâmetros de segurança, todos no código e cobertos por teste:
 node scripts/criar-usuarios.mjs contas.sql --senha "uma-senha-temporaria"
 pnpm exec wrangler d1 execute vitalis-glosas --remote --file contas.sql
 ```
+
+
+## Consistência dos números (banco, tela e MCP)
+
+Quem responde o quê:
+
+| Pergunta | Fonte |
+|---|---|
+| Quantas guias estão em cada estado | `GET /api/report` e a tool `consultar_relatorio` |
+| O que a minha área tem para resolver | tool `minhas_pendencias` (um item por protocolo) |
+| O que aconteceu com um protocolo | tool `consultar_historico` (eventos, não guias) |
+
+Regras que mantêm as três bocas iguais:
+
+- contagem por estado sai sempre de `montarRelatorio` (`src/http/handlers/report.ts`), a mesma
+  função que alimenta a tela — o MCP não recalcula;
+- risco soma cada protocolo uma vez, mesmo com várias tarefas abertas;
+- toda resposta paginada informa `limite_aplicado` e `truncado`, para ninguém contar em cima de
+  uma lista cortada;
+- campos que carregam o estado atual do protocolo dentro de um evento dizem isso no nome.
+
+`tests/consistencia-numeros.test.ts` compara banco, relatório e MCP no mesmo cenário e falha se
+divergirem — inclusive o caso do protocolo com duas tarefas abertas, que inflava o risco.

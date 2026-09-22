@@ -998,9 +998,13 @@ Retorna status, visão geral, problemas, subproblemas, regras aplicadas e próxi
 
 `registrar_guia` recebe um objeto de guia estruturado e um identificador idempotente de origem. Somente a secretaria pode chamá-la. A tool cria protocolo e versão inicial, executa a validação e retorna protocolo, resultado e URL da página criada.
 
-`minhas_pendencias` não recebe área. Ela deriva o escopo da credencial e aceita apenas filtros opcionais de data, estado e limite. Retorna totais, itens e links temporários para revisão.
+`minhas_pendencias` não recebe área. Ela deriva o escopo da credencial e aceita apenas filtros opcionais de data, estado e limite. Retorna **um item por protocolo** (não por tarefa), com `total_protocolos`, `total_tarefas_abertas`, `risco_cents`, `limite_aplicado` e `truncado`, além dos links temporários de revisão.
+
+O risco soma cada protocolo **uma única vez**, mesmo que ele tenha mais de uma tarefa aberta para a área (RN: "risco conta uma vez por protocolo"). Os nomes são longos de propósito: `total` sozinho não dizia se contava guia ou tarefa, e quem lia a resposta escolhia errado.
 
 `consultar_historico` recebe protocolo ou filtros de data e evento. O resultado respeita o papel autenticado e nunca inclui secrets ou conteúdo binário de evidências.
+
+Cada linha é um **evento**, não uma guia: o mesmo protocolo aparece em vários eventos e leva junto o estado ATUAL dele. Por isso os campos se chamam `status_validacao_atual_do_protocolo` e `status_fluxo_atual_do_protocolo`, e a resposta traz `eventos_retornados`, `total_eventos_no_filtro`, `protocolos_distintos`, `limite_aplicado` e `truncado`. Contagem por estado é responsabilidade de `consultar_relatorio` — somar estado por evento produz número que não existe em lugar nenhum.
 
 ### 23.5 Administração de contas
 

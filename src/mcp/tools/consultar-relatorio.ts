@@ -18,7 +18,8 @@ export function registrarConsultarRelatorio(server: McpServer, env: Env, context
   server.registerTool(
     "consultar_relatorio",
     {
-      description: "Relatório consolidado da clínica (verificadas, atenção, risco e pendências antigas). Exclusivo da Direção.",
+      description:
+        "FONTE ÚNICA das contagens da clínica: guias verificadas, distribuição por estado de validação, risco e pendências mais antigas — os mesmos números da tela de relatório. Use esta tool para qualquer pergunta de \"quantas guias estão em X\"; nunca some estados vindos de consultar_historico. Exclusivo da Direção.",
       inputSchema: schemaRelatorio,
     },
     async () => {
