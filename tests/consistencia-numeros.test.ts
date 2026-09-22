@@ -40,6 +40,8 @@ function inserirProtocolo(entrada: {
   readonly riscoCents: number;
   readonly tarefas: ReadonlyArray<{ readonly area: "SECRETARIA" | "FINANCEIRO"; readonly titulo: string }>;
   readonly eventos: number;
+  /** Códigos de problema abertos, que alimentam o detalhamento por motivo do relatório. */
+  readonly motivos?: ReadonlyArray<{ readonly codigo: string; readonly area: "SECRETARIA" | "FINANCEIRO" }>;
 }): void {
   const id = `p-${entrada.numero}`;
   const versao = `v-${entrada.numero}`;
@@ -63,6 +65,13 @@ function inserirProtocolo(entrada: {
     `INSERT INTO validation_runs (id, protocol_id, guide_version_id, rule_set_id, result_status, summary, ai_status, started_at_utc, finished_at_utc)
      VALUES (?, ?, ?, 'rs-teste', ?, 'resumo', 'NAO_EXECUTADA', ?, ?)`,
   ).run(`vr-${entrada.numero}`, id, versao, entrada.status, agora, agora);
+
+  (entrada.motivos ?? []).forEach((motivo, indice) => {
+    db.prepare(
+      `INSERT INTO validation_issues (id, validation_run_id, code, title, recommended_action, owner_area, status, subproblems_json, rule_reference_json, created_at_utc)
+       VALUES (?, ?, ?, ?, 'CORRIGIR', ?, 'ABERTO', '[]', '{}', ?)`,
+    ).run(`i-${entrada.numero}-${indice}`, `vr-${entrada.numero}`, motivo.codigo, `Problema ${motivo.codigo}`, motivo.area, agora);
+  });
 
   entrada.tarefas.forEach((tarefa, indice) => {
     db.prepare(
@@ -122,6 +131,10 @@ beforeEach(() => {
       { area: "SECRETARIA", titulo: "Corrigir CID" },
     ],
     eventos: 3,
+    motivos: [
+      { codigo: "CAMPO_OBRIGATORIO_AUSENTE", area: "SECRETARIA" },
+      { codigo: "AUTORIZACAO_VENCIDA", area: "SECRETARIA" },
+    ],
   });
   inserirProtocolo({
     numero: "VT-99-0002",
@@ -173,6 +186,41 @@ describe("relatório e banco contam a mesma coisa", () => {
 
     expect(secretaria.total_tarefas_abertas).toBe(doRelatorio.SECRETARIA);
     expect(financeiro.total_tarefas_abertas).toBe(doRelatorio.FINANCEIRO);
+  });
+});
+
+describe("o relatório já vem detalhado, sem precisar de um segundo pedido", () => {
+  it("traz motivo, guias, protocolos e responsável por estado", async () => {
+    const relatorio = await montarRelatorio(env.DB);
+    const deCorrigir = relatorio.motivos_por_estado.filter((l) => l.status_validacao === "CORRIGIR");
+
+    expect(deCorrigir.length).toBeGreaterThan(0);
+    for (const linha of deCorrigir) {
+      expect(linha.titulo).not.toBe("");
+      expect(linha.area_responsavel).toBe("SECRETARIA");
+      expect(linha.protocol_numbers.length).toBe(linha.guias);
+    }
+  });
+
+  it("conta GUIAS por motivo, e os protocolos citados existem naquele estado", async () => {
+    const relatorio = await montarRelatorio(env.DB);
+    const doEstado = new Set(
+      (db.prepare("SELECT protocol_number FROM protocols WHERE validation_status = 'CORRIGIR'").all() as Array<{ protocol_number: string }>).map(
+        (l) => l.protocol_number,
+      ),
+    );
+
+    for (const linha of relatorio.motivos_por_estado.filter((l) => l.status_validacao === "CORRIGIR")) {
+      for (const numero of linha.protocol_numbers) expect(doEstado.has(numero)).toBe(true);
+    }
+
+    // A mesma guia tem dois motivos abertos: a soma por motivo passa do total do estado, e é por
+    // isso que a contagem oficial continua sendo a distribuição por estado.
+    const somaPorMotivo = relatorio.motivos_por_estado
+      .filter((l) => l.status_validacao === "CORRIGIR")
+      .reduce((total, l) => total + l.guias, 0);
+    const totalDoEstado = relatorio.distribuicao_por_estado_validacao.find((l) => l.status_validacao === "CORRIGIR")?.quantidade ?? 0;
+    expect(somaPorMotivo).toBeGreaterThan(totalDoEstado);
   });
 });
 

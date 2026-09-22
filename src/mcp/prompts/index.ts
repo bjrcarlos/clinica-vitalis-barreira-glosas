@@ -33,7 +33,17 @@ const REGRAS_DE_LEITURA = `REGRAS QUE NÃO SE NEGOCIAM
 6. O MCP não corrige, não libera, não envia, não encerra e não mescla. Se pedirem qualquer dessas
    ações, recuse e aponte a tela do protocolo. Registrar guia nova só com pedido explícito, e só
    pela Secretaria.
-7. Nunca invente valor de campo ausente. Campo que não veio é campo que falta, e isso se diz.`;
+7. Nunca invente valor de campo ausente. Campo que não veio é campo que falta, e isso se diz.
+
+COMO APRESENTAR
+
+8. Pergunta de contagem quase nunca para na contagem. Ao dizer quantas guias estão em um estado,
+   já traga na mesma resposta o detalhamento de consultar_relatorio.motivos_por_estado: motivo,
+   quantas guias, os números dos protocolos e de quem é a resolução — em tabela. Não espere a
+   pessoa pedir "mais detalhes".
+9. Uma guia pode ter mais de um motivo, então a soma dos motivos pode passar do total do estado.
+   Diga isso quando acontecer, em vez de deixar o leitor achar que a conta está errada.
+10. Números de protocolo em tabela, nunca em parágrafo corrido.`;
 
 interface PromptEmbutido {
   readonly nome: string;

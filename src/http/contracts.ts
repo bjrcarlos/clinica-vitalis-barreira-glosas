@@ -336,6 +336,20 @@ export const esquemaDistribuicaoEstadoValidacao = z.object({
   risco_cents: z.number().int().nonnegative(),
 });
 
+/**
+ * Um motivo dentro de um estado de validação: quantas guias, quais protocolos e de quem é a
+ * resolução. Responde "quais são as 12 que precisam de correção" sem ninguém precisar pedir
+ * detalhe — a pergunta de contagem quase nunca para na contagem.
+ */
+export const esquemaMotivoPorEstado = z.object({
+  status_validacao: esquemaValidacaoStatus,
+  codigo: z.string(),
+  titulo: z.string(),
+  area_responsavel: esquemaArea.nullable(),
+  guias: z.number().int().nonnegative(),
+  protocol_numbers: z.array(esquemaNumeroProtocolo),
+});
+
 export const esquemaPendenciaAntiga = z.object({
   numero_protocolo: esquemaNumeroProtocolo,
   id_guia_origem: z.string().nullable(),
@@ -358,6 +372,7 @@ export const esquemaRelatorioResposta = z.object({
   principais_motivos: z.array(esquemaMotivoPrincipal),
   distribuicao_por_area: z.array(esquemaDistribuicaoArea),
   distribuicao_por_estado_validacao: z.array(esquemaDistribuicaoEstadoValidacao),
+  motivos_por_estado: z.array(esquemaMotivoPorEstado),
   pendencias_mais_antigas: z.array(esquemaPendenciaAntiga),
 });
 export type RelatorioResposta = z.infer<typeof esquemaRelatorioResposta>;

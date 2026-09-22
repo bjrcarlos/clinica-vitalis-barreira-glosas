@@ -121,6 +121,15 @@ describe("o texto do prompt carrega as regras que evitam o erro de número", () 
     expect(textoSecretaria).toContain("sem nenhum argumento de área");
   });
 
+  it("manda responder contagem já com o detalhamento, sem esperar um segundo pedido", async () => {
+    const resultado = await rpc(TOKEN_SECRETARIA, "prompts/get", { name: "minha-fila" });
+    const texto = (resultado.messages as unknown as Array<{ content: { text: string } }>)[0].content.text;
+
+    expect(texto).toContain("motivos_por_estado");
+    expect(texto).toContain("mais detalhes");
+    expect(texto).toContain("mais de um motivo");
+  });
+
   it("o prompt de lote manda destacar prazo de envio como decisão, não erro de digitação", async () => {
     const resultado = await rpc(TOKEN_SECRETARIA, "prompts/get", { name: "conferir-lote", arguments: {} });
     const texto = (resultado.messages as unknown as Array<{ content: { text: string } }>)[0].content.text;

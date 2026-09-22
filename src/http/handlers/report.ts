@@ -46,6 +46,14 @@ interface LinhaAreaTarefas {
   readonly mais_antiga: string | null;
 }
 
+interface LinhaMotivoPorEstado {
+  readonly status_validacao: string;
+  readonly codigo: string;
+  readonly area_responsavel: string | null;
+  readonly guias: number;
+  readonly numeros: string | null;
+}
+
 interface LinhaPendenciaAntiga {
   readonly numero_protocolo: string;
   readonly id_guia_origem: string | null;
@@ -91,6 +99,7 @@ export async function montarRelatorio(db: D1Database): Promise<RelatorioResposta
     riscoTratadoResultado,
     riscoPendenteResultado,
     motivosResultado,
+    motivosPorEstadoResultado,
     areaRiscoResultado,
     areaTarefasResultado,
     pendenciasAntigasResultado,
@@ -178,6 +187,23 @@ export async function montarRelatorio(db: D1Database): Promise<RelatorioResposta
          ORDER BY ocorrencias DESC, codigo ASC`,
       )
       .all<LinhaMotivo>(),
+
+    // Mesmos motivos, agora quebrados por estado de validação e contando GUIAS (protocolo
+    // distinto), não ocorrências: é o detalhamento que a pergunta "quantas precisam de correção"
+    // pede logo em seguida. Uma guia com dois motivos aparece nos dois, e por isso a soma das
+    // linhas pode passar do total do estado — a contagem oficial continua sendo a distribuição.
+    db
+      .prepare(
+        `SELECT p.validation_status AS status_validacao, vi.code AS codigo, vi.owner_area AS area_responsavel,
+                COUNT(DISTINCT p.id) AS guias, GROUP_CONCAT(DISTINCT p.protocol_number) AS numeros
+         FROM validation_issues vi
+         JOIN validation_runs vr ON vr.id = vi.validation_run_id
+         JOIN protocols p ON p.id = vr.protocol_id
+         WHERE vi.status = 'ABERTO' AND p.workflow_status != 'MESCLADA'
+         GROUP BY p.validation_status, vi.code, vi.owner_area
+         ORDER BY p.validation_status ASC, guias DESC, vi.code ASC`,
+      )
+      .all<LinhaMotivoPorEstado>(),
 
     // Risco e contagem de protocolo por área: usa `protocols.assigned_area` (um único dono por
     // protocolo, já denormalizado por `RepositorioValidacoesD1`) para que a soma das áreas nunca
@@ -290,6 +316,14 @@ export async function montarRelatorio(db: D1Database): Promise<RelatorioResposta
     })),
     distribuicao_por_area: distribuicaoPorArea,
     distribuicao_por_estado_validacao: distribuicaoPorEstadoValidacao,
+    motivos_por_estado: motivosPorEstadoResultado.results.map((linha) => ({
+      status_validacao: linha.status_validacao as RelatorioResposta["distribuicao_por_estado_validacao"][number]["status_validacao"],
+      codigo: linha.codigo,
+      titulo: apresentarCodigoProblema(linha.codigo as CodigoProblema),
+      area_responsavel: linha.area_responsavel as Area | null,
+      guias: linha.guias,
+      protocol_numbers: separarNumeros(linha.numeros).sort(),
+    })),
     pendencias_mais_antigas: pendenciasAntigasResultado.results.map((linha) => ({
       numero_protocolo: linha.numero_protocolo,
       id_guia_origem: linha.id_guia_origem,

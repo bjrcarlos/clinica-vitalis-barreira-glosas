@@ -30,7 +30,7 @@ export function registrarConsultarRelatorio(server: McpServer, env: Env, context
       const saida = {
         ...relatorio,
         orientacao:
-          "Estes são os números oficiais da clínica, os mesmos da tela de relatório. Use-os para qualquer contagem; não derive contagem de consultar_historico, que devolve eventos.",
+          "Estes são os números oficiais da clínica, os mesmos da tela de relatório. Use-os para qualquer contagem; não derive contagem de consultar_historico, que devolve eventos. Ao responder uma contagem por estado, apresente junto o detalhamento de motivos_por_estado (motivo, guias, protocolos e responsável) em tabela — uma guia pode ter mais de um motivo, então a soma dos motivos pode passar do total do estado.",
       };
       return { content: [{ type: "text", text: JSON.stringify(saida) }] };
     },
