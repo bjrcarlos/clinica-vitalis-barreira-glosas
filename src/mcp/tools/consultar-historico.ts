@@ -23,8 +23,14 @@ export function registrarConsultarHistorico(server: McpServer, env: Env, context
       inputSchema: schemaHistorico,
     },
     async (entrada) => {
-      const condicoes = ["(p.assigned_area = ? OR p.assigned_area IS NULL)"];
-      const valores: (string | number)[] = [contexto.papel];
+      // Secretaria e Financeiro veem o que é da sua área (mais o que não tem área). A Direção
+      // lê o histórico inteiro — é o papel de leitura ampla, sem fila e sem escrita.
+      const condicoes: string[] = [];
+      const valores: (string | number)[] = [];
+      if (contexto.papel !== "DIRECAO") {
+        condicoes.push("(p.assigned_area = ? OR p.assigned_area IS NULL)");
+        valores.push(contexto.papel);
+      }
       if (entrada.protocolo) {
         condicoes.push("p.protocol_number = ?");
         valores.push(entrada.protocolo);
@@ -49,8 +55,11 @@ export function registrarConsultarHistorico(server: McpServer, env: Env, context
         condicoes.push("p.validation_status = ?");
         valores.push(entrada.estado);
       }
+      // Direção sem nenhum filtro deixa `condicoes` vazio — `WHERE` vazio é SQL inválido, então
+      // o recorte some da query em vez de virar string vazia.
+      const filtro = condicoes.length > 0 ? `WHERE ${condicoes.join(" AND ")}` : "";
       const linhas = await env.DB.prepare(
-        `SELECT p.protocol_number, p.source_guide_id, p.validation_status, p.workflow_status, e.event_type, e.actor_role, e.source, e.reason, e.occurred_at_utc, e.recorded_at_utc, e.metadata_json FROM workflow_events e JOIN protocols p ON p.id = e.protocol_id WHERE ${condicoes.join(" AND ")} ORDER BY e.recorded_at_utc DESC LIMIT ?`,
+        `SELECT p.protocol_number, p.source_guide_id, p.validation_status, p.workflow_status, e.event_type, e.actor_role, e.source, e.reason, e.occurred_at_utc, e.recorded_at_utc, e.metadata_json FROM workflow_events e JOIN protocols p ON p.id = e.protocol_id ${filtro} ORDER BY e.recorded_at_utc DESC LIMIT ?`,
       )
         .bind(...valores, entrada.limite)
         .all<{ protocol_number: string; source_guide_id: string | null; validation_status: string; workflow_status: string; event_type: string; actor_role: string; source: string; reason: string | null; occurred_at_utc: string; recorded_at_utc: string; metadata_json: string }>();

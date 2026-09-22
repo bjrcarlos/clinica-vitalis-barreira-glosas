@@ -14,6 +14,7 @@ import { manipularRegistrarEnvio } from "../http/handlers/send";
 import { manipularEncerrarParticular, manipularEncerrarCancelado } from "../http/handlers/close";
 import { manipularCompararMerge, manipularExecutarMerge } from "../http/handlers/merges";
 import { manipularMcp } from "../mcp/server";
+import { manipularIdentidade } from "../http/handlers/oauth/index";
 
 export interface Env {
   DB: D1Database;
@@ -77,6 +78,11 @@ export default {
         },
       });
     }
+
+    // Identidade (login, descoberta OAuth, autorização, token) vem antes da API e da SPA:
+    // os caminhos são fixados por especificação e metade responde HTML.
+    const respostaIdentidade = await manipularIdentidade(request, env);
+    if (respostaIdentidade) return respostaIdentidade;
 
     if (url.pathname === "/mcp") {
       if (request.method !== "POST") return respostaJsonErro(405, "METODO_NAO_PERMITIDO", "Método não permitido para esta rota.");

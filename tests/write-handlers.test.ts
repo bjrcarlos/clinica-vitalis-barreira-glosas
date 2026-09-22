@@ -9,6 +9,7 @@ import { cadastrarProtocolo } from "../src/http/handlers/create-protocol";
 import { criarVersaoProtocolo } from "../src/http/handlers/create-version";
 import { liberarProtocolo } from "../src/http/handlers/release";
 import { importarGuias } from "../src/http/handlers/imports";
+import { aplicarMigracoes } from "./apoio/migracoes";
 
 /**
  * Cobertura pedida pelo orquestrador da Fase 2 para os handlers de escrita: papel errado
@@ -76,8 +77,7 @@ class SqliteD1Database {
 
 function criarBancoDeTeste(): DatabaseSync {
   const db = new DatabaseSync(":memory:");
-  const migracao = readFileSync(resolve(__dirname, "../migrations/0001_init.sql"), "utf-8");
-  db.exec(migracao);
+  aplicarMigracoes(db);
   return db;
 }
 

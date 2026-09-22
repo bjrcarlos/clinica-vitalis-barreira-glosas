@@ -10,6 +10,7 @@ import { liberarProtocolo } from "../src/http/handlers/release";
 import { registrarEnvioProtocolo } from "../src/http/handlers/send";
 import { encerrarProtocoloParticular } from "../src/http/handlers/close";
 import { montarRelatorio } from "../src/http/handlers/report";
+import { aplicarMigracoes } from "./apoio/migracoes";
 
 /**
  * Cobertura pedida pelo orquestrador da Fase 3 para envio e encerramento: envio sem evidência
@@ -78,8 +79,7 @@ class SqliteD1Database {
 
 function criarBancoDeTeste(): DatabaseSync {
   const db = new DatabaseSync(":memory:");
-  const migracao = readFileSync(resolve(__dirname, "../migrations/0001_init.sql"), "utf-8");
-  db.exec(migracao);
+  aplicarMigracoes(db);
   return db;
 }
 

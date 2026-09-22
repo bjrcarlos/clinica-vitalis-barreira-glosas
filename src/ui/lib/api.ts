@@ -110,6 +110,20 @@ export const api = {
 /** Papel funcional da identidade da demonstração (PRD §8: OAuth fora de escopo). DIRECAO é só leitura. */
 export type PapelSessao = "SECRETARIA" | "FINANCEIRO" | "DIRECAO";
 
+/** Quem está logado nesta aba (`GET /api/me`). Sem login, `autenticado: false` — a interface cai na identidade funcional da demonstração. */
+export interface UsuarioAtual {
+  readonly autenticado: boolean;
+  readonly nome?: string;
+  readonly email?: string;
+  readonly papel?: PapelSessao;
+  readonly expira_em_utc?: string;
+}
+
+/** `GET /api/me` — conta real por trás da sessão, quando alguém entrou por `/entrar` ou pelo fluxo OAuth. */
+export function obterUsuarioAtual(signal?: AbortSignal): Promise<UsuarioAtual> {
+  return api.get<UsuarioAtual>("/me", signal);
+}
+
 /** `POST /api/session` — troca a identidade funcional da demonstração (cookie HttpOnly assinado). */
 export function trocarSessao(papel: PapelSessao): Promise<void> {
   return api.post<void>("/session", { papel });

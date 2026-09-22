@@ -1,0 +1,65 @@
+.caixa {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.linha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--cor-mint);
+  color: var(--cor-verde-texto);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--fonte-titulo);
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nome {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-texto);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.papel {
+  font-size: 11.5px;
+  color: var(--cor-texto-4);
+}
+
+.sair {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  width: 100%;
+  padding: 7px 12px;
+  border-radius: var(--raio-item);
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-card);
+  color: var(--cor-texto-2);
+  cursor: pointer;
+}
+
+.sair:hover {
+  border-color: var(--cor-primaria);
+  color: var(--cor-texto);
+}

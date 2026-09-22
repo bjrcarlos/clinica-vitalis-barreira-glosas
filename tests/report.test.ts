@@ -7,6 +7,7 @@ import { montarRelatorio } from "../src/http/handlers/report";
 import { montarListaProtocolos } from "../src/http/handlers/protocols-list";
 import { montarDetalheProtocolo } from "../src/http/handlers/protocol-detail";
 import { montarRegrasAtivas } from "../src/http/handlers/rules";
+import { aplicarMigracoes } from "./apoio/migracoes";
 
 /**
  * Adaptador mínimo "D1Database" sobre `node:sqlite`, igual em espírito ao de
@@ -50,8 +51,7 @@ class SqliteD1Database {
 
 function criarBancoDeTeste(): DatabaseSync {
   const db = new DatabaseSync(":memory:");
-  const migracao = readFileSync(resolve(__dirname, "../migrations/0001_init.sql"), "utf-8");
-  db.exec(migracao);
+  aplicarMigracoes(db);
   return db;
 }
 

@@ -26,7 +26,19 @@
    não segue para liberação normal; pela identidade Financeiro, encerrar como particular ou como
    cobrança cancelada informando o motivo, e conferir que o protocolo sai da lista de pendências.
 
-## MCP
+## Conectar um assistente por OAuth
+
+1. Abrir `/conectar`, copiar o texto do Claude Code e colar no assistente; ele registra o
+   servidor sozinho e abre o login.
+2. Entrar como `secretaria@vitalis.example`; mostrar a tela de autorização com o nome da pessoa,
+   o papel e a lista do que o assistente poderá fazer.
+3. Pedir "minhas pendências" ao assistente e mostrar que vêm as 27 da Secretaria, sem nenhum
+   parâmetro de área.
+4. Sair, entrar como `direcao@vitalis.example`, reconectar e repetir o pedido: a mesma tool
+   responde que a Direção não tem fila e aponta `consultar_relatorio`.
+5. Mostrar em `/conectar` que a tabela de permissões corresponde ao que acabou de acontecer.
+
+## MCP (Bearer fixo, atalho de demonstração)
 
 1. Com o Bearer da Secretaria, chamar `tools/list`, `consultar_regra`, `verificar_guia` e
    `minhas_pendencias`; destacar que a última deriva a área da credencial.

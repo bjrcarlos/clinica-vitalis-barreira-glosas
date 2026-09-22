@@ -1,0 +1,233 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 760px;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+.subtitulo {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--cor-texto-3);
+  line-height: 1.5;
+  max-width: 640px;
+}
+
+.h2 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.blocoCabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.pre {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--cor-texto);
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda-suave);
+  border-radius: var(--raio-item);
+  padding: 16px 18px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.seletorRotulo {
+  margin: 20px 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cor-texto-4);
+}
+
+.seletor {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.passos {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.passos li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--cor-texto-2);
+  line-height: 1.5;
+}
+
+.numero {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--cor-mint);
+  color: var(--cor-primaria);
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cartaoTabela {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabelaCabecalho {
+  padding: 18px 22px 4px;
+}
+
+.wrapperRolagem {
+  overflow-x: auto;
+}
+
+.wrapperRolagem table {
+  min-width: 480px;
+}
+
+.celulaPermissao {
+  text-align: center;
+  font-size: 15px;
+}
+
+.notaTabela {
+  margin: 0;
+  padding: 14px 22px 20px;
+  font-size: 12.5px;
+  color: var(--cor-texto-3);
+  line-height: 1.5;
+}
+
+.cartaoDesconectar {
+  background: var(--cor-superficie);
+}
+
+.h2Discreto {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cor-texto-4);
+}
+
+.comandosRemover {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.comandosRemover code {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  color: var(--cor-texto-2);
+  background: var(--cor-divisoria);
+  border-radius: 6px;
+  padding: 5px 9px;
+}
+
+/* Visualmente oculto, mas lido por leitor de tela (mesmo padrão de HistoricoProtocolo.module.css) —
+   o ✓/— da tabela de permissões é decorativo; "Sim"/"Não" é o que o leitor de tela anuncia. */
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Estado do login ------------------------------------------------------ */
+
+.cartaoLogin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.loginTitulo {
+  margin: 0 0 2px;
+  font-size: 14px;
+  color: var(--cor-texto);
+}
+
+.loginApoio {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--cor-texto-3);
+  max-width: 62ch;
+}
+
+.botaoPrimario {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: var(--raio-item);
+  border: 1px solid var(--cor-primaria);
+  background: var(--cor-primaria);
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.botaoPrimario:hover {
+  background: var(--cor-primaria-clara);
+  border-color: var(--cor-primaria-clara);
+}
+
+.botaoSecundario {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: var(--raio-item);
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-card);
+  color: var(--cor-texto-2);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.botaoSecundario:hover {
+  border-color: var(--cor-primaria);
+  color: var(--cor-texto);
+}

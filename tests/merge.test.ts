@@ -18,6 +18,7 @@ import { validarGuia as motorValidacaoReal } from "../src/rules/engine";
 import { compararMerge, executarMerge } from "../src/http/handlers/merges";
 import { buscarResumoWire } from "../src/http/handlers/create-protocol";
 import { montarRelatorio } from "../src/http/handlers/report";
+import { aplicarMigracoes } from "./apoio/migracoes";
 
 /**
  * Cobertura de integração do merge (RF-13, PRD-SDD §26) que faltava: até aqui só existia
@@ -125,8 +126,7 @@ class SqliteD1DatabaseComSabotagem {
 function criarBancoDeTeste(): DatabaseSync {
   const db = new DatabaseSync(":memory:");
   const __dirname = dirname(fileURLToPath(import.meta.url));
-  const migracao = readFileSync(resolve(__dirname, "../migrations/0001_init.sql"), "utf-8");
-  db.exec(migracao);
+  aplicarMigracoes(db);
   return db;
 }
 

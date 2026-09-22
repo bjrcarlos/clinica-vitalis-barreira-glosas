@@ -305,3 +305,44 @@ curl https://seu-dominio.workers.dev/api/report
 - Stack técnico: `CLAUDE.md` (dependências, comando, convenções).
 - Autenticação MCP: `docs/PRD-SDD.md` §23.2.
 - Bindings Cloudflare: consulte documentação Wrangler e [Cloudflare Docs](https://developers.cloudflare.com/workers/).
+
+
+## Contas de acesso e OAuth do MCP
+
+Desde 22/09/2026 o MCP aceita OAuth 2.1 além dos dois Bearer fixos. O papel do token passa a ser
+o papel da conta que fez login — Secretaria, Financeiro ou Direção.
+
+### Criar ou trocar a senha das contas
+
+```bash
+node scripts/criar-usuarios.mjs                      # senhas aleatórias, uma por conta
+node scripts/criar-usuarios.mjs arquivo.sql --senha S # mesma senha nas três (uso local)
+pnpm exec wrangler d1 execute vitalis-glosas --local  --file usuarios.local.sql
+pnpm exec wrangler d1 execute vitalis-glosas --remote --file usuarios.local.sql
+```
+
+O SQL gerado leva apenas hash PBKDF2, salt e número de iterações — nunca a senha. As senhas em
+claro são impressas uma vez e anexadas a `.secrets.local.md` (ignorado pelo Git). O `INSERT` usa
+`ON CONFLICT(email) DO UPDATE`: trocar a senha preserva o id da conta e não derruba os tokens
+OAuth já emitidos.
+
+As três contas: `secretaria@vitalis.example`, `financeiro@vitalis.example`,
+`direcao@vitalis.example`.
+
+### Endpoints de identidade
+
+| Caminho | Para quê |
+|---|---|
+| `GET /entrar` · `POST /entrar` | login direto no sistema (interface) |
+| `POST /sair` | encerra a sessão do navegador (não revoga token de MCP) |
+| `GET /api/me` | quem está logado nesta aba |
+| `GET /.well-known/oauth-protected-resource` | descoberta: quem autoriza o `/mcp` (RFC 9728) |
+| `GET /.well-known/oauth-authorization-server` | descoberta: endereços do fluxo (RFC 8414) |
+| `POST /oauth/register` | registro dinâmico do cliente (RFC 7591) |
+| `GET/POST /oauth/authorize` | login + autorização (única tela que a pessoa vê) |
+| `POST /oauth/token` | troca de código e renovação |
+| `POST /oauth/revoke` | revogação (RFC 7009) |
+
+**`run_worker_first` em `wrangler.jsonc` é obrigatório para isso funcionar.** Com
+`not_found_handling: "single-page-application"`, qualquer navegação HTML casa com o fallback do
+`index.html` e nunca chegaria ao Worker — `/entrar` abriria a SPA numa rota que ela não conhece.

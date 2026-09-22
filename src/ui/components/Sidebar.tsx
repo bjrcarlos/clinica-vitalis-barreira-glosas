@@ -47,6 +47,13 @@ const ICONE_REGRAS = (
     <path d="M9 13h6M9 17h6" />
   </svg>
 );
+const ICONE_CONECTAR = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="4" y="15" width="6" height="6" rx="1.5" />
+    <rect x="14" y="3" width="6" height="6" rx="1.5" />
+    <path d="M7 15v-3a2 2 0 0 1 2-2h3m0 0V7m0 3 3-3" />
+  </svg>
+);
 
 /**
  * Navegação principal fixada em docs/PRD-SDD.md §12.1 — não é dado, não vem de props.
@@ -65,6 +72,7 @@ const ITENS: readonly ItemNav[] = [
   { rota: "/pendencias", rotulo: "Minhas pendências", icone: ICONE_PENDENCIAS },
   { rota: "/regras", rotulo: "Regras", icone: ICONE_REGRAS },
   { rota: "/merge", rotulo: "Merge", icone: ICONE_GUIAS },
+  { rota: "/conectar", rotulo: "Conectar IA", icone: ICONE_CONECTAR },
 ];
 
 /** Coluna de navegação de 236px — item ativo em mint, contador de pendências em pílula âmbar. */

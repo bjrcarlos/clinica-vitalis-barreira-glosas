@@ -6,6 +6,7 @@ import { Protocolo } from "./pages/Protocolo";
 import { Pendencias } from "./pages/Pendencias";
 import { Regras } from "./pages/Regras";
 import { Merge } from "./pages/Merge";
+import { Conectar } from "./pages/Conectar";
 
 /**
  * Rotas da Fase 2 (docs/PRD-SDD.md §24, escopo fixado pelo orquestrador). Cada página é hoje
@@ -20,6 +21,7 @@ import { Merge } from "./pages/Merge";
  *   /importar            -> redireciona para /guias?modal=importar (modal sobre a lista, ver Guias.tsx)
  *   /nova-guia           -> redireciona para /guias?modal=nova-guia (modal sobre a lista, ver Guias.tsx)
  *   /regras              -> src/ui/pages/Regras.tsx     (design-reference/Regras.dc.html)
+ *   /conectar            -> src/ui/pages/Conectar.tsx   (sem tela em design-reference; tutorial de instalação do MCP)
  *
  * "Importar" e "Nova guia" deixaram de ser páginas/itens de sidebar: viraram modais abertos
  * pelos botões de "Todas as guias" (src/ui/components/entrada/FormularioImportacao.tsx e
@@ -39,6 +41,7 @@ export function AppRoutes() {
       <Route path="/nova-guia" element={<Navigate to="/guias?modal=nova-guia" replace />} />
       <Route path="/regras" element={<Regras />} />
       <Route path="/merge" element={<Merge />} />
+      <Route path="/conectar" element={<Conectar />} />
     </Routes>
   );
 }

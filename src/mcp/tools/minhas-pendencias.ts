@@ -25,6 +25,12 @@ export function registrarMinhasPendencias(server: McpServer, env: Env, contexto:
       inputSchema: schemaPendencias,
     },
     async (entrada) => {
+      // Direção não tem fila: a tool devolve a fila de QUEM CHAMOU, e não existe fila da Direção.
+      // Devolver as duas áreas juntas aqui quebraria o contrato da tool; a visão do todo é
+      // `consultar_relatorio`.
+      if (contexto.papel === "DIRECAO") {
+        throw new Error("A Direção não tem fila própria de pendências. Use consultar_relatorio para a visão consolidada.");
+      }
       const area = contexto.papel;
       const condicoes = ["t.assigned_area = ?", "t.status = 'ABERTA'", "p.workflow_status != 'MESCLADA'"];
       const valores: (string | number)[] = [area];

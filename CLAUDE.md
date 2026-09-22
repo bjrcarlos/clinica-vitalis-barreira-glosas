@@ -33,7 +33,10 @@ Uma única implementação de regras serve UI, MCP e Skill. Nunca duplicar lógi
 - Risco conta **uma vez por protocolo**, mesmo com vários problemas; protocolo mesclado não soma de novo.
 - Autorização é válida **no próprio dia** do vencimento (comparação inclusiva).
 - Nenhuma tool MCP corrige, libera, envia, encerra ou mescla. Decisão humana é só da interface.
-- Papel vem da credencial, nunca de parâmetro de entrada.
+- Papel vem da credencial, nunca de parâmetro de entrada. Com OAuth, a credencial é o token
+  emitido à pessoa e o papel é o de `users.papel`; o Bearer fixo por área continua aceito como
+  atalho de demonstração. Segredo de autenticação (senha, código, token) nunca é gravado em
+  claro: senha é PBKDF2, código e token são guardados por hash SHA-256.
 - IA nunca produz `OK`, nunca altera campo: falha ou saída fora do schema vira `REVISÃO HUMANA` com `ai_status = FAILED`.
 - Códigos de problema (`code`) são estáveis: mudar texto é permitido, mudar código não.
 

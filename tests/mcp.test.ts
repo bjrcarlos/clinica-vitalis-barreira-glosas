@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { manipularMcp } from "../src/mcp/server";
 import type { Env } from "../src/worker/index";
 import type { GuiaBruta } from "../src/domain/guide";
+import { aplicarMigracoes } from "./apoio/migracoes";
 
 /**
  * Migração para `createMcpHandler` (PRD-SDD §17/§23): estes testes cobrem exatamente os
@@ -74,8 +75,7 @@ const FINANCEIRO_TOKEN = "token-financeiro-teste-mcp";
 
 function criarBancoDeTeste(): DatabaseSync {
   const db = new DatabaseSync(":memory:");
-  const migracao = readFileSync(resolve(__dirname, "../migrations/0001_init.sql"), "utf-8");
-  db.exec(migracao);
+  aplicarMigracoes(db);
   // Regra ativa a partir do material oficial (nunca copiado para dentro do código de teste).
   const regrasTexto = readFileSync(resolve(__dirname, "../regras_convenio.json.txt"), "utf-8");
   db.prepare(
@@ -165,11 +165,19 @@ describe("manipularMcp — transporte createMcpHandler (PRD-SDD §17/§23)", () 
     expect(resposta.status).toBe(401);
   });
 
-  it("tools/list expõe exatamente as cinco tools do contrato, com esses nomes", async () => {
+  it("tools/list expõe exatamente as tools do contrato, com esses nomes", async () => {
     const resposta = await chamar(SECRETARIA_TOKEN, "tools/list");
     const corpo = await corpoJsonRpc(resposta);
     const nomes = (corpo.result?.tools as Array<{ name: string }> | undefined)?.map((t) => t.name);
-    expect(nomes).toEqual(["consultar_regra", "verificar_guia", "registrar_guia", "minhas_pendencias", "consultar_historico"]);
+    // As cinco do PRD-SDD §23.3 mais `consultar_relatorio`, acrescentada com o papel DIRECAO.
+    expect(nomes).toEqual([
+      "consultar_regra",
+      "verificar_guia",
+      "registrar_guia",
+      "minhas_pendencias",
+      "consultar_historico",
+      "consultar_relatorio",
+    ]);
   });
 
   it("consultar_regra devolve a regra ativa para convênio e procedimento conhecidos", async () => {

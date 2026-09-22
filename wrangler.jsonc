@@ -12,10 +12,16 @@
     "enabled": true
   },
   // Serve o build estático do cliente React (SPA) por baixo de env.ASSETS.
+  //
+  // `run_worker_first` existe porque, com `single-page-application`, QUALQUER navegação HTML
+  // casa com o fallback do index.html e nunca chegaria ao Worker. As telas de identidade
+  // (login, autorização OAuth) são HTML servido pelo Worker, não pela SPA — sem esta lista,
+  // "/entrar" abriria a SPA numa rota que ela não conhece, em vez da tela de login.
   "assets": {
     "directory": "./dist/client",
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/entrar", "/sair", "/oauth/*", "/.well-known/*", "/mcp", "/api/*"]
   },
   // Banco D1: guias, protocolos, eventos e regras (schema real entra na Fase 1).
   "d1_databases": [

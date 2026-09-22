@@ -2,14 +2,16 @@ import { createMcpHandler } from "agents/mcp/server";
 import { McpServer } from "@modelcontextprotocol/server";
 import type { Env } from "../worker/index";
 import { autenticar, type ContextoMcp } from "./auth";
+import { desafioBearer } from "../infrastructure/auth/oauth";
 import { registrarConsultarRegra } from "./tools/consultar-regra";
 import { registrarVerificarGuia } from "./tools/verificar-guia";
 import { registrarRegistrarGuia } from "./tools/registrar-guia";
 import { registrarMinhasPendencias } from "./tools/minhas-pendencias";
 import { registrarConsultarHistorico } from "./tools/consultar-historico";
+import { registrarConsultarRelatorio } from "./tools/consultar-relatorio";
 
 /**
- * As cinco tools do PRD-SDD §23.3, registradas numa `McpServer` nova a cada requisição — nunca
+ * As tools do PRD-SDD §23.3 (mais `consultar_relatorio`, da Fase 6), registradas numa `McpServer` nova a cada requisição — nunca
  * uma instância compartilhada entre chamadas (§23.1 "uma instância lógica de servidor por
  * requisição"). `contexto` já veio do Bearer autenticado em `manipularMcp`; nenhuma tool aceita
  * papel/área como argumento.
@@ -21,6 +23,7 @@ function construirServidor(env: Env, contexto: ContextoMcp): McpServer {
   registrarRegistrarGuia(server, env, contexto);
   registrarMinhasPendencias(server, env, contexto);
   registrarConsultarHistorico(server, env, contexto);
+  registrarConsultarRelatorio(server, env, contexto);
   return server;
 }
 
@@ -34,9 +37,15 @@ function construirServidor(env: Env, contexto: ContextoMcp): McpServer {
 export async function manipularMcp(request: Request, env: Env): Promise<Response> {
   const contexto = await autenticar(request, env);
   if (!contexto) {
+    // `WWW-Authenticate` com `resource_metadata` (RFC 9728) é o que faz um cliente MCP
+    // descobrir sozinho onde autenticar e iniciar o OAuth — sem ele, o cliente só vê 401.
+    const origem = new URL(request.url).origin;
     return Response.json(
-      { jsonrpc: "2.0", id: null, error: { code: -32001, message: "Autenticação Bearer inválida ou ausente." } },
-      { status: 401 },
+      { jsonrpc: "2.0", id: null, error: { code: -32001, message: "Autenticação necessária. Conclua o login OAuth ou use um Bearer válido." } },
+      {
+        status: 401,
+        headers: { "WWW-Authenticate": desafioBearer(origem, "invalid_token", "Bearer ausente, expirado ou revogado.") },
+      },
     );
   }
   const handler = createMcpHandler(() => construirServidor(env, contexto));

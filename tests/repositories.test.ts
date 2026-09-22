@@ -15,11 +15,12 @@ import { RepositorioValidacoesD1 } from "../src/infrastructure/d1/validations";
 import { RepositorioVersoesD1 } from "../src/infrastructure/d1/versions";
 import { registrarGuia } from "../src/application/register-guide";
 import type { MotorValidacao } from "../src/application/validate-guide";
+import { aplicarMigracoes } from "./apoio/migracoes";
 
 /**
  * Adaptador mínimo "D1Database" sobre node:sqlite (DatabaseSync), só com o que os
  * repositórios desta fase usam (prepare/bind/first/run/all/batch). Não depende de wrangler:
- * carrega a migração real (migrations/0001_init.sql) direto num banco em memória.
+ * carrega as migrações reais (migrations/*.sql) direto num banco em memória.
  */
 class SqliteD1Statement {
   constructor(
@@ -78,8 +79,7 @@ class SqliteD1Database {
 
 function criarBancoDeTeste(): DatabaseSync {
   const db = new DatabaseSync(":memory:");
-  const migracao = readFileSync(resolve(__dirname, "../migrations/0001_init.sql"), "utf-8");
-  db.exec(migracao);
+  aplicarMigracoes(db);
   return db;
 }
 

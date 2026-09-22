@@ -165,7 +165,10 @@ A Skill deve:
 - Enviar guias diretamente aos convênios.
 - Automatizar decisões financeiras.
 - Construir um ERP, workflow corporativo ou dashboard analítico amplo.
-- Criar gestão completa de usuários ou OAuth de produção.
+- Criar gestão completa de usuários (convite, recuperação de senha, perfis editáveis na tela).
+  **OAuth saiu deste item em 22/09/2026, por decisão do dono:** o login individual e o OAuth 2.1
+  do MCP foram implementados (§23.2). O que continua fora é a administração de contas pela
+  interface — contas são criadas por script.
 - Treinar um modelo com os feedbacks coletados.
 - Implementar OCR, assinatura certificada ou antivírus próprio.
 - Enviar automaticamente o relatório de terça-feira.
@@ -942,20 +945,38 @@ Decisões humanas formarão uma base auditável, mas não serão enviadas automa
 - inputs e outputs validados com Zod;
 - mensagens de erro compreensíveis e sem stack trace.
 
-### 23.2 Autenticação da prova
+### 23.2 Autenticação
 
-1. Middleware lê `Authorization: Bearer ...`.
-2. Compara o hash do token com os secrets configurados.
-3. Deriva `principal` e `role` imutáveis.
-4. Injeta o contexto autenticado no handler MCP.
-5. Cada tool aplica sua permissão sem aceitar `role` como input.
+Dois caminhos de credencial, conferidos nesta ordem. Em ambos, `principal` e `role` são
+derivados da credencial e injetados no handler; nenhuma tool aceita `role` como input.
 
-Tokens:
+**1. OAuth 2.1 (caminho normal, desde 22/09/2026).** O cliente de IA se conecta sozinho:
 
-- `MCP_SECRETARIA_TOKEN`;
-- `MCP_FINANCEIRO_TOKEN`.
+1. `POST /mcp` sem Bearer responde `401` com
+   `WWW-Authenticate: Bearer resource_metadata="..."` (RFC 9728);
+2. o cliente lê `/.well-known/oauth-protected-resource` e
+   `/.well-known/oauth-authorization-server` (RFC 8414);
+3. registra-se em `POST /oauth/register` (RFC 7591) como cliente **público**;
+4. redireciona a pessoa para `/oauth/authorize`, onde ela entra com e-mail e senha e autoriza;
+5. troca o código por token em `POST /oauth/token`, com **PKCE S256 obrigatório**.
 
-OAuth fica documentado como evolução de produção.
+O papel do token é o papel da CONTA (`users.papel`): Secretaria, Financeiro ou Direção.
+Código de autorização é de uso único (`UPDATE ... WHERE used_at_utc IS NULL`), refresh é
+rotacionado a cada uso, e código e token são guardados apenas como hash SHA-256.
+
+**2. Bearer fixo por área (atalho de demonstração).** `MCP_SECRETARIA_TOKEN` e
+`MCP_FINANCEIRO_TOKEN` continuam aceitos. Não identificam pessoa: `principal` é a própria área.
+
+Permissão por papel:
+
+| Tool | Secretaria | Financeiro | Direção |
+|---|---|---|---|
+| `consultar_regra` | sim | sim | sim |
+| `verificar_guia` | sim | sim | sim |
+| `consultar_historico` | sim (sua área) | sim (sua área) | sim (tudo) |
+| `minhas_pendencias` | sim | sim | **não** (sem fila própria) |
+| `registrar_guia` | sim | não | não |
+| `consultar_relatorio` | não | não | **sim** |
 
 ### 23.3 Contratos das tools
 
@@ -1451,7 +1472,7 @@ IA e MCP dependem do mesmo motor determinístico da interface. Não haverá uma 
 
 ## 37. Evoluções posteriores
 
-- OAuth e identidade individual;
+- ~~OAuth e identidade individual~~ — entregue em 22/09/2026 (§23.2);
 - integração com o sistema da clínica e o prontuário;
 - envio programático ao convênio;
 - relatório automático de terça-feira;
