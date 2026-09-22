@@ -236,6 +236,36 @@ export function paginaConsentimento(dados: DadosPaginaConsentimento): string {
   );
 }
 
+export interface DadosPaginaDefinirSenha {
+  readonly nome: string;
+  readonly destino: string;
+  readonly minimo: number;
+  readonly erro?: string;
+}
+
+/**
+ * Primeiro acesso: a conta foi criada pela Direção com uma senha provisória, e a pessoa define a
+ * dela antes de qualquer outra coisa. Não pede a senha atual — ela acabou de digitá-la para
+ * chegar aqui, e pedir de novo só faria o primeiro acesso parecer um erro.
+ */
+export function paginaDefinirSenha(dados: DadosPaginaDefinirSenha): string {
+  return documento(
+    "Definir senha",
+    `<h1>Defina sua senha</h1>
+  <p class="apoio">Olá, ${escaparHtml(dados.nome.split(/\s+/)[0] ?? dados.nome)}. Você entrou com uma senha provisória. Escolha a sua para continuar.</p>
+  ${dados.erro ? `<p class="erro" role="alert">${escaparHtml(dados.erro)}</p>` : ""}
+  <form method="post" action="/trocar-senha">
+      <input type="hidden" name="redirecionar" value="${escaparHtml(dados.destino)}">
+      <label for="senha_nova">Nova senha</label>
+      <input id="senha_nova" name="senha_nova" type="password" autocomplete="new-password" required minlength="${dados.minimo}" autofocus>
+      <label for="senha_confirmacao">Repita a nova senha</label>
+      <input id="senha_confirmacao" name="senha_confirmacao" type="password" autocomplete="new-password" required minlength="${dados.minimo}">
+      <button type="submit">Salvar e continuar</button>
+  </form>
+  <p class="rodape">Pelo menos ${dados.minimo} caracteres. A senha provisória deixa de valer assim que você salvar.</p>`,
+  );
+}
+
 export function paginaErro(titulo: string, detalhe: string): string {
   return documento(
     titulo,

@@ -2,6 +2,10 @@
 /**
  * Gera o SQL das contas de acesso (Secretaria, Financeiro, Direção) com senha já derivada.
  *
+ * Desde que a tela `/pessoas` existe, este script serve para dois casos apenas: semear um
+ * ambiente do zero e recuperar o acesso quando não sobrar nenhuma conta de Direção ativa. O
+ * dia a dia — criar, desativar, trocar papel, redefinir senha — é feito pela interface.
+ *
  * A senha NUNCA entra no SQL nem no repositório: o arquivo gerado leva apenas o hash PBKDF2, o
  * salt e o número de iterações. As senhas em claro são impressas uma única vez aqui e gravadas
  * em `.secrets.local.md` (ignorado pelo Git), que é onde este projeto já guarda credencial local.

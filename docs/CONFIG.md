@@ -346,3 +346,35 @@ As três contas: `secretaria@vitalis.example`, `financeiro@vitalis.example`,
 **`run_worker_first` em `wrangler.jsonc` é obrigatório para isso funcionar.** Com
 `not_found_handling: "single-page-application"`, qualquer navegação HTML casa com o fallback do
 `index.html` e nunca chegaria ao Worker — `/entrar` abriria a SPA numa rota que ela não conhece.
+
+
+## Administração de contas (tela `/pessoas`)
+
+A partir de 22/09/2026 a Direção administra contas pela interface; `scripts/criar-usuarios.mjs`
+continua existindo só para dois casos: semear o ambiente do zero e recuperar o acesso se não
+sobrar nenhuma conta de Direção.
+
+| Rota | Quem pode | O que faz |
+|---|---|---|
+| `GET /api/users` | Direção | lista contas, com estado e último acesso |
+| `POST /api/users` | Direção | cria conta e devolve a senha provisória **uma vez** |
+| `PATCH /api/users/:id` | Direção | troca papel e/ou ativa/desativa |
+| `POST /api/users/:id/senha` | Direção | redefine a senha de alguém |
+| `GET /api/users/eventos` | Direção | histórico de identidade |
+| `POST /api/me/senha` | qualquer conta | troca a própria senha (confere a atual) |
+| `GET/POST /trocar-senha` | conta com senha provisória | define a senha no primeiro acesso |
+
+Parâmetros de segurança, todos no código e cobertos por teste:
+
+- senha mínima de 10 caracteres (`TAMANHO_MINIMO_SENHA`, `src/http/handlers/usuarios.ts`);
+- 5 tentativas erradas bloqueiam a conta por 15 minutos (`LIMITE_TENTATIVAS` e `BLOQUEIO_MS`,
+  `src/http/handlers/oauth/credenciais.ts`);
+- senha provisória de 14 caracteres, sem os que se confundem lidos em voz alta (0/O, 1/l);
+- PBKDF2-SHA256 com 100.000 iterações, guardadas por hash junto com o salt.
+
+**Se ninguém mais conseguir entrar como Direção**, o caminho de volta é o script:
+
+```bash
+node scripts/criar-usuarios.mjs contas.sql --senha "uma-senha-temporaria"
+pnpm exec wrangler d1 execute vitalis-glosas --remote --file contas.sql
+```

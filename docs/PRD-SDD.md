@@ -165,10 +165,12 @@ A Skill deve:
 - Enviar guias diretamente aos convênios.
 - Automatizar decisões financeiras.
 - Construir um ERP, workflow corporativo ou dashboard analítico amplo.
-- Criar gestão completa de usuários (convite, recuperação de senha, perfis editáveis na tela).
-  **OAuth saiu deste item em 22/09/2026, por decisão do dono:** o login individual e o OAuth 2.1
-  do MCP foram implementados (§23.2). O que continua fora é a administração de contas pela
-  interface — contas são criadas por script.
+- Autoatendimento de conta: cadastro aberto ao público, convite por e-mail e "esqueci minha
+  senha" por e-mail. **Nada disso existe porque não há provedor de e-mail configurado** — quem
+  cria conta é a Direção, e quem esquece a senha pede à Direção para redefinir.
+  **OAuth e administração de contas saíram deste item em 22/09/2026, por decisão do dono:** o
+  login individual, o OAuth 2.1 do MCP (§23.2) e a tela de administração (§23.5) foram
+  implementados.
 - Treinar um modelo com os feedbacks coletados.
 - Implementar OCR, assinatura certificada ou antivírus próprio.
 - Enviar automaticamente o relatório de terça-feira.
@@ -999,6 +1001,32 @@ Retorna status, visão geral, problemas, subproblemas, regras aplicadas e próxi
 `minhas_pendencias` não recebe área. Ela deriva o escopo da credencial e aceita apenas filtros opcionais de data, estado e limite. Retorna totais, itens e links temporários para revisão.
 
 `consultar_historico` recebe protocolo ou filtros de data e evento. O resultado respeita o papel autenticado e nunca inclui secrets ou conteúdo binário de evidências.
+
+### 23.5 Administração de contas
+
+Quem administra é a **Direção**, pela tela `/pessoas`. A autorização dessas rotas sai da sessão
+de login (conta real), nunca do cookie de identidade funcional da demonstração — se lesse o
+cookie funcional, qualquer visitante criaria contas escolhendo "Direção" no seletor.
+
+Ciclo de vida de uma conta:
+
+1. a Direção cria com nome, e-mail e papel; o sistema devolve uma **senha provisória mostrada
+   uma única vez**;
+2. no primeiro acesso, a pessoa é levada para `/trocar-senha` e define a própria senha antes de
+   qualquer outra coisa — inclusive antes de autorizar um assistente de IA;
+3. a pessoa troca a própria senha quando quiser, conferindo a atual;
+4. a Direção pode trocar o papel, desativar, reativar e redefinir a senha de alguém.
+
+Regras que valem inclusive para a Direção:
+
+- ninguém desativa a própria conta;
+- a última Direção ativa não pode ser desativada nem rebaixada — sem ela, ninguém administraria
+  contas;
+- trocar o papel, desativar a conta ou redefinir a senha **revoga os tokens de MCP** daquela
+  pessoa: um token antigo trabalhando com permissão antiga seria um buraco silencioso;
+- cinco senhas erradas seguidas bloqueiam a conta por 15 minutos.
+
+Tudo isso vira evento em `user_events`, append-only: quem fez, em quem, quando.
 
 ### 23.4 Links de revisão
 

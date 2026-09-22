@@ -1,4 +1,3 @@
-import { conferirSenha } from "../../../infrastructure/auth/password";
 import { assinarLogin, cabecalhoSetCookieLogin } from "../../../infrastructure/auth/login-session";
 import { assinarSessao, construirCabecalhoSetCookie } from "../../../infrastructure/auth/session";
 import { segredoAleatorio } from "../../../infrastructure/auth/crypto-texto";
@@ -6,6 +5,7 @@ import { ESCOPO_PADRAO, redirectUriPermitida, VALIDADE_CODIGO_MS, VALIDADE_LOGIN
 import type { ContextoOauth } from "./comum";
 import { lerFormulario, redirecionarComErro, respostaComCookies, sessaoAtual } from "./comum";
 import { paginaConsentimento, paginaErro, paginaLogin, respostaHtml } from "./paginas";
+import { conferirCredenciais } from "./credenciais";
 
 /**
  * Endpoint de autorização (`/oauth/authorize`): a única parte do fluxo que uma PESSOA vê.
@@ -142,20 +142,15 @@ export async function autorizarPost(ctx: ContextoOauth): Promise<Response> {
 
   if (acao === "entrar") {
     const email = (formulario.get("email") ?? "").trim();
-    const senha = formulario.get("senha") ?? "";
-    const usuario = await ctx.repo.buscarUsuarioPorEmail(email);
-    const senhaConfere =
-      usuario !== null &&
-      (await conferirSenha(senha, { hash: usuario.senhaHash, salt: usuario.senhaSalt, iteracoes: usuario.senhaIteracoes }));
+    const resultado = await conferirCredenciais(ctx, email, formulario.get("senha") ?? "");
 
-    if (!usuario || !senhaConfere) {
-      // Mesma mensagem para e-mail inexistente e senha errada: não revela quais contas existem.
+    if (resultado.tipo === "recusado") {
       return respostaHtml(
         paginaLogin({
           acao: "/oauth/authorize",
           titulo: "Entrar para autorizar",
           apoio: `${cliente.nomeCliente} quer consultar a Barreira de Glosas em seu nome.`,
-          erro: "E-mail ou senha não conferem.",
+          erro: resultado.mensagem,
           emailPreenchido: email,
           ocultos: ocultosDoFluxo(p),
         }),
@@ -163,6 +158,7 @@ export async function autorizarPost(ctx: ContextoOauth): Promise<Response> {
       );
     }
 
+    const usuario = resultado.usuario;
     const { valorCookie, sessao } = await assinarLogin(
       { userId: usuario.id, email: usuario.email, nome: usuario.nome, papel: usuario.papel },
       ctx.chaveAssinatura,
@@ -170,6 +166,22 @@ export async function autorizarPost(ctx: ContextoOauth): Promise<Response> {
       VALIDADE_LOGIN_MS,
     );
     const funcional = await assinarSessao(usuario.papel, ctx.chaveAssinatura, ctx.agoraUtc);
+    const cookies = [
+      cabecalhoSetCookieLogin(valorCookie, sessao.expiraEmUtc, ctx.seguro),
+      construirCabecalhoSetCookie(funcional.valorCookie, funcional.sessao.expiraEmUtc, ctx.seguro),
+    ];
+
+    // Entrou com senha provisória: define a senha definitiva ANTES de autorizar o assistente.
+    // Voltar para cá depois é automático — a URL inteira deste fluxo vai no `redirecionar`.
+    if (usuario.senhaProvisoria) {
+      const volta = `/oauth/authorize?${new URLSearchParams(
+        Object.entries(ocultosDoFluxo(p)).filter(([, valor]) => valor !== null && valor !== "") as [string, string][],
+      ).toString()}`;
+      return respostaComCookies(
+        new Response(null, { status: 302, headers: { location: `/trocar-senha?redirecionar=${encodeURIComponent(volta)}` } }),
+        cookies,
+      );
+    }
 
     return respostaComCookies(
       respostaHtml(
@@ -181,10 +193,7 @@ export async function autorizarPost(ctx: ContextoOauth): Promise<Response> {
           ocultos: ocultosDoFluxo(p),
         }),
       ),
-      [
-        cabecalhoSetCookieLogin(valorCookie, sessao.expiraEmUtc, ctx.seguro),
-        construirCabecalhoSetCookie(funcional.valorCookie, funcional.sessao.expiraEmUtc, ctx.seguro),
-      ],
+      cookies,
     );
   }
 
