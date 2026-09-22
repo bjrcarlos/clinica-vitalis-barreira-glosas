@@ -23,6 +23,10 @@
   animation: modal-painel-entrada 0.18s ease-out;
 }
 
+.painel.medio {
+  max-width: 880px;
+}
+
 .painel.largo {
   max-width: 1080px;
 }

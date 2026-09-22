@@ -1,19 +1,85 @@
-.pagina {
+.assistente {
+  display: grid;
+  grid-template-columns: 228px minmax(0, 1fr);
+  gap: 26px;
+  align-items: start;
+}
+
+.colunaTrilha {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  padding-right: 22px;
+  border-right: 1px solid var(--cor-divisoria);
 }
 
-.titulo {
+.notaTrilha {
   margin: 0;
-  font-size: 30px;
-  line-height: 1.1;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--cor-texto-4);
 }
 
-.subtitulo {
-  margin: 6px 0 0;
-  font-size: 14px;
+.painel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.trilhoProgresso {
+  height: 4px;
+  border-radius: var(--raio-pill);
+  background: var(--trilho);
+  overflow: hidden;
+}
+
+.progresso {
+  display: block;
+  height: 100%;
+  border-radius: var(--raio-pill);
+  background: var(--cor-primaria);
+  transition: width 0.24s ease-out;
+}
+
+.cabecalhoEtapa {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contador {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cor-primaria-clara);
+}
+
+.tituloEtapa {
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  font-size: 25px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--cor-texto);
+}
+
+.tituloEtapa:focus-visible {
+  outline: 2px solid var(--cor-primaria-clara);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.apoio {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--cor-texto-3);
+  max-width: 62ch;
 }
 
 .erro {
@@ -26,96 +92,73 @@
   font-weight: 500;
 }
 
-.grade {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 18px;
-  align-items: start;
-}
-
 .formulario {
-  background: var(--cor-card);
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-card);
-  padding: 26px 28px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.gradeCampos {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px 18px;
+.corpoEtapa {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: etapa-entrada 0.2s ease-out;
 }
 
-.campoLargo {
-  grid-column: span 2;
+.gradeCampos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
 }
 
 .campoTotal {
   grid-column: 1 / -1;
 }
 
-.rodapeFormulario {
+/* Contexto do convênio ------------------------------------------------- */
+
+.contexto {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-top: 4px;
-  border-top: 1px solid var(--cor-divisoria);
+  flex-direction: column;
+  gap: 9px;
+  padding: 14px 16px;
+  border: 1px solid var(--cor-borda-suave);
+  border-left: 3px solid var(--cor-verde-ok);
+  border-radius: var(--raio-bloco);
+  background: var(--cor-mint-hover);
 }
 
-.notaRodape {
-  font-size: 12px;
-  color: var(--cor-texto-3);
+.contextoAtencao {
+  border-left-color: var(--cor-corrigir-txt);
+  background: var(--cor-corrigir-bg);
 }
 
-.botaoPrimario {
-  margin-left: auto;
-  font: inherit;
+.contextoCabecalho {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   font-size: 13px;
-  font-weight: 600;
-  padding: 11px 18px;
-  border-radius: var(--raio-item);
-  border: 1px solid var(--cor-primaria);
-  background: var(--cor-primaria);
-  color: #fff;
-  cursor: pointer;
-}
-
-.botaoPrimario:hover:not(:disabled) {
-  background: var(--cor-primaria-clara);
-  border-color: var(--cor-primaria-clara);
-}
-
-.botaoPrimario:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.colunaLateral {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.cartaoLateral {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  font-size: 12px;
-  color: var(--cor-texto-3);
-  line-height: 1.5;
-}
-
-.h2 {
-  margin: 0;
-  font-size: 14px;
   color: var(--cor-texto);
 }
 
-.paragrafoLateral {
+.contextoVersao {
+  font-size: 11px;
+  color: var(--cor-texto-4);
+}
+
+.contextoAviso {
   margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  font-weight: 500;
+  color: var(--cor-corrigir-txt);
+}
+
+.contextoNota {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--cor-texto-3);
 }
 
 .listaChips {
@@ -128,13 +171,182 @@
 }
 
 .chip {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 11px;
   font-weight: 600;
+  border-radius: var(--raio-pill);
+  padding: 3px 9px;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-card);
+  color: var(--cor-texto-3);
+}
+
+.chipPreenchido {
+  border-color: var(--cor-verde-ok);
+  background: var(--cor-ok-bg);
+  color: var(--cor-ok-txt);
+}
+
+/* Revisão da última etapa ---------------------------------------------- */
+
+.revisao {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.revisaoBloco {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--cor-borda-suave);
+  border-radius: var(--raio-bloco);
+  background: var(--cor-superficie);
+}
+
+.revisaoCabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.revisaoTitulo {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cor-texto-4);
+}
+
+.revisaoLista {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.revisaoItem {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12.5px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--cor-divisoria);
+}
+
+.revisaoItem:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.revisaoItem dt {
+  color: var(--cor-texto-4);
+  flex-shrink: 0;
+}
+
+.revisaoItem dd {
+  margin: 0;
+  font-weight: 500;
+  color: var(--cor-texto);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.revisaoVazio {
+  color: var(--cor-texto-4);
+  font-weight: 400;
+}
+
+/* Rodapé e botões ------------------------------------------------------ */
+
+.rodape {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--cor-divisoria);
+}
+
+.notaRodape {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--cor-texto-4);
+  margin-right: auto;
+  max-width: 38ch;
+}
+
+.botaoPrimario {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 11px 20px;
+  border-radius: var(--raio-item);
+  border: 1px solid var(--cor-primaria);
+  background: var(--cor-primaria);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease-out, transform 0.15s ease-out;
+}
+
+.botaoPrimario:hover:not(:disabled) {
+  background: var(--cor-primaria-clara);
+  border-color: var(--cor-primaria-clara);
+  transform: translateY(-1px);
+}
+
+.botaoPrimario:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.botaoSecundario {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 11px 16px;
+  border-radius: var(--raio-item);
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-card);
+  color: var(--cor-texto-2);
+  cursor: pointer;
+}
+
+.botaoSecundario:hover {
+  border-color: var(--cor-primaria);
+  color: var(--cor-texto);
+}
+
+.botaoTexto {
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border: 0;
   border-radius: 6px;
-  padding: 2px 7px;
-  background: var(--cor-corrigir-bg);
-  color: var(--cor-corrigir-txt);
+  background: transparent;
+  color: var(--cor-primaria-clara);
+  cursor: pointer;
+}
+
+.botaoTexto:hover {
+  background: var(--cor-mint);
+}
+
+/* Tela de conclusão ---------------------------------------------------- */
+
+.conclusao {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
 }
 
 .cartaoJaExistia {
@@ -146,4 +358,48 @@
 .cartaoJaExistia a {
   font-weight: 600;
   align-self: flex-start;
+}
+
+@keyframes etapa-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 860px) {
+  .assistente {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .colunaTrilha {
+    position: static;
+    padding-right: 0;
+    padding-bottom: 14px;
+    border-right: 0;
+    border-bottom: 1px solid var(--cor-divisoria);
+  }
+
+  .notaTrilha {
+    display: none;
+  }
+
+  .gradeCampos,
+  .revisao {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rodape {
+    flex-wrap: wrap;
+  }
+
+  .notaRodape {
+    width: 100%;
+    margin-right: 0;
+  }
 }

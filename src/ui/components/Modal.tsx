@@ -7,8 +7,8 @@ interface ModalProps {
   readonly titulo: string;
   readonly aoFechar: () => void;
   readonly children: ReactNode;
-  /** "padrao" (~480px, diálogos curtos) ou "largo" (~1080px, formulários de várias colunas). */
-  readonly tamanho?: "padrao" | "largo";
+  /** "padrao" (~480px, diálogos curtos), "medio" (~880px, formulário em etapas) ou "largo" (~1080px, várias colunas). */
+  readonly tamanho?: "padrao" | "medio" | "largo";
 }
 
 const SELETOR_FOCAVEL =
@@ -81,7 +81,7 @@ export function Modal({ aberto, titulo, aoFechar, children, tamanho = "padrao" }
     <div className={styles.sobreposicao} onMouseDown={(evento) => evento.target === evento.currentTarget && aoFechar()}>
       <div
         ref={containerRef}
-        className={`${styles.painel} ${tamanho === "largo" ? styles.largo : ""}`}
+        className={`${styles.painel} ${tamanho === "largo" ? styles.largo : ""} ${tamanho === "medio" ? styles.medio : ""}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={tituloId}

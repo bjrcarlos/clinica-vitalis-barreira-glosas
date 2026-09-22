@@ -430,7 +430,7 @@ export function Guias() {
       <Modal aberto={modalAberto === "importar"} titulo="Importar guias" aoFechar={fecharModal} tamanho="largo">
         <FormularioImportacao aoConcluir={aoConcluirImportacao} />
       </Modal>
-      <Modal aberto={modalAberto === "nova-guia"} titulo="Nova guia" aoFechar={fecharModal} tamanho="largo">
+      <Modal aberto={modalAberto === "nova-guia"} titulo="Nova guia" aoFechar={fecharModal} tamanho="medio">
         <FormularioNovaGuia aoConcluir={aoConcluirNovaGuia} />
       </Modal>
     </div>
