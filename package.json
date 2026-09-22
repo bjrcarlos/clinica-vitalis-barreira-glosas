@@ -9,6 +9,7 @@
     "build": "vite build && tsc --noEmit -p tsconfig.worker.json",
     "dev": "wrangler dev",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "seed:sql": "node --experimental-transform-types scripts/seed.ts",
     "seed:local": "node --experimental-transform-types scripts/seed.ts && wrangler d1 execute DB --local --file=.wrangler/seed/seed.sql"
   },
   "dependencies": {

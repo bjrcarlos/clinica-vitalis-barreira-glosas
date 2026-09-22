@@ -108,3 +108,15 @@ Execução faseada conforme `docs/PRD-SDD.md` §33–35. Cada fase roda com cont
 - **`.playwright-mcp/` e `.vitest/`** (diretórios não rastreados, provavelmente artefato de
   ferramenta) não estão no `.gitignore` — risco de serem commitados por engano no primeiro
   commit da Fase 2 se ninguém decidir antes.
+
+## Pendências que dependem do dono (22/09/2026)
+
+1. **Reescrita do histórico do Git.** Os arquivos atuais já não contêm o print do enunciado, o `account_id` da Cloudflare nem o e-mail pessoal, mas os commits antigos ainda contêm. A reescrita foi autorizada e não pôde ser executada aqui: `git filter-branch` está bloqueado pela política de permissões da sessão. O script pronto e verificado está no scratchpad da sessão (`limpar-historico.sh`), e há uma cópia integral do `.git` como backup no mesmo lugar. Enquanto não for rodado, o repositório não deve ser publicado.
+2. **Deploy.** Preparado e não executado, por decisão do dono. O build de produção foi validado com `wrangler deploy --dry-run`: 1.398 KiB brutos, 249 KiB gzip, com os quatro bindings resolvidos (DB, EVIDENCE, AI, ASSETS). O passo a passo está em `docs/CONFIG.md`, incluindo a geração do SQL de seed para conferência antes de tocar no banco remoto.
+3. **Autoria dos commits.** O e-mail pessoal continua como autor de todos os commits. Sai junto na reescrita apenas se o `--env-filter` for usado; é preciso decidir qual endereço entra no lugar.
+
+## Números medidos ao fim da revisão (22/09/2026)
+
+80 protocolos: 29 `OK`, 12 `CORRIGIR`, 34 `REVISAO_HUMANA`, 5 `NAO_FATURAR_CONVENIO`. Risco inicial e atual: 372.600 centavos (R$ 3.726,00). 186 testes verdes em 14 arquivos. Bundle do cliente: 144 KiB gzip. Worker: 249 KiB gzip.
+
+`PRAZO_ENVIO_EXCEDIDO` (RN-09) não ocorre em nenhuma das 80 guias: a maior distância entre lançamento e atendimento na amostra é de 3 dias, contra prazos de 30 e 45 dias. A regra é exercitada por teste de borda e demonstrável por `verificar_guia` com guia colada.

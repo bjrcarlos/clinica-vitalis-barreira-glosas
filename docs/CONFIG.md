@@ -235,12 +235,21 @@ Ele mostrará os nomes, mas nunca o conteúdo.
 corepack pnpm exec wrangler d1 migrations apply vitalis-glosas --remote
 ```
 
-O seed oficial é gerado pelo próprio caso de uso e deve ser revisado antes de ser aplicado no D1
-remoto. A execução local continua sendo `corepack pnpm seed:local`; para produção, use o SQL
-gerado por `corepack pnpm seed:sql` com `wrangler d1 execute --remote` depois de conferir o
-ambiente e o banco alvo.
+### 6. Carregar as regras e as 80 guias no banco remoto
 
-### 6. Deploy
+O seed é gerado pelo mesmo caminho de código que a aplicação usa, e o SQL fica em disco para ser
+conferido **antes** de tocar no banco remoto:
+
+```bash
+pnpm seed:sql                       # gera .wrangler/seed/seed.sql, sem aplicar nada
+less .wrangler/seed/seed.sql        # confira o alvo e o conteúdo antes de continuar
+pnpm exec wrangler d1 execute vitalis-glosas --remote --file=.wrangler/seed/seed.sql
+```
+
+O comando local equivalente (`pnpm seed:local`) aplica direto no D1 local e nunca toca no remoto.
+O seed é idempotente: aplicá-lo duas vezes não duplica protocolo.
+
+### 7. Deploy
 
 ```bash
 corepack pnpm build
