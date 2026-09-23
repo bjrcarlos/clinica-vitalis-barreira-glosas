@@ -129,4 +129,4 @@ Execução faseada conforme `docs/PRD-SDD.md` §33–35. Cada fase roda com cont
 - Três secrets configurados por `wrangler secret put`; os valores ficaram apenas em `.secrets.local.md`, fora do Git.
 - Carga: regra ativa por SQL e as 80 guias pela rota `POST /api/imports` (80 aceitas, 0 rejeitadas). O `seed.sql` inteiro **não** serve para o D1 remoto — ver `docs/CONFIG.md` §6.
 - Conferido em produção: relatório com 80 verificadas, 51 exigem atenção e R$ 3.726,00 em risco, iguais ao ambiente local; listagem sem filtro com 80; MCP recusando chamada sem Bearer e devolvendo pendências diferentes por token (Secretaria 27 / Financeiro 43) mesmo quando o argumento `area` é forçado.
-- Repositório: <https://github.com/bjrcarlos/vitalis-barreira-glosas>, **privado** até a reescrita do histórico ser executada.
+- Repositório público: <https://github.com/bjrcarlos/clinica-vitalis-barreira-glosas>, criado em 23/09/2026 só com o histórico já limpo. O repositório anterior (`vitalis-barreira-glosas`) continua privado e não é mais usado.
