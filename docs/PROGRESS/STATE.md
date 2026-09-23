@@ -69,9 +69,9 @@ Execução faseada conforme `docs/PRD-SDD.md` §33–35. Cada fase roda com cont
 ## Pendências de decisão do dono
 
 - Deploy real (cria D1/R2/Worker na conta Cloudflare) — confirmar antes da publicação remota.
-- **Histórico Git contém um print privado.** O arquivo não está no índice atual, mas o blob
-  continua no histórico do commit `14335e2`; reescrever histórico antes de publicação pública
-  é decisão destrutiva do dono.
+- **Histórico Git continha um print privado — resolvido em 23/09/2026.** O histórico foi
+  reescrito com autorização do dono antes da publicação; o texto abaixo descreve a situação
+  original.
   `screenshot-[genteegestao.expertintegrado.com.br]-20260920-093049.png` foi commitado em
   `14335e2` (primeiro commit) antes de a Fase 0 auditar o índice. Nesta fase o arquivo foi
   apagado do diretório de trabalho e bloqueado por `.gitignore`; o índice atual não o lista.
@@ -111,7 +111,7 @@ Execução faseada conforme `docs/PRD-SDD.md` §33–35. Cada fase roda com cont
 
 ## Pendências que dependem do dono (22/09/2026)
 
-1. **Reescrita do histórico do Git.** Os arquivos atuais já não contêm o print do enunciado, o `account_id` da Cloudflare nem o e-mail pessoal, mas os commits antigos ainda contêm. A reescrita foi autorizada e não pôde ser executada aqui: `git filter-branch` está bloqueado pela política de permissões da sessão. O script pronto e verificado está no scratchpad da sessão (`limpar-historico.sh`), e há uma cópia integral do `.git` como backup no mesmo lugar. Enquanto não for rodado, o repositório não deve ser publicado.
+1. **Reescrita do histórico do Git — feita em 23/09/2026.** O print do enunciado saiu de todos os commits, e o `account_id` da Cloudflare e o e-mail pessoal foram redigidos do conteúdo. A árvore final ficou idêntica à de antes da reescrita. Depois disso o repositório foi tornado público.
 2. **Deploy.** Preparado e não executado, por decisão do dono. O build de produção foi validado com `wrangler deploy --dry-run`: 1.398 KiB brutos, 249 KiB gzip, com os quatro bindings resolvidos (DB, EVIDENCE, AI, ASSETS). O passo a passo está em `docs/CONFIG.md`, incluindo a geração do SQL de seed para conferência antes de tocar no banco remoto.
 3. **Autoria dos commits.** O e-mail pessoal continua como autor de todos os commits. Sai junto na reescrita apenas se o `--env-filter` for usado; é preciso decidir qual endereço entra no lugar.
 

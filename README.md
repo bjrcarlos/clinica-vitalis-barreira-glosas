@@ -199,9 +199,10 @@ confirmação explícita antes de registrar uma guia.
 - IA só interpreta observação e retorna schema validado; falha vira revisão humana.
 - MCP não corrige, libera, envia, encerra ou mescla — decisão humana é só da interface.
 - Evidências ficam no R2 privado, com hash e links HMAC temporários.
-- O histórico Git inicial contém um screenshot privado no commit `14335e2`; o arquivo não está no
-  índice atual, mas a remoção histórica precisa ser decidida pelo dono antes de tornar o
-  repositório público. Não reescreva o histórico sem autorização explícita.
+- O histórico Git foi reescrito em 23/09/2026, com autorização do dono, antes de o repositório
+  ficar público: o print privado do enunciado saiu de todos os commits, e o `account_id` da
+  Cloudflare e o e-mail pessoal foram redigidos do conteúdo. Por isso os hashes de commit citados
+  em documentos anteriores a essa data não existem mais.
 
 ## Não implementado nesta prova
 

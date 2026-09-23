@@ -76,5 +76,5 @@
 ## Fechamento
 
 Mostrar o README, os handoffs em `docs/PROGRESS/`, a Skill do operador e os gates:
-`corepack pnpm typecheck`, `corepack pnpm test` e `corepack pnpm build`. Explicar que deploy remoto,
-configuração de produção e eventual limpeza do screenshot histórico exigem decisão do proprietário.
+`corepack pnpm typecheck`, `corepack pnpm test` e `corepack pnpm build`. Explicar que deploy remoto e
+configuração de produção exigem decisão do proprietário.
