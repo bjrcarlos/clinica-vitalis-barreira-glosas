@@ -272,6 +272,34 @@ corepack pnpm exec wrangler deploy
 
 Isto faz build do Worker e da SPA, publica em produção e vincula os bindings.
 
+### 8. Deploy automático a cada push (Workers Builds)
+
+O repositório público é <https://github.com/bjrcarlos/clinica-vitalis-barreira-glosas>. Para a
+Cloudflare publicar sozinha a cada push em `main`, ligue o Worker ao repositório uma vez pelo
+painel. Esse passo exige autorizar o app da Cloudflare no GitHub, e não pode ser feito pela
+linha de comando:
+
+1. Painel da Cloudflare → **Workers & Pages** → `vitalis-barreira-glosas` → **Settings** →
+   **Builds** → **Connect**.
+2. Escolha **GitHub**, autorize o app "Cloudflare Workers and Pages" com acesso ao repositório
+   `clinica-vitalis-barreira-glosas`, e selecione esse repositório.
+3. Preencha:
+
+   | Campo | Valor |
+   |---|---|
+   | Branch de produção | `main` |
+   | Build command | `pnpm run build` |
+   | Deploy command | `pnpm exec wrangler deploy` |
+   | Root directory | `/` (raiz) |
+
+4. Salve e dispare o primeiro build. Ele deve terminar com "Success" e a mesma URL `workers.dev`.
+
+O que já está pronto no repositório para esse build funcionar sem ajuste: o nome do Worker em
+`wrangler.jsonc` é o mesmo do Worker publicado, os IDs dos bindings (D1, R2, AI) estão no arquivo,
+`.node-version` fixa o Node 24, e o `pnpm-lock.yaml` fixa as dependências, incluindo o wrangler
+usado no deploy. Os secrets (`LINK_SIGNING_KEY`, `MCP_SECRETARIA_TOKEN`, `MCP_FINANCEIRO_TOKEN`)
+ficam no Worker e não são tocados pelo build. Migrações de D1 continuam manuais, pelo passo 4.
+
 **Verificação pós-deploy:**
 
 ```bash
