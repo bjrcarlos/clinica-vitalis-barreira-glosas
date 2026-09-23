@@ -144,7 +144,7 @@ corepack pnpm test
 corepack pnpm build
 ```
 
-224 testes. O seed oficial carrega 80 guias e pode ser repetido; ele também limpa evidências e
+250 testes. O seed oficial carrega 80 guias e pode ser repetido; ele também limpa evidências e
 merges locais antes de recarregar o domínio, permitindo restaurar o estado da demonstração.
 
 ## MCP
@@ -222,6 +222,56 @@ Gaps conhecidos desta execução, para o próximo a mexer no código:
 - A amostra de agosto não contém nenhuma guia com `data_lancamento` além do prazo do convênio
   (RN-09); a regra existe, é determinística e testada, mas só é demonstrável com uma guia colada
   via `verificar_guia` — ver [`docs/DEMO-ROTEIRO.md`](docs/DEMO-ROTEIRO.md).
+
+## Como fiz
+
+**Ferramentas e por quê.** Toda a stack é Cloudflare: Workers hospeda interface, API e MCP no
+mesmo lugar, D1 guarda os dados e o histórico, R2 guarda as evidências e Workers AI interpreta a
+observação da recepção. Já vinha tudo pronto para o que o problema pedia, e a hospedagem é gratuita
+com limite generoso. Aplicação em TypeScript e React, testes em Vitest, deploy com Wrangler.
+Usei Claude Code e Codex como parceiros de código, revisão e documentação, e o Codex também como o
+"cliente real" do MCP nos testes.
+
+**O que a IA gerou e o que mudei na mão.** A IA escreveu a maior parte do código, dos testes e dos
+documentos a partir do PRD. As decisões abaixo foram minhas, e várias contrariam o que a IA propôs:
+
+1. **MCP com conta de pessoa, em vez de API sem usuário.** A IA tinha decidido não ter sistema de
+   usuários, por ser um MVP. Mas um MCP exige saber quem está do outro lado: Secretaria, Financeiro
+   e Direção não podem ver nem fazer a mesma coisa. Criei login e senha, administração de contas e
+   OAuth. O assistente pede o login sozinho, identifica o perfil e entrega só as ferramentas e os
+   dados daquela área.
+2. **Skill embutida no MCP.** Pela minha experiência, a instalação que parece levar cinco minutos
+   leva duas horas para uma pessoa leiga, que desiste no meio. Por isso a Skill vem do próprio
+   servidor, e a tela "Conectar" traz uma mensagem pronta: a pessoa copia, cola no assistente e ele
+   faz o resto.
+3. **Merge com a diferença visível antes de confirmar.** Guia duplicada é decisão difícil. Mostrar
+   os campos lado a lado, na mesma tela da decisão, evita pular entre telas e reduz o esforço de
+   decidir.
+4. **Rastro por data e prova de envio.** Pesquisa por data na interface e no MCP, evidência anexada
+   (print, PDF ou digitalização) que prova quando a guia foi enviada, e histórico que nunca é
+   apagado: correção cria versão nova. Isso deixa cada decisão explicável e forma uma base que,
+   depois de curada, pode treinar um agente mais autônomo.
+5. **IA só interpreta texto.** Cobertura, prazos, valores e limites são regras determinísticas. A IA
+   nunca libera guia nem altera dado, e se falhar a guia vai para revisão humana.
+
+As três decisões de produto no início deste README também são minhas: barreira na recepção,
+bloquear na dúvida e interface desktop.
+
+**O que ficou de fora e por quê.** Está listado em "Não implementado nesta prova". Em resumo, quis
+provar a barreira de conferência sem substituir o processo da clínica. Por isso não há integração
+com o sistema de gestão, envio automático ao convênio nem decisão financeira automática. Recursos
+como OCR e assinatura certificada não eram necessários para demonstrar o fluxo. O feedback humano
+fica registrado, mas o treino de modelo com ele não acontece nesta versão.
+
+**Como testei.** Rodei typecheck, build e 250 testes automatizados, que cobrem regras,
+permissões, OAuth, MCP e a consistência entre banco, tela e MCP. Carreguei as 80 guias da prova
+pela rota de importação e conferi o relatório contra o banco. Em produção, conectei o Codex por
+OAuth com cada perfil e usei o MCP como uma pessoa usaria. Foi assim que apareceu uma divergência
+de números: o assistente somava eventos do histórico como se fossem guias. Corrigi na origem, com
+nomes de campo explícitos, contagem oficial vinda do relatório e respostas já formatadas. O roteiro
+em [`docs/DEMO-ROTEIRO.md`](docs/DEMO-ROTEIRO.md) cobre os casos principais de ponta a ponta.
+
+**Tempo.** Cerca de 8 horas corridas.
 
 ## Demonstração
 
